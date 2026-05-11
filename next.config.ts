@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**.instawp.site",
+        hostname: "magdaceramics.com",
       },
     ],
   },
