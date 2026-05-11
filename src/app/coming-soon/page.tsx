@@ -1,6 +1,6 @@
 export default function ComingSoon() {
   return (
-    <section className="min-h-[80vh] bg-[#e8e0d5] flex items-center justify-center">
+    <section className="fixed inset-0 z-50 bg-[#e8e0d5] flex items-center justify-center">
       <div className="text-center px-6">
         <p className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] mb-4">
           Już wkrótce
