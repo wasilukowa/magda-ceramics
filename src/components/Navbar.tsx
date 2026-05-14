@@ -37,15 +37,15 @@ export default function Navbar() {
             onMouseEnter={() => setShopOpen(true)}
             onMouseLeave={() => setShopOpen(false)}
           >
-            <button className="flex items-center gap-1 hover:text-[var(--foreground)] transition-colors cursor-pointer">
+            <Link href="/sklep" className="flex items-center gap-1 hover:text-[var(--foreground)] transition-colors">
               Sklep
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M6 9l6 6 6-6" />
               </svg>
-            </button>
+            </Link>
 
             {shopOpen && (
-              <ul className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-[var(--background)] border border-[var(--border)] min-w-[140px] shadow-sm">
+              <ul className="absolute top-full left-1/2 -translate-x-1/2 bg-[var(--background)] border border-[var(--border)] min-w-[140px] shadow-sm">
                 <li>
                   <Link
                     href="/sklep"
