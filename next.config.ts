@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "magdaceramics.com",
       },
+      {
+        protocol: "https",
+        hostname: "wp.magdaceramics.com",
+      },
     ],
   },
 };
