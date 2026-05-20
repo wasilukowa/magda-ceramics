@@ -10,9 +10,10 @@ type Props = {
   price: string;
   image: string;
   inStock: boolean;
+  hasPrice: boolean;
 };
 
-export default function AddToCartButton({ id, slug, name, price, image, inStock }: Props) {
+export default function AddToCartButton({ id, slug, name, price, image, inStock, hasPrice }: Props) {
   const { addItem, openCart } = useCart();
   const [added, setAdded] = useState(false);
 
@@ -21,6 +22,17 @@ export default function AddToCartButton({ id, slug, name, price, image, inStock 
     openCart();
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
+  }
+
+  if (!hasPrice) {
+    return (
+      <button
+        disabled
+        className="w-full border border-[var(--border)] text-xs tracking-widest uppercase py-4 text-[var(--muted)] cursor-not-allowed"
+      >
+        Niedostępna cena
+      </button>
+    );
   }
 
   if (!inStock) {
