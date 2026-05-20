@@ -74,31 +74,13 @@ export default function CartDrawer() {
                   </Link>
                   <p className="text-sm text-[var(--muted)] mt-1">{item.price} zł</p>
 
-                  <div className="flex items-center gap-3 mt-3">
-                    <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="w-7 h-7 border border-[var(--border)] flex items-center justify-center text-[var(--muted)] hover:border-[var(--foreground)] hover:text-[var(--foreground)] transition-colors"
-                      aria-label="Zmniejsz ilość"
-                    >
-                      −
-                    </button>
-                    <span className="text-sm w-4 text-center">{item.quantity}</span>
-                    <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="w-7 h-7 border border-[var(--border)] flex items-center justify-center text-[var(--muted)] hover:border-[var(--foreground)] hover:text-[var(--foreground)] transition-colors"
-                      aria-label="Zwiększ ilość"
-                    >
-                      +
-                    </button>
-
+                  <div className="flex items-center mt-3">
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="ml-auto text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                      className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors text-xs tracking-widest uppercase"
                       aria-label="Usuń produkt"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <path d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      Usuń
                     </button>
                   </div>
                 </div>

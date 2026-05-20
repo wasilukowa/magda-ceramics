@@ -14,10 +14,12 @@ type Props = {
 };
 
 export default function AddToCartButton({ id, slug, name, price, image, inStock, hasPrice }: Props) {
-  const { addItem, openCart } = useCart();
+  const { items, addItem, openCart } = useCart();
   const [added, setAdded] = useState(false);
+  const alreadyInCart = items.some((i) => i.id === id);
 
   function handleClick() {
+    if (alreadyInCart) { openCart(); return; }
     addItem({ id, slug, name, price, image });
     openCart();
     setAdded(true);
@@ -51,7 +53,7 @@ export default function AddToCartButton({ id, slug, name, price, image, inStock,
       onClick={handleClick}
       className="w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 hover:opacity-80 transition-opacity"
     >
-      {added ? "Dodano ✓" : "Dodaj do koszyka"}
+      {alreadyInCart ? "W koszyku — zobacz" : added ? "Dodano ✓" : "Dodaj do koszyka"}
     </button>
   );
 }

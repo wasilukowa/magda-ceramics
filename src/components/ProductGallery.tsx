@@ -37,10 +37,10 @@ export default function ProductGallery({ images, productName }: Props) {
             <button
               key={i}
               onClick={() => setActive(i)}
+              aria-label={`Zdjęcie ${i + 1}`}
+              style={active === i ? { outline: "1px solid var(--foreground)" } : undefined}
               className={`aspect-square bg-[#e8e0d5] overflow-hidden transition-opacity ${
-                active === i
-                  ? "ring-1 ring-[var(--foreground)]"
-                  : "opacity-50 hover:opacity-100"
+                active === i ? "" : "opacity-40 hover:opacity-80"
               }`}
             >
               <Image
