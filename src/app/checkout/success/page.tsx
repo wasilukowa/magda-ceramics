@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
@@ -10,7 +10,7 @@ type OrderState =
   | { status: "success"; orderId: number }
   | { status: "error"; message: string };
 
-export default function SuccessPage() {
+function SuccessContent() {
   const searchParams = useSearchParams();
   const { clearCart } = useCart();
   const [state, setState] = useState<OrderState>({ status: "loading" });
@@ -89,5 +89,19 @@ export default function SuccessPage() {
         Wróć do sklepu
       </Link>
     </div>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-xl mx-auto px-6 py-24 text-center">
+          <p className="text-sm text-[var(--muted)]">Finalizujemy zamówienie...</p>
+        </div>
+      }
+    >
+      <SuccessContent />
+    </Suspense>
   );
 }
