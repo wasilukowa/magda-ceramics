@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { getProduct, getProducts } from "@/lib/woocommerce";
+import AddToCartButton from "@/components/AddToCartButton";
 
 export async function generateStaticParams() {
   const products = await getProducts();
@@ -86,12 +87,18 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             />
           )}
 
-          <div>
-            {product.stock_status === "instock" ? (
-              <p className="text-xs tracking-widest uppercase text-[var(--muted)]">Dostępny</p>
-            ) : (
-              <p className="text-xs tracking-widest uppercase text-[var(--muted)]">Niedostępny</p>
-            )}
+          <div className="space-y-3">
+            <p className="text-xs tracking-widest uppercase text-[var(--muted)]">
+              {product.stock_status === "instock" ? "Dostępny" : "Niedostępny"}
+            </p>
+            <AddToCartButton
+              id={product.id}
+              slug={product.slug}
+              name={product.name}
+              price={product.price}
+              image={mainImage?.src ?? ""}
+              inStock={product.stock_status === "instock"}
+            />
           </div>
 
           {product.description && (
