@@ -39,7 +39,8 @@ export async function getCategories(): Promise<WCCategory[]> {
 
 export async function getProducts(categoryId?: number): Promise<WCProduct[]> {
   const query = categoryId ? `category=${categoryId}&` : "";
-  return wcFetch(`products?${query}per_page=20`);
+  const products: WCProduct[] = await wcFetch(`products?${query}per_page=20`);
+  return products.filter((p) => p.price && parseFloat(p.price) > 0);
 }
 
 export async function getProduct(slug: string): Promise<WCProduct | null> {
