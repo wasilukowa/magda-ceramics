@@ -75,7 +75,7 @@ export default function ComingSoon() {
 
         {/* Nakładka tekstowa — wyśrodkowana na zdjęciu */}
         <div className="absolute inset-[20px] flex items-center justify-center">
-          <div className="w-full bg-white/50 flex flex-col items-center px-8 py-8 text-center">
+          <div className="w-full bg-white/70 flex flex-col items-center px-8 py-8 text-center">
             <TextContent />
           </div>
         </div>
