@@ -12,24 +12,7 @@ export default function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="relative h-[85vh] bg-[#e8e0d5] flex items-center justify-center overflow-hidden">
-        <div className="text-center px-6">
-          <p className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] mb-4">
-            Handmade ceramics
-          </p>
-          <h1 className="text-5xl md:text-7xl font-light tracking-tight text-[var(--foreground)]">
-            Magda Ceramics
-          </h1>
-          <div className="mt-8">
-            <Link
-              href="/sklep"
-              className="inline-block text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
-            >
-              View collection
-            </Link>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Categories */}
       <section className="max-w-6xl mx-auto px-6 py-20">
