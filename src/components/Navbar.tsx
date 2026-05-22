@@ -98,7 +98,7 @@ export default function Navbar() {
           </button>
 
           <a
-            href="https://instagram.com/magda-ceramics"
+            href="https://www.instagram.com/magda_ceramics"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Instagram"
