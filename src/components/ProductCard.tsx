@@ -18,7 +18,7 @@ export default function ProductCard({ product }: { product: WCProduct }) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[var(--muted)] text-xs tracking-widest uppercase">
-            Brak zdjęcia
+            No image
           </div>
         )}
       </div>

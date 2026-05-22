@@ -64,7 +64,7 @@ export default function ComingSoon() {
           <div className="relative w-full h-full">
             <Image
               src="/coming-soon.jpg"
-              alt="Ręcznie robiona ceramika"
+              alt="Handmade ceramics"
               fill
               sizes="100vw"
               className="object-cover object-center"
@@ -87,7 +87,7 @@ export default function ComingSoon() {
           <div className="relative w-full h-full">
             <Image
               src="/coming-soon.jpg"
-              alt="Ręcznie robiona ceramika"
+              alt="Handmade ceramics"
               fill
               sizes="50vw"
               className="object-cover object-center"

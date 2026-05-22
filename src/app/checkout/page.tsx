@@ -29,20 +29,20 @@ export default function CheckoutPage() {
         if (data.error) setError(data.error);
         else setClientSecret(data.clientSecret);
       })
-      .catch(() => setError("Błąd połączenia. Spróbuj ponownie."));
+      .catch(() => setError("Connection error. Please try again."));
   }, [items]);
 
   if (itemCount === 0) {
     return (
       <div className="max-w-3xl mx-auto px-6 py-24 text-center">
         <p className="text-sm text-[var(--muted)] mb-6">
-          Twój koszyk jest pusty.
+          Your cart is empty.
         </p>
         <Link
           href="/sklep"
           className="text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"
         >
-          Wróć do sklepu
+          Back to shop
         </Link>
       </div>
     );
@@ -50,10 +50,10 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-16">
-      <h1 className="text-xs tracking-widest uppercase mb-12">Zamówienie</h1>
+      <h1 className="text-xs tracking-widest uppercase mb-12">Order</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-        {/* Lewa: formularz */}
+        {/* Left: form */}
         <div>
           {error && (
             <p className="text-sm text-red-600 mb-6">{error}</p>
@@ -109,9 +109,9 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        {/* Prawa: podsumowanie */}
+        {/* Right: summary */}
         <div>
-          <p className="text-xs tracking-widest uppercase mb-6">Podsumowanie</p>
+          <p className="text-xs tracking-widest uppercase mb-6">Summary</p>
           <div className="space-y-4 mb-8">
             {items.map((item) => (
               <div key={item.id} className="flex justify-between text-sm">
@@ -129,12 +129,12 @@ export default function CheckoutPage() {
           </div>
           <div className="border-t border-[var(--border)] pt-4 flex justify-between">
             <span className="text-xs tracking-widest uppercase text-[var(--muted)]">
-              Suma
+              Total
             </span>
             <span className="text-sm">{total.toFixed(2)} zł</span>
           </div>
           <p className="text-xs text-[var(--muted)] mt-2">
-            + koszt wysyłki zostanie doliczony
+            + shipping cost will be added
           </p>
         </div>
       </div>

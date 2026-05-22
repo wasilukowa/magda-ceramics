@@ -31,7 +31,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ kateg
           href="/sklep"
           className="text-xs tracking-widest uppercase border border-[var(--border)] px-5 py-2 hover:border-[var(--foreground)] transition-colors"
         >
-          Wszystkie
+          All
         </a>
         {categories.map((cat) => (
           <a
@@ -49,7 +49,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ kateg
       </div>
 
       {products.length === 0 ? (
-        <p className="text-center text-[var(--muted)]">Brak produktów w tej kategorii.</p>
+        <p className="text-center text-[var(--muted)]">No products in this category.</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product) => (

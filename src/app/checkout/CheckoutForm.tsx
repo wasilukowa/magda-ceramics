@@ -5,23 +5,23 @@ import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js"
 import { CartItem } from "@/context/CartContext";
 
 const COUNTRIES = [
-  { code: "PL", label: "Polska" },
-  { code: "GB", label: "Wielka Brytania" },
-  { code: "DE", label: "Niemcy" },
-  { code: "FR", label: "Francja" },
-  { code: "NL", label: "Holandia" },
-  { code: "BE", label: "Belgia" },
+  { code: "PL", label: "Poland" },
+  { code: "GB", label: "United Kingdom" },
+  { code: "DE", label: "Germany" },
+  { code: "FR", label: "France" },
+  { code: "NL", label: "Netherlands" },
+  { code: "BE", label: "Belgium" },
   { code: "AT", label: "Austria" },
-  { code: "CH", label: "Szwajcaria" },
-  { code: "SE", label: "Szwecja" },
-  { code: "NO", label: "Norwegia" },
-  { code: "DK", label: "Dania" },
-  { code: "FI", label: "Finlandia" },
-  { code: "IT", label: "Włochy" },
-  { code: "ES", label: "Hiszpania" },
-  { code: "CZ", label: "Czechy" },
+  { code: "CH", label: "Switzerland" },
+  { code: "SE", label: "Sweden" },
+  { code: "NO", label: "Norway" },
+  { code: "DK", label: "Denmark" },
+  { code: "FI", label: "Finland" },
+  { code: "IT", label: "Italy" },
+  { code: "ES", label: "Spain" },
+  { code: "CZ", label: "Czech Republic" },
   { code: "US", label: "USA" },
-  { code: "CA", label: "Kanada" },
+  { code: "CA", label: "Canada" },
   { code: "AU", label: "Australia" },
 ];
 
@@ -131,19 +131,19 @@ export default function CheckoutForm({ items }: Props) {
     });
 
     if (stripeError) {
-      setError(stripeError.message ?? "Wystąpił błąd płatności.");
+      setError(stripeError.message ?? "A payment error occurred.");
       setLoading(false);
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Dane osobowe */}
+      {/* Contact details */}
       <div>
-        <p className="text-xs tracking-widest uppercase mb-5">Dane kontaktowe</p>
+        <p className="text-xs tracking-widest uppercase mb-5">Contact details</p>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Imię *">
+            <Field label="First name *">
               <input
                 required
                 value={address.firstName}
@@ -152,7 +152,7 @@ export default function CheckoutForm({ items }: Props) {
                 autoComplete="given-name"
               />
             </Field>
-            <Field label="Nazwisko *">
+            <Field label="Last name *">
               <input
                 required
                 value={address.lastName}
@@ -172,7 +172,7 @@ export default function CheckoutForm({ items }: Props) {
               autoComplete="email"
             />
           </Field>
-          <Field label="Telefon">
+          <Field label="Phone">
             <input
               type="tel"
               value={address.phone}
@@ -184,11 +184,11 @@ export default function CheckoutForm({ items }: Props) {
         </div>
       </div>
 
-      {/* Adres */}
+      {/* Shipping address */}
       <div>
-        <p className="text-xs tracking-widest uppercase mb-5">Adres dostawy</p>
+        <p className="text-xs tracking-widest uppercase mb-5">Shipping address</p>
         <div className="space-y-4">
-          <Field label="Kraj *">
+          <Field label="Country *">
             <select
               required
               value={address.country}
@@ -202,7 +202,7 @@ export default function CheckoutForm({ items }: Props) {
               ))}
             </select>
           </Field>
-          <Field label="Ulica i numer domu/mieszkania *">
+          <Field label="Street address *">
             <input
               required
               value={address.street}
@@ -212,7 +212,7 @@ export default function CheckoutForm({ items }: Props) {
             />
           </Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Kod pocztowy *">
+            <Field label="Postcode *">
               <input
                 required
                 value={address.postcode}
@@ -221,7 +221,7 @@ export default function CheckoutForm({ items }: Props) {
                 autoComplete="postal-code"
               />
             </Field>
-            <Field label="Miasto *">
+            <Field label="City *">
               <input
                 required
                 value={address.city}
@@ -234,15 +234,15 @@ export default function CheckoutForm({ items }: Props) {
         </div>
       </div>
 
-      {/* Płatność */}
+      {/* Payment */}
       <div>
-        <p className="text-xs tracking-widest uppercase mb-5">Płatność</p>
+        <p className="text-xs tracking-widest uppercase mb-5">Payment</p>
         <PaymentElement />
       </div>
 
-      {/* Notatka */}
+      {/* Note */}
       <div>
-        <Field label="Notatka do zamówienia (opcjonalnie)">
+        <Field label="Order note (optional)">
           <textarea
             value={address.note}
             onChange={set("note")}
@@ -261,11 +261,11 @@ export default function CheckoutForm({ items }: Props) {
         disabled={!stripe || loading}
         className="w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 hover:opacity-80 transition-opacity disabled:opacity-40"
       >
-        {loading ? "Przetwarzanie..." : "Zapłać i zamów"}
+        {loading ? "Processing..." : "Pay & order"}
       </button>
 
       <p className="text-xs text-[var(--muted)] text-center">
-        Płatność obsługiwana przez Stripe — bezpieczne połączenie SSL
+        Payment powered by Stripe — secure SSL connection
       </p>
     </form>
   );

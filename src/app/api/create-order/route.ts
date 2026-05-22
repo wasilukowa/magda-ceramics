@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     },
     body: JSON.stringify({
       payment_method: "stripe",
-      payment_method_title: "Karta / BLIK / Apple Pay / Google Pay",
+      payment_method_title: "Card / Apple Pay / Google Pay",
       set_paid: true,
       billing,
       shipping: billing,
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
   if (!res.ok) {
     const err = await res.text();
     console.error("WooCommerce order error:", err);
-    return Response.json({ error: "Nie udało się utworzyć zamówienia" }, { status: 500 });
+    return Response.json({ error: "Failed to create order" }, { status: 500 });
   }
 
   const order = await res.json();

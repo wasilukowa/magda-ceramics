@@ -12,7 +12,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = await getProduct(slug);
-  if (!product) return { title: "Produkt — Magda Ceramics" };
+  if (!product) return { title: "Product — Magda Ceramics" };
   return { title: `${product.name} — Magda Ceramics` };
 }
 
@@ -30,7 +30,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         href="/sklep"
         className="text-xs tracking-widest uppercase text-[var(--muted)] hover:text-[var(--foreground)] transition-colors mb-10 inline-block"
       >
-        ← Sklep
+        ← Shop
       </Link>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
@@ -47,7 +47,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           {hasPrice ? (
             <p className="text-xl tracking-wide">{product.price} zł</p>
           ) : (
-            <p className="text-sm text-[var(--muted)] tracking-wide">Cena niedostępna</p>
+            <p className="text-sm text-[var(--muted)] tracking-wide">Price unavailable</p>
           )}
 
           {product.short_description && (
@@ -59,7 +59,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
           <div className="space-y-3">
             <p className="text-xs tracking-widest uppercase text-[var(--muted)]">
-              {product.stock_status === "instock" ? "Dostępny" : "Niedostępny"}
+              {product.stock_status === "instock" ? "In stock" : "Out of stock"}
             </p>
             <AddToCartButton
               id={product.id}

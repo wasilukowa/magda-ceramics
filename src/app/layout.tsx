@@ -13,7 +13,7 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: "Magda Ceramics",
-  description: "Ręcznie robiona ceramika użytkowa",
+  description: "Handmade functional ceramics",
 };
 
 export default function RootLayout({
@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pl" className={montserrat.variable}>
+    <html lang="en" className={montserrat.variable}>
       <body className="min-h-screen flex flex-col">
         <CartProvider>
           <Navbar />

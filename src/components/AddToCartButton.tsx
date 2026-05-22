@@ -32,7 +32,7 @@ export default function AddToCartButton({ id, slug, name, price, image, inStock,
         disabled
         className="w-full border border-[var(--border)] text-xs tracking-widest uppercase py-4 text-[var(--muted)] cursor-not-allowed"
       >
-        Niedostępna cena
+        Price unavailable
       </button>
     );
   }
@@ -43,7 +43,7 @@ export default function AddToCartButton({ id, slug, name, price, image, inStock,
         disabled
         className="w-full border border-[var(--border)] text-xs tracking-widest uppercase py-4 text-[var(--muted)] cursor-not-allowed"
       >
-        Niedostępny
+        Out of stock
       </button>
     );
   }
@@ -53,7 +53,7 @@ export default function AddToCartButton({ id, slug, name, price, image, inStock,
       onClick={handleClick}
       className="w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 hover:opacity-80 transition-opacity"
     >
-      {alreadyInCart ? "W koszyku — zobacz" : added ? "Dodano ✓" : "Dodaj do koszyka"}
+      {alreadyInCart ? "In cart — view" : added ? "Added ✓" : "Add to cart"}
     </button>
   );
 }

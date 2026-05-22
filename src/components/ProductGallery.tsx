@@ -14,7 +14,7 @@ export default function ProductGallery({ images, productName }: Props) {
   if (images.length === 0) {
     return (
       <div className="aspect-square bg-[#e8e0d5] flex items-center justify-center text-[var(--muted)] text-xs tracking-widest uppercase">
-        Brak zdjęcia
+        No image
       </div>
     );
   }
@@ -37,7 +37,7 @@ export default function ProductGallery({ images, productName }: Props) {
             <button
               key={i}
               onClick={() => setActive(i)}
-              aria-label={`Zdjęcie ${i + 1}`}
+              aria-label={`Photo ${i + 1}`}
               style={active === i ? { outline: "1px solid var(--foreground)" } : undefined}
               className={`aspect-square bg-[#e8e0d5] overflow-hidden transition-opacity ${
                 active === i ? "" : "opacity-40 hover:opacity-80"

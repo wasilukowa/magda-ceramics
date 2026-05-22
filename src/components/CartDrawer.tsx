@@ -29,10 +29,10 @@ export default function CartDrawer() {
       <div className="fixed top-0 right-0 h-full w-full max-w-sm bg-[var(--background)] z-50 flex flex-col shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border)]">
-          <span className="text-xs tracking-widest uppercase">Koszyk</span>
+          <span className="text-xs tracking-widest uppercase">Cart</span>
           <button
             onClick={closeCart}
-            aria-label="Zamknij koszyk"
+            aria-label="Close cart"
             className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -45,7 +45,7 @@ export default function CartDrawer() {
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
           {items.length === 0 ? (
             <p className="text-sm text-[var(--muted)] text-center mt-12">
-              Koszyk jest pusty
+              Your cart is empty
             </p>
           ) : (
             items.map((item) => (
@@ -78,9 +78,9 @@ export default function CartDrawer() {
                     <button
                       onClick={() => removeItem(item.id)}
                       className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors text-xs tracking-widest uppercase"
-                      aria-label="Usuń produkt"
+                      aria-label="Remove item"
                     >
-                      Usuń
+                      Remove
                     </button>
                   </div>
                 </div>
@@ -93,16 +93,16 @@ export default function CartDrawer() {
         {items.length > 0 && (
           <div className="px-6 py-6 border-t border-[var(--border)] space-y-4">
             <div className="flex justify-between text-sm">
-              <span className="text-xs tracking-widest uppercase text-[var(--muted)]">Suma</span>
+              <span className="text-xs tracking-widest uppercase text-[var(--muted)]">Total</span>
               <span className="tracking-wide">{total.toFixed(2)} zł</span>
             </div>
-            <p className="text-xs text-[var(--muted)]">Koszt wysyłki zostanie obliczony przy kasie</p>
+            <p className="text-xs text-[var(--muted)]">Shipping will be calculated at checkout</p>
             <Link
               href="/checkout"
               onClick={closeCart}
               className="block w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 text-center hover:opacity-80 transition-opacity"
             >
-              Przejdź do kasy
+              Go to checkout
             </Link>
           </div>
         )}

@@ -20,13 +20,13 @@ function SuccessContent() {
     const redirectStatus = searchParams.get("redirect_status");
 
     if (redirectStatus !== "succeeded" || !paymentIntent) {
-      setState({ status: "error", message: "Płatność nie powiodła się lub została anulowana." });
+      setState({ status: "error", message: "Payment failed or was cancelled." });
       return;
     }
 
     const raw = sessionStorage.getItem("pendingOrder");
     if (!raw) {
-      setState({ status: "error", message: "Nie znaleziono danych zamówienia." });
+      setState({ status: "error", message: "Order data not found." });
       return;
     }
 
@@ -48,14 +48,14 @@ function SuccessContent() {
         }
       })
       .catch(() =>
-        setState({ status: "error", message: "Błąd połączenia przy tworzeniu zamówienia." })
+        setState({ status: "error", message: "Connection error while creating the order." })
       );
   }, [searchParams, clearCart]);
 
   if (state.status === "loading") {
     return (
       <div className="max-w-xl mx-auto px-6 py-24 text-center">
-        <p className="text-sm text-[var(--muted)]">Finalizujemy zamówienie...</p>
+        <p className="text-sm text-[var(--muted)]">Finalising your order...</p>
       </div>
     );
   }
@@ -68,7 +68,7 @@ function SuccessContent() {
           href="/checkout"
           className="text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"
         >
-          Wróć do kasy
+          Back to checkout
         </Link>
       </div>
     );
@@ -77,16 +77,16 @@ function SuccessContent() {
   return (
     <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-6">
       <p className="text-xs tracking-widest uppercase text-[var(--muted)]">
-        Dziękujemy za zamówienie
+        Thank you for your order
       </p>
       <p className="text-sm">
-        Zamówienie #{state.orderId} zostało przyjęte. Potwierdzenie wysłaliśmy na Twój adres e-mail.
+        Order #{state.orderId} has been received. A confirmation has been sent to your email address.
       </p>
       <Link
         href="/sklep"
         className="inline-block text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
       >
-        Wróć do sklepu
+        Back to shop
       </Link>
     </div>
   );
@@ -97,7 +97,7 @@ export default function SuccessPage() {
     <Suspense
       fallback={
         <div className="max-w-xl mx-auto px-6 py-24 text-center">
-          <p className="text-sm text-[var(--muted)]">Finalizujemy zamówienie...</p>
+          <p className="text-sm text-[var(--muted)]">Finalising your order...</p>
         </div>
       }
     >

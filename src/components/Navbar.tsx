@@ -5,11 +5,11 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 
 const SHOP_CATEGORIES = [
-  { name: "Kubki", slug: "kubki" },
-  { name: "Miski", slug: "miski" },
-  { name: "Maluszki", slug: "maluszki" },
-  { name: "Wazony", slug: "wazony" },
-  { name: "Różności", slug: "roznosci" },
+  { name: "Mugs", slug: "kubki" },
+  { name: "Bowls", slug: "miski" },
+  { name: "Smalls", slug: "maluszki" },
+  { name: "Vases", slug: "wazony" },
+  { name: "Miscellaneous", slug: "roznosci" },
 ];
 
 export default function Navbar() {
@@ -29,18 +29,18 @@ export default function Navbar() {
         <ul className="hidden md:flex items-center gap-8 text-xs tracking-widest uppercase text-[var(--muted)]">
           <li>
             <Link href="/" className="hover:text-[var(--foreground)] transition-colors">
-              Strona główna
+              Home
             </Link>
           </li>
 
-          {/* Sklep dropdown */}
+          {/* Shop dropdown */}
           <li
             className="relative"
             onMouseEnter={() => setShopOpen(true)}
             onMouseLeave={() => setShopOpen(false)}
           >
             <Link href="/sklep" className="flex items-center gap-1 hover:text-[var(--foreground)] transition-colors">
-              Sklep
+              Shop
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M6 9l6 6 6-6" />
               </svg>
@@ -53,7 +53,7 @@ export default function Navbar() {
                     href="/sklep"
                     className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[#e8e0d5] transition-colors"
                   >
-                    Wszystkie
+                    All
                   </Link>
                 </li>
                 {SHOP_CATEGORIES.map((cat) => (
@@ -72,17 +72,17 @@ export default function Navbar() {
 
           <li>
             <Link href="/kontakt" className="hover:text-[var(--foreground)] transition-colors">
-              Kontakt
+              Contact
             </Link>
           </li>
         </ul>
 
-        {/* Ikony */}
+        {/* Icons */}
         <div className="flex items-center gap-4">
-          {/* Koszyk */}
+          {/* Cart */}
           <button
             onClick={openCart}
-            aria-label="Koszyk"
+            aria-label="Cart"
             className="relative text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -134,8 +134,8 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-[var(--border)] bg-[var(--background)] px-6 py-4">
           <ul className="flex flex-col gap-4 text-xs tracking-widest uppercase text-[var(--muted)]">
-            <li><Link href="/" onClick={() => setMobileOpen(false)}>Strona główna</Link></li>
-            <li><Link href="/sklep" onClick={() => setMobileOpen(false)}>Sklep — wszystkie</Link></li>
+            <li><Link href="/" onClick={() => setMobileOpen(false)}>Home</Link></li>
+            <li><Link href="/sklep" onClick={() => setMobileOpen(false)}>Shop — all</Link></li>
             {SHOP_CATEGORIES.map((cat) => (
               <li key={cat.slug} className="pl-4">
                 <Link href={`/sklep/${cat.slug}`} onClick={() => setMobileOpen(false)}>
@@ -143,7 +143,7 @@ export default function Navbar() {
                 </Link>
               </li>
             ))}
-            <li><Link href="/kontakt" onClick={() => setMobileOpen(false)}>Kontakt</Link></li>
+            <li><Link href="/kontakt" onClick={() => setMobileOpen(false)}>Contact</Link></li>
           </ul>
         </div>
       )}
