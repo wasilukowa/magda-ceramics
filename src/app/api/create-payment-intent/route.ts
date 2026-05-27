@@ -1,24 +1,17 @@
 import Stripe from "stripe";
+import { CartItem } from "@/contracts/server/cart";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
-type CartItem = {
-  id: number;
-  name: string;
-  price: string;
-  quantity: number;
-};
 
 export async function POST(request: Request) {
   const { items } = (await request.json()) as { items: CartItem[] };
 
   if (!items || items.length === 0) {
-    return Response.json({ error: "Koszyk jest pusty" }, { status: 400 });
+    return Response.json({ error: "Cart is empty" }, { status: 400 });
   }
 
   const amount = items.reduce(
-    (sum, item) =>
-      sum + Math.round(parseFloat(item.price) * item.quantity * 100),
+    (sum, item) => sum + Math.round(parseFloat(item.price) * item.quantity * 100),
     0
   );
 

@@ -3,12 +3,19 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/hooks/useCart";
+import { BillingAddress, OrderItem } from "@/contracts/server/cart";
 
 type OrderState =
   | { status: "loading" }
   | { status: "success"; orderId: number }
   | { status: "error"; message: string };
+
+type PendingOrder = {
+  billing: BillingAddress;
+  items: OrderItem[];
+  note: string;
+};
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -30,7 +37,7 @@ function SuccessContent() {
       return;
     }
 
-    const { billing, items } = JSON.parse(raw);
+    const { billing, items }: PendingOrder = JSON.parse(raw);
 
     fetch("/api/create-order", {
       method: "POST",
@@ -38,10 +45,10 @@ function SuccessContent() {
       body: JSON.stringify({ billing, items, paymentIntentId: paymentIntent }),
     })
       .then((r) => r.json())
-      .then((data) => {
+      .then((data: { error?: string; orderId?: number }) => {
         if (data.error) {
           setState({ status: "error", message: data.error });
-        } else {
+        } else if (data.orderId) {
           sessionStorage.removeItem("pendingOrder");
           clearCart();
           setState({ status: "success", orderId: data.orderId });

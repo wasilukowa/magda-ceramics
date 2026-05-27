@@ -1,10 +1,20 @@
 @import "tailwindcss";
 
 :root {
+  /* Brand palette */
   --background: #faf9f7;
   --foreground: #1a1a1a;
   --muted: #6b6b6b;
   --border: #e5e2dc;
+
+  /* Surface */
+  --color-ceramic: #e8e0d5;
+  --color-ceramic-hover: #ddd5c8;
+
+  /* Navbar / Footer */
+  --color-navbar: #a4b6b8;
+  --color-navbar-border: #8a9e9f;
+  --color-navbar-hover: #8AAAA6;
 }
 
 @theme inline {

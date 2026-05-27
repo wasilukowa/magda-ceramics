@@ -1,30 +1,20 @@
 import Link from "next/link";
-
-const categories = [
-  { name: "Mugs", slug: "kubki", emoji: "☕" },
-  { name: "Bowls", slug: "miski", emoji: "🥣" },
-  { name: "Smalls", slug: "maluszki", emoji: "🌿" },
-  { name: "Vases", slug: "wazony", emoji: "🏺" },
-  { name: "Miscellaneous", slug: "roznosci", emoji: "✨" },
-];
+import { HOMEPAGE_CATEGORIES } from "@/content/data";
 
 export default function Home() {
   return (
     <>
-      {/* Hero */}
-      
-
       {/* Categories */}
       <section className="max-w-6xl mx-auto px-6 py-20">
         <h2 className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] text-center mb-12">
           Categories
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {categories.map((cat) => (
+          {HOMEPAGE_CATEGORIES.map((cat) => (
             <Link
               key={cat.slug}
               href={`/sklep/${cat.slug}`}
-              className="group aspect-square bg-[#e8e0d5] flex flex-col items-center justify-center gap-3 hover:bg-[#ddd5c8] transition-colors"
+              className="group aspect-square bg-[var(--color-ceramic)] flex flex-col items-center justify-center gap-3 hover:bg-[var(--color-ceramic-hover)] transition-colors"
             >
               <span className="text-3xl">{cat.emoji}</span>
               <span className="text-xs tracking-widest uppercase text-[var(--muted)] group-hover:text-[var(--foreground)] transition-colors">

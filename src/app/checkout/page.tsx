@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/hooks/useCart";
 import CheckoutForm from "./CheckoutForm";
 import Link from "next/link";
+import { CartItem } from "@/contracts/server/cart";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -25,9 +26,9 @@ export default function CheckoutPage() {
       body: JSON.stringify({ items }),
     })
       .then((r) => r.json())
-      .then((data) => {
+      .then((data: { error?: string; clientSecret?: string }) => {
         if (data.error) setError(data.error);
-        else setClientSecret(data.clientSecret);
+        else if (data.clientSecret) setClientSecret(data.clientSecret);
       })
       .catch(() => setError("Connection error. Please try again."));
   }, [items]);
@@ -99,10 +100,7 @@ export default function CheckoutPage() {
             !error && (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="h-12 bg-[#e8e0d5] animate-pulse"
-                  />
+                  <div key={i} className="h-12 bg-[var(--color-ceramic)] animate-pulse" />
                 ))}
               </div>
             )
@@ -113,7 +111,7 @@ export default function CheckoutPage() {
         <div>
           <p className="text-xs tracking-widest uppercase mb-6">Summary</p>
           <div className="space-y-4 mb-8">
-            {items.map((item) => (
+            {items.map((item: CartItem) => (
               <div key={item.id} className="flex justify-between text-sm">
                 <span className="text-[var(--muted)]">
                   {item.name}{" "}

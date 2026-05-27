@@ -1,33 +1,20 @@
+import { serverFetch } from "@/lib/api";
+import { BillingAddress, OrderItem } from "@/contracts/server/cart";
+
 const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
 const WC_KEY = process.env.WC_CONSUMER_KEY;
 const WC_SECRET = process.env.WC_CONSUMER_SECRET;
 
-type Billing = {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  address_1: string;
-  city: string;
-  postcode: string;
-  country: string;
-};
-
-type OrderItem = {
-  id: number;
-  quantity: number;
-};
-
 export async function POST(request: Request) {
   const { billing, items, paymentIntentId } = (await request.json()) as {
-    billing: Billing;
+    billing: BillingAddress;
     items: OrderItem[];
     paymentIntentId: string;
   };
 
   const auth = Buffer.from(`${WC_KEY}:${WC_SECRET}`).toString("base64");
 
-  const res = await fetch(`${WP_URL}/wp-json/wc/v3/orders`, {
+  const res = await serverFetch(`${WP_URL}/wp-json/wc/v3/orders`, {
     method: "POST",
     headers: {
       Authorization: `Basic ${auth}`,

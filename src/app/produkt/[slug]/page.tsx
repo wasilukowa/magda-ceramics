@@ -1,28 +1,26 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getProduct, getProducts } from "@/lib/woocommerce";
+import { productService } from "@/lib/service/product";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductGallery from "@/components/ProductGallery";
 
 export async function generateStaticParams() {
-  const products = await getProducts();
+  const products = await productService.getProducts();
   return products.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = await getProduct(slug);
+  const product = await productService.getProductBySlug(slug);
   if (!product) return { title: "Product — Magda Ceramics" };
   return { title: `${product.name} — Magda Ceramics` };
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = await getProduct(slug);
+  const product = await productService.getProductBySlug(slug);
 
   if (!product) notFound();
-
-  const hasPrice = !!product.price && parseFloat(product.price) > 0;
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-16">
@@ -44,22 +42,22 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <h1 className="text-2xl font-light tracking-wide">{product.name}</h1>
           </div>
 
-          {hasPrice ? (
+          {product.hasPrice ? (
             <p className="text-xl tracking-wide">{product.price} zł</p>
           ) : (
             <p className="text-sm text-[var(--muted)] tracking-wide">Price unavailable</p>
           )}
 
-          {product.short_description && (
+          {product.shortDescription && (
             <div
               className="text-sm text-[var(--muted)] leading-relaxed prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: product.short_description }}
+              dangerouslySetInnerHTML={{ __html: product.shortDescription }}
             />
           )}
 
           <div className="space-y-3">
             <p className="text-xs tracking-widest uppercase text-[var(--muted)]">
-              {product.stock_status === "instock" ? "In stock" : "Out of stock"}
+              {product.inStock ? "In stock" : "Out of stock"}
             </p>
             <AddToCartButton
               id={product.id}
@@ -67,8 +65,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               name={product.name}
               price={product.price}
               image={product.images[0]?.src ?? ""}
-              inStock={product.stock_status === "instock"}
-              hasPrice={hasPrice}
+              inStock={product.inStock}
+              hasPrice={product.hasPrice}
             />
           </div>
 

@@ -1,30 +1,9 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { CartStore, CartItem } from "@/lib/store/slices/cartSlice";
 
-export type CartItem = {
-  id: number;
-  slug: string;
-  name: string;
-  price: string;
-  image: string;
-  quantity: number;
-};
-
-type CartContextType = {
-  items: CartItem[];
-  addItem: (item: Omit<CartItem, "quantity">) => void;
-  removeItem: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
-  clearCart: () => void;
-  itemCount: number;
-  total: number;
-  isOpen: boolean;
-  openCart: () => void;
-  closeCart: () => void;
-};
-
-const CartContext = createContext<CartContextType | null>(null);
+const CartContext = createContext<CartStore | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -56,28 +35,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const updateQuantity = useCallback((id: number, quantity: number) => {
     if (quantity < 1) return;
-    setItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, quantity } : i))
-    );
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity } : i)));
   }, []);
 
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
-  const total = items.reduce(
-    (sum, i) => sum + parseFloat(i.price) * i.quantity,
-    0
-  );
+  const total = items.reduce((sum, i) => sum + parseFloat(i.price) * i.quantity, 0);
 
   return (
     <CartContext.Provider
       value={{
         items,
+        isOpen,
+        itemCount,
+        total,
         addItem,
         removeItem,
         updateQuantity,
         clearCart,
-        itemCount,
-        total,
-        isOpen,
         openCart: () => setIsOpen(true),
         closeCart: () => setIsOpen(false),
       }}
@@ -87,7 +61,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useCart() {
+export function useCart(): CartStore {
   const ctx = useContext(CartContext);
   if (!ctx) throw new Error("useCart must be used inside CartProvider");
   return ctx;

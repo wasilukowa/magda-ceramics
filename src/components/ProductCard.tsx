@@ -1,13 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { WCProduct } from "@/lib/woocommerce";
+import { ProductProps } from "@/contracts/server/product";
 
-export default function ProductCard({ product }: { product: WCProduct }) {
+export default function ProductCard({ product }: { product: ProductProps }) {
   const image = product.images[0];
 
   return (
     <Link href={`/produkt/${product.slug}`} className="group">
-      <div className="aspect-square bg-[#e8e0d5] overflow-hidden mb-3">
+      <div className="aspect-square bg-[var(--color-ceramic)] overflow-hidden mb-3">
         {image ? (
           <Image
             src={image.src}

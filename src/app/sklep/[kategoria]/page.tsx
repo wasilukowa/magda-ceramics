@@ -1,23 +1,24 @@
-import { getProducts, getCategories } from "@/lib/woocommerce";
+import { productService } from "@/lib/service/product";
 import ProductCard from "@/components/ProductCard";
+import { cn } from "@/lib/utils";
 
 export async function generateStaticParams() {
-  const categories = await getCategories();
+  const categories = await productService.getCategories();
   return categories.map((cat) => ({ kategoria: cat.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ kategoria: string }> }) {
   const { kategoria } = await params;
-  const categories = await getCategories();
+  const categories = await productService.getCategories();
   const cat = categories.find((c) => c.slug === kategoria);
   return { title: `${cat?.name ?? kategoria} — Magda Ceramics` };
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ kategoria: string }> }) {
   const { kategoria } = await params;
-  const categories = await getCategories();
+  const categories = await productService.getCategories();
   const category = categories.find((c) => c.slug === kategoria);
-  const products = await getProducts(category?.id);
+  const products = await productService.getProducts(category?.id);
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-16">
@@ -25,7 +26,6 @@ export default async function CategoryPage({ params }: { params: Promise<{ kateg
         {category?.name ?? kategoria}
       </h1>
 
-      {/* Filtry kategorii */}
       <div className="flex flex-wrap gap-3 justify-center mb-12">
         <a
           href="/sklep"
@@ -37,11 +37,12 @@ export default async function CategoryPage({ params }: { params: Promise<{ kateg
           <a
             key={cat.slug}
             href={`/sklep/${cat.slug}`}
-            className={`text-xs tracking-widest uppercase border px-5 py-2 transition-colors ${
+            className={cn(
+              "text-xs tracking-widest uppercase border px-5 py-2 transition-colors",
               cat.slug === kategoria
                 ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
                 : "border-[var(--border)] hover:border-[var(--foreground)]"
-            }`}
+            )}
           >
             {cat.name}
           </a>

@@ -3,7 +3,7 @@ import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { CartProvider } from "@/context/CartContext";
+import { CartProvider } from "@/lib/store/providers/CartProvider";
 import CartDrawer from "@/components/CartDrawer";
 
 const montserrat = Montserrat({

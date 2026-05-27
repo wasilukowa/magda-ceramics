@@ -1,12 +1,12 @@
-import { getProducts, getCategories } from "@/lib/woocommerce";
+import { productService } from "@/lib/service/product";
 import ProductCard from "@/components/ProductCard";
 
 export const metadata = { title: "Shop — Magda Ceramics" };
 
 export default async function ShopPage() {
   const [products, categories] = await Promise.all([
-    getProducts(),
-    getCategories(),
+    productService.getProducts(),
+    productService.getCategories(),
   ]);
 
   return (

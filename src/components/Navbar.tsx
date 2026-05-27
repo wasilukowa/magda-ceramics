@@ -3,15 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { useCart } from "@/context/CartContext";
-
-const SHOP_CATEGORIES = [
-  { name: "Mugs", slug: "kubki" },
-  { name: "Bowls", slug: "miski" },
-  { name: "Smalls", slug: "maluszki" },
-  { name: "Vases", slug: "wazony" },
-  { name: "Miscellaneous", slug: "roznosci" },
-];
+import { useCart } from "@/hooks/useCart";
+import { SHOP_CATEGORIES, INSTAGRAM_URL } from "@/content/data";
 
 export default function Navbar() {
   const [shopOpen, setShopOpen] = useState(false);
@@ -19,7 +12,7 @@ export default function Navbar() {
   const { itemCount, openCart } = useCart();
 
   return (
-    <header className="sticky top-0 z-50 bg-[#a4b6b8]">
+    <header className="sticky top-0 z-50 bg-[var(--color-navbar)]">
 
       {/* Logo row */}
       <div className="max-w-[1200px] mx-auto flex justify-center pt-8 pb-6">
@@ -32,7 +25,7 @@ export default function Navbar() {
       <div className="max-w-[1200px] mx-auto relative flex items-center justify-center pb-6 px-6">
 
         {/* Desktop nav links — centered */}
-        <ul className="hidden md:flex items-center gap-10 text-sm tracking-widest uppercase text-[#1a1a1a]">
+        <ul className="hidden md:flex items-center gap-10 text-sm tracking-widest uppercase text-[var(--foreground)]">
           <li>
             <Link href="/" className="hover:opacity-60 transition-opacity">
               Home
@@ -52,15 +45,15 @@ export default function Navbar() {
             </Link>
 
             {shopOpen && (
-              <ul className="absolute top-full left-1/2 -translate-x-1/2 bg-[#a4b6b8] border border-[#8a9e9f] min-w-[160px] shadow-sm">
+              <ul className="absolute top-full left-1/2 -translate-x-1/2 bg-[var(--color-navbar)] border border-[var(--color-navbar-border)] min-w-[160px] shadow-sm">
                 <li>
-                  <Link href="/sklep" className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[#8AAAA6] transition-colors">
+                  <Link href="/sklep" className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[var(--color-navbar-hover)] transition-colors">
                     All
                   </Link>
                 </li>
                 {SHOP_CATEGORIES.map((cat) => (
                   <li key={cat.slug}>
-                    <Link href={`/sklep/${cat.slug}`} className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[#8AAAA6] transition-colors">
+                    <Link href={`/sklep/${cat.slug}`} className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[var(--color-navbar-hover)] transition-colors">
                       {cat.name}
                     </Link>
                   </li>
@@ -77,7 +70,7 @@ export default function Navbar() {
 
           <li>
             <a
-              href="https://www.instagram.com/magda_ceramics"
+              href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
@@ -92,8 +85,8 @@ export default function Navbar() {
           </li>
         </ul>
 
-        {/* Icons — absolute right, always inside container */}
-        <div className="absolute right-6 flex items-center gap-5 text-[#1a1a1a]">
+        {/* Icons — absolute right */}
+        <div className="absolute right-6 flex items-center gap-5 text-[var(--foreground)]">
           <button aria-label="Account" className="hidden md:block hover:opacity-60 transition-opacity">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="12" cy="8" r="4" />
@@ -108,7 +101,7 @@ export default function Navbar() {
               <path d="M16 10a4 4 0 01-8 0" />
             </svg>
             {itemCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-[#1a1a1a] text-[#a4b6b8] text-[9px] w-4 h-4 rounded-full flex items-center justify-center leading-none">
+              <span className="absolute -top-1.5 -right-1.5 bg-[var(--foreground)] text-[var(--color-navbar)] text-[9px] w-4 h-4 rounded-full flex items-center justify-center leading-none">
                 {itemCount > 9 ? "9+" : itemCount}
               </span>
             )}
@@ -132,24 +125,24 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-[#8a9e9f] bg-[#a4b6b8]">
-        <div className="max-w-[1200px] mx-auto px-6 py-5">
-          <ul className="flex flex-col gap-5 text-sm tracking-widest uppercase text-[#1a1a1a]">
-            <li><Link href="/" onClick={() => setMobileOpen(false)}>Home</Link></li>
-            <li><Link href="/sklep" onClick={() => setMobileOpen(false)}>Shop — all</Link></li>
-            {SHOP_CATEGORIES.map((cat) => (
-              <li key={cat.slug} className="pl-4">
-                <Link href={`/sklep/${cat.slug}`} onClick={() => setMobileOpen(false)}>{cat.name}</Link>
+        <div className="md:hidden border-t border-[var(--color-navbar-border)] bg-[var(--color-navbar)]">
+          <div className="max-w-[1200px] mx-auto px-6 py-5">
+            <ul className="flex flex-col gap-5 text-sm tracking-widest uppercase text-[var(--foreground)]">
+              <li><Link href="/" onClick={() => setMobileOpen(false)}>Home</Link></li>
+              <li><Link href="/sklep" onClick={() => setMobileOpen(false)}>Shop — all</Link></li>
+              {SHOP_CATEGORIES.map((cat) => (
+                <li key={cat.slug} className="pl-4">
+                  <Link href={`/sklep/${cat.slug}`} onClick={() => setMobileOpen(false)}>{cat.name}</Link>
+                </li>
+              ))}
+              <li><Link href="/kontakt" onClick={() => setMobileOpen(false)}>Contact</Link></li>
+              <li>
+                <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)}>
+                  Instagram
+                </a>
               </li>
-            ))}
-            <li><Link href="/kontakt" onClick={() => setMobileOpen(false)}>Contact</Link></li>
-            <li>
-              <a href="https://www.instagram.com/magda_ceramics" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)}>
-                Instagram
-              </a>
-            </li>
-          </ul>
-        </div>
+            </ul>
+          </div>
         </div>
       )}
     </header>

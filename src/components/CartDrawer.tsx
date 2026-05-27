@@ -2,15 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "@/context/CartContext";
 import { useEffect } from "react";
+import { useCart } from "@/hooks/useCart";
 
 export default function CartDrawer() {
   const { items, removeItem, updateQuantity, total, isOpen, closeCart } = useCart();
 
   useEffect(() => {
-    if (isOpen) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
+    document.body.style.overflow = isOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
@@ -51,8 +50,8 @@ export default function CartDrawer() {
             items.map((item) => (
               <div key={item.id} className="flex gap-4">
                 <Link href={`/produkt/${item.slug}`} onClick={closeCart}>
-                  <div className="w-20 h-20 bg-[#e8e0d5] flex-shrink-0 overflow-hidden">
-                    {item.image ? (
+                  <div className="w-20 h-20 bg-[var(--color-ceramic)] flex-shrink-0 overflow-hidden">
+                    {item.image && (
                       <Image
                         src={item.image}
                         alt={item.name}
@@ -60,7 +59,7 @@ export default function CartDrawer() {
                         height={80}
                         className="w-full h-full object-cover"
                       />
-                    ) : null}
+                    )}
                   </div>
                 </Link>
 

@@ -2,46 +2,15 @@
 
 import { useState } from "react";
 import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { CartItem } from "@/context/CartContext";
-
-const COUNTRIES = [
-  { code: "PL", label: "Poland" },
-  { code: "GB", label: "United Kingdom" },
-  { code: "DE", label: "Germany" },
-  { code: "FR", label: "France" },
-  { code: "NL", label: "Netherlands" },
-  { code: "BE", label: "Belgium" },
-  { code: "AT", label: "Austria" },
-  { code: "CH", label: "Switzerland" },
-  { code: "SE", label: "Sweden" },
-  { code: "NO", label: "Norway" },
-  { code: "DK", label: "Denmark" },
-  { code: "FI", label: "Finland" },
-  { code: "IT", label: "Italy" },
-  { code: "ES", label: "Spain" },
-  { code: "CZ", label: "Czech Republic" },
-  { code: "US", label: "USA" },
-  { code: "CA", label: "Canada" },
-  { code: "AU", label: "Australia" },
-];
+import { CartItem, Address } from "@/contracts/server/cart";
+import { CHECKOUT_COUNTRIES } from "@/content/data";
+import { cn } from "@/lib/utils";
 
 type Props = {
   items: CartItem[];
 };
 
-type Address = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  street: string;
-  city: string;
-  postcode: string;
-  country: string;
-  note: string;
-};
-
-const EMPTY: Address = {
+const EMPTY_ADDRESS: Address = {
   firstName: "",
   lastName: "",
   email: "",
@@ -53,13 +22,7 @@ const EMPTY: Address = {
   note: "",
 };
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
       <label className="block text-[10px] tracking-widest uppercase text-[var(--muted)] mb-1.5">
@@ -76,7 +39,7 @@ const inputClass =
 export default function CheckoutForm({ items }: Props) {
   const stripe = useStripe();
   const elements = useElements();
-  const [address, setAddress] = useState<Address>(EMPTY);
+  const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -144,42 +107,17 @@ export default function CheckoutForm({ items }: Props) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <Field label="First name *">
-              <input
-                required
-                value={address.firstName}
-                onChange={set("firstName")}
-                className={inputClass}
-                autoComplete="given-name"
-              />
+              <input required value={address.firstName} onChange={set("firstName")} className={inputClass} autoComplete="given-name" />
             </Field>
             <Field label="Last name *">
-              <input
-                required
-                value={address.lastName}
-                onChange={set("lastName")}
-                className={inputClass}
-                autoComplete="family-name"
-              />
+              <input required value={address.lastName} onChange={set("lastName")} className={inputClass} autoComplete="family-name" />
             </Field>
           </div>
           <Field label="E-mail *">
-            <input
-              required
-              type="email"
-              value={address.email}
-              onChange={set("email")}
-              className={inputClass}
-              autoComplete="email"
-            />
+            <input required type="email" value={address.email} onChange={set("email")} className={inputClass} autoComplete="email" />
           </Field>
           <Field label="Phone">
-            <input
-              type="tel"
-              value={address.phone}
-              onChange={set("phone")}
-              className={inputClass}
-              autoComplete="tel"
-            />
+            <input type="tel" value={address.phone} onChange={set("phone")} className={inputClass} autoComplete="tel" />
           </Field>
         </div>
       </div>
@@ -189,46 +127,21 @@ export default function CheckoutForm({ items }: Props) {
         <p className="text-xs tracking-widest uppercase mb-5">Shipping address</p>
         <div className="space-y-4">
           <Field label="Country *">
-            <select
-              required
-              value={address.country}
-              onChange={set("country")}
-              className={inputClass}
-            >
-              {COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.label}
-                </option>
+            <select required value={address.country} onChange={set("country")} className={inputClass}>
+              {CHECKOUT_COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>{c.label}</option>
               ))}
             </select>
           </Field>
           <Field label="Street address *">
-            <input
-              required
-              value={address.street}
-              onChange={set("street")}
-              className={inputClass}
-              autoComplete="street-address"
-            />
+            <input required value={address.street} onChange={set("street")} className={inputClass} autoComplete="street-address" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Postcode *">
-              <input
-                required
-                value={address.postcode}
-                onChange={set("postcode")}
-                className={inputClass}
-                autoComplete="postal-code"
-              />
+              <input required value={address.postcode} onChange={set("postcode")} className={inputClass} autoComplete="postal-code" />
             </Field>
             <Field label="City *">
-              <input
-                required
-                value={address.city}
-                onChange={set("city")}
-                className={inputClass}
-                autoComplete="address-level2"
-              />
+              <input required value={address.city} onChange={set("city")} className={inputClass} autoComplete="address-level2" />
             </Field>
           </div>
         </div>
@@ -243,18 +156,11 @@ export default function CheckoutForm({ items }: Props) {
       {/* Note */}
       <div>
         <Field label="Order note (optional)">
-          <textarea
-            value={address.note}
-            onChange={set("note")}
-            rows={3}
-            className={`${inputClass} resize-none`}
-          />
+          <textarea value={address.note} onChange={set("note")} rows={3} className={cn(inputClass, "resize-none")} />
         </Field>
       </div>
 
-      {error && (
-        <p className="text-sm text-red-600">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <button
         type="submit"

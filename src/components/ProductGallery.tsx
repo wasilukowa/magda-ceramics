@@ -2,18 +2,15 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { ProductGalleryProps } from "@/contracts/shared";
 
-type Props = {
-  images: { src: string; alt: string }[];
-  productName: string;
-};
-
-export default function ProductGallery({ images, productName }: Props) {
+export default function ProductGallery({ images, productName }: ProductGalleryProps) {
   const [active, setActive] = useState(0);
 
   if (images.length === 0) {
     return (
-      <div className="aspect-square bg-[#e8e0d5] flex items-center justify-center text-[var(--muted)] text-xs tracking-widest uppercase">
+      <div className="aspect-square bg-[var(--color-ceramic)] flex items-center justify-center text-[var(--muted)] text-xs tracking-widest uppercase">
         No image
       </div>
     );
@@ -21,7 +18,7 @@ export default function ProductGallery({ images, productName }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="aspect-square bg-[#e8e0d5] overflow-hidden">
+      <div className="aspect-square bg-[var(--color-ceramic)] overflow-hidden">
         <Image
           src={images[active].src}
           alt={images[active].alt || productName}
@@ -39,9 +36,10 @@ export default function ProductGallery({ images, productName }: Props) {
               onClick={() => setActive(i)}
               aria-label={`Photo ${i + 1}`}
               style={active === i ? { outline: "1px solid var(--foreground)" } : undefined}
-              className={`aspect-square bg-[#e8e0d5] overflow-hidden transition-opacity ${
-                active === i ? "" : "opacity-40 hover:opacity-80"
-              }`}
+              className={cn(
+                "aspect-square bg-[var(--color-ceramic)] overflow-hidden transition-opacity",
+                active !== i && "opacity-40 hover:opacity-80"
+              )}
             >
               <Image
                 src={img.src}

@@ -1,19 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useCart } from "@/context/CartContext";
+import { useCart } from "@/hooks/useCart";
+import { AddToCartButtonProps } from "@/contracts/shared";
 
-type Props = {
-  id: number;
-  slug: string;
-  name: string;
-  price: string;
-  image: string;
-  inStock: boolean;
-  hasPrice: boolean;
-};
-
-export default function AddToCartButton({ id, slug, name, price, image, inStock, hasPrice }: Props) {
+export default function AddToCartButton({
+  id, slug, name, price, image, inStock, hasPrice,
+}: AddToCartButtonProps) {
   const { items, addItem, openCart } = useCart();
   const [added, setAdded] = useState(false);
   const alreadyInCart = items.some((i) => i.id === id);
