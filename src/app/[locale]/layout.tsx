@@ -43,7 +43,7 @@ export default async function LocaleLayout({
           <CartProvider>
             <Navbar />
             <CartDrawer />
-            <main className="flex-1 max-w-[1200px] mx-auto w-full">
+            <main className="flex-1 w-full">
               {children}
             </main>
             <Footer />

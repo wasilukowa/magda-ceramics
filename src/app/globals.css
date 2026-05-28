@@ -7,6 +7,9 @@
   --muted: #6b6b6b;
   --border: #e5e2dc;
 
+  /* Accent */
+  --color-accent: #8AAAA6;
+
   /* Surface */
   --color-ceramic: #e8e0d5;
   --color-ceramic-hover: #ddd5c8;

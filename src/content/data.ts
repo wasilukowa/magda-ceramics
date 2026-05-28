@@ -9,11 +9,11 @@ export const SHOP_CATEGORIES: ShopCategory[] = [
 ];
 
 export const HOMEPAGE_CATEGORIES: ShopCategory[] = [
-  { slug: "kubki", emoji: "☕" },
-  { slug: "miski", emoji: "🥣" },
-  { slug: "maluszki", emoji: "🌿" },
-  { slug: "wazony", emoji: "🏺" },
-  { slug: "roznosci", emoji: "✨" },
+  { slug: "kubki" },
+  { slug: "miski" },
+  { slug: "maluszki" },
+  { slug: "wazony" },
+  { slug: "roznosci" },
 ];
 
 export const INSTAGRAM_URL = "https://www.instagram.com/magda_ceramics";
