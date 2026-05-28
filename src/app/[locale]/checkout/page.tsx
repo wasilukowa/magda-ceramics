@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useCart } from "@/hooks/useCart";
 import CheckoutForm from "./CheckoutForm";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { CartItem } from "@/contracts/server/cart";
 
 const stripePromise = loadStripe(
@@ -14,6 +15,7 @@ const stripePromise = loadStripe(
 
 export default function CheckoutPage() {
   const { items, total, itemCount } = useCart();
+  const t = useTranslations("checkout");
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,20 +32,18 @@ export default function CheckoutPage() {
         if (data.error) setError(data.error);
         else if (data.clientSecret) setClientSecret(data.clientSecret);
       })
-      .catch(() => setError("Connection error. Please try again."));
-  }, [items]);
+      .catch(() => setError(t("connectionError")));
+  }, [items, t]);
 
   if (itemCount === 0) {
     return (
       <div className="max-w-3xl mx-auto px-6 py-24 text-center">
-        <p className="text-sm text-[var(--muted)] mb-6">
-          Your cart is empty.
-        </p>
+        <p className="text-sm text-[var(--muted)] mb-6">{t("empty")}</p>
         <Link
-          href="/sklep"
+          href="/shop"
           className="text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"
         >
-          Back to shop
+          {t("backToShop")}
         </Link>
       </div>
     );
@@ -51,14 +51,11 @@ export default function CheckoutPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-16">
-      <h1 className="text-xs tracking-widest uppercase mb-12">Order</h1>
+      <h1 className="text-xs tracking-widest uppercase mb-12">{t("title")}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-        {/* Left: form */}
         <div>
-          {error && (
-            <p className="text-sm text-red-600 mb-6">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600 mb-6">{error}</p>}
           {clientSecret ? (
             <Elements
               stripe={stripePromise}
@@ -100,16 +97,20 @@ export default function CheckoutPage() {
             !error && (
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-12 bg-[var(--color-ceramic)] animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-12 bg-[var(--color-ceramic)] animate-pulse"
+                  />
                 ))}
               </div>
             )
           )}
         </div>
 
-        {/* Right: summary */}
         <div>
-          <p className="text-xs tracking-widest uppercase mb-6">Summary</p>
+          <p className="text-xs tracking-widest uppercase mb-6">
+            {t("summary")}
+          </p>
           <div className="space-y-4 mb-8">
             {items.map((item: CartItem) => (
               <div key={item.id} className="flex justify-between text-sm">
@@ -127,13 +128,11 @@ export default function CheckoutPage() {
           </div>
           <div className="border-t border-[var(--border)] pt-4 flex justify-between">
             <span className="text-xs tracking-widest uppercase text-[var(--muted)]">
-              Total
+              {t("total")}
             </span>
             <span className="text-sm">{total.toFixed(2)} zł</span>
           </div>
-          <p className="text-xs text-[var(--muted)] mt-2">
-            + shipping cost will be added
-          </p>
+          <p className="text-xs text-[var(--muted)] mt-2">{t("shippingNote")}</p>
         </div>
       </div>
     </div>

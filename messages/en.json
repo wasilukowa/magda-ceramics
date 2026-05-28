@@ -1,0 +1,113 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About me",
+    "shop": "Shop",
+    "shopAll": "All",
+    "contact": "Contact",
+    "instagram": "Instagram"
+  },
+  "categories": {
+    "all": "All",
+    "kubki": "Mugs",
+    "miski": "Bowls",
+    "maluszki": "Smalls",
+    "wazony": "Vases",
+    "roznosci": "Miscellaneous"
+  },
+  "home": {
+    "heroTitle": "Hi, I'm Magda!",
+    "heroText": "Welcome to my world of handmade ceramics, where passion meets creative chaos. From my cozy kitchen studio in Warsaw, I hand-sculpt and hand-paint unique, one-of-a-kind pieces.",
+    "heroLink": "Read my story →",
+    "categories": "Categories",
+    "about": "About the studio",
+    "aboutText": "Every piece is made by hand, with care and attention to every detail. Functional ceramics that combine simplicity of form with the warmth of the material."
+  },
+  "shop": {
+    "title": "Shop",
+    "noProducts": "No products found.",
+    "noCategoryProducts": "No products in this category."
+  },
+  "product": {
+    "backToShop": "← Shop",
+    "priceUnavailable": "Price unavailable",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty",
+    "remove": "Remove",
+    "total": "Total",
+    "shipping": "Shipping will be calculated at checkout",
+    "checkout": "Go to checkout",
+    "close": "Close cart"
+  },
+  "addToCart": {
+    "add": "Add to cart",
+    "inCart": "In cart — view",
+    "added": "Added ✓",
+    "unavailable": "Price unavailable",
+    "outOfStock": "Out of stock"
+  },
+  "contact": {
+    "title": "Contact",
+    "name": "Name",
+    "email": "Email",
+    "message": "Message",
+    "send": "Send"
+  },
+  "checkout": {
+    "title": "Order",
+    "summary": "Summary",
+    "total": "Total",
+    "shippingNote": "+ shipping cost will be added",
+    "empty": "Your cart is empty.",
+    "backToShop": "Back to shop",
+    "connectionError": "Connection error. Please try again.",
+    "contactDetails": "Contact details",
+    "firstName": "First name *",
+    "lastName": "Last name *",
+    "emailLabel": "E-mail *",
+    "phone": "Phone",
+    "shippingAddress": "Shipping address",
+    "country": "Country *",
+    "street": "Street address *",
+    "postcode": "Postcode *",
+    "city": "City *",
+    "payment": "Payment",
+    "note": "Order note (optional)",
+    "payButton": "Pay & order",
+    "processing": "Processing...",
+    "stripeNote": "Payment powered by Stripe — secure SSL connection"
+  },
+  "success": {
+    "loading": "Finalising your order...",
+    "thankYou": "Thank you for your order",
+    "orderReceived": "Order #{orderId} has been received. A confirmation has been sent to your email address.",
+    "backToShop": "Back to shop",
+    "paymentFailed": "Payment failed or was cancelled.",
+    "orderNotFound": "Order data not found.",
+    "connectionError": "Connection error while creating the order.",
+    "backToCheckout": "Back to checkout"
+  },
+  "footer": {
+    "copyright": "Handmade ceramics",
+    "info": "Info",
+    "about": "About",
+    "contact": "Contact",
+    "shop": "Shop",
+    "legal": "Legal",
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "shipping": "Shipping",
+    "returns": "Returns",
+    "aboutTitle": "About",
+    "termsTitle": "Terms & Conditions",
+    "privacyTitle": "Privacy & Cookies Policy"
+  },
+  "comingSoon": {
+    "title": "Coming soon",
+    "message": "Something beautiful is on its way."
+  }
+}

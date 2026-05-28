@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
 
 export default function CartDrawer() {
-  const { items, removeItem, updateQuantity, total, isOpen, closeCart } = useCart();
+  const { items, removeItem, total, isOpen, closeCart } = useCart();
+  const t = useTranslations("cart");
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
@@ -17,21 +19,18 @@ export default function CartDrawer() {
 
   return (
     <>
-      {/* Overlay */}
       <div
         className="fixed inset-0 bg-black/30 z-50"
         onClick={closeCart}
         aria-hidden
       />
 
-      {/* Panel */}
       <div className="fixed top-0 right-0 h-full w-full max-w-sm bg-[var(--background)] z-50 flex flex-col shadow-xl">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border)]">
-          <span className="text-xs tracking-widest uppercase">Cart</span>
+          <span className="text-xs tracking-widest uppercase">{t("title")}</span>
           <button
             onClick={closeCart}
-            aria-label="Close cart"
+            aria-label={t("close")}
             className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -40,16 +39,15 @@ export default function CartDrawer() {
           </button>
         </div>
 
-        {/* Items */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
           {items.length === 0 ? (
             <p className="text-sm text-[var(--muted)] text-center mt-12">
-              Your cart is empty
+              {t("empty")}
             </p>
           ) : (
             items.map((item) => (
               <div key={item.id} className="flex gap-4">
-                <Link href={`/produkt/${item.slug}`} onClick={closeCart}>
+                <Link href={{ pathname: "/product/[slug]", params: { slug: item.slug } }} onClick={closeCart}>
                   <div className="w-20 h-20 bg-[var(--color-ceramic)] flex-shrink-0 overflow-hidden">
                     {item.image && (
                       <Image
@@ -65,7 +63,7 @@ export default function CartDrawer() {
 
                 <div className="flex-1 min-w-0">
                   <Link
-                    href={`/produkt/${item.slug}`}
+                    href={{ pathname: "/product/[slug]", params: { slug: item.slug } }}
                     onClick={closeCart}
                     className="text-xs tracking-widest uppercase leading-tight hover:text-[var(--muted)] transition-colors line-clamp-2"
                   >
@@ -79,7 +77,7 @@ export default function CartDrawer() {
                       className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors text-xs tracking-widest uppercase"
                       aria-label="Remove item"
                     >
-                      Remove
+                      {t("remove")}
                     </button>
                   </div>
                 </div>
@@ -88,20 +86,19 @@ export default function CartDrawer() {
           )}
         </div>
 
-        {/* Footer */}
         {items.length > 0 && (
           <div className="px-6 py-6 border-t border-[var(--border)] space-y-4">
             <div className="flex justify-between text-sm">
-              <span className="text-xs tracking-widest uppercase text-[var(--muted)]">Total</span>
+              <span className="text-xs tracking-widest uppercase text-[var(--muted)]">{t("total")}</span>
               <span className="tracking-wide">{total.toFixed(2)} zł</span>
             </div>
-            <p className="text-xs text-[var(--muted)]">Shipping will be calculated at checkout</p>
+            <p className="text-xs text-[var(--muted)]">{t("shipping")}</p>
             <Link
               href="/checkout"
               onClick={closeCart}
               className="block w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 text-center hover:opacity-80 transition-opacity"
             >
-              Go to checkout
+              {t("checkout")}
             </Link>
           </div>
         )}

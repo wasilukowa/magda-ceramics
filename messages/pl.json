@@ -1,0 +1,113 @@
+{
+  "nav": {
+    "home": "Strona główna",
+    "about": "O mnie",
+    "shop": "Sklep",
+    "shopAll": "Wszystkie",
+    "contact": "Kontakt",
+    "instagram": "Instagram"
+  },
+  "categories": {
+    "all": "Wszystkie",
+    "kubki": "Kubki",
+    "miski": "Miski",
+    "maluszki": "Maluszki",
+    "wazony": "Wazony",
+    "roznosci": "Różności"
+  },
+  "home": {
+    "heroTitle": "Cześć, jestem Magda!",
+    "heroText": "Witajcie w moim pełnym pasji i twórczego nieładu świecie. Z mojej domowej pracowni w Warszawie tworzę unikalne, ręcznie rzeźbione i malowane naczynia ceramiczne.",
+    "heroLink": "Czytaj więcej →",
+    "categories": "Kategorie",
+    "about": "O pracowni",
+    "aboutText": "Każdy przedmiot wykonany jest ręcznie, z troską i dbałością o każdy detal. Ceramika użytkowa łącząca prostotę formy z ciepłem materiału."
+  },
+  "shop": {
+    "title": "Sklep",
+    "noProducts": "Brak produktów.",
+    "noCategoryProducts": "Brak produktów w tej kategorii."
+  },
+  "product": {
+    "backToShop": "← Sklep",
+    "priceUnavailable": "Cena niedostępna",
+    "inStock": "Dostępny",
+    "outOfStock": "Niedostępny"
+  },
+  "cart": {
+    "title": "Koszyk",
+    "empty": "Twój koszyk jest pusty",
+    "remove": "Usuń",
+    "total": "Razem",
+    "shipping": "Koszt wysyłki zostanie obliczony przy kasie",
+    "checkout": "Przejdź do kasy",
+    "close": "Zamknij koszyk"
+  },
+  "addToCart": {
+    "add": "Dodaj do koszyka",
+    "inCart": "W koszyku — podejrzyj",
+    "added": "Dodano ✓",
+    "unavailable": "Cena niedostępna",
+    "outOfStock": "Brak w magazynie"
+  },
+  "contact": {
+    "title": "Kontakt",
+    "name": "Imię",
+    "email": "Email",
+    "message": "Wiadomość",
+    "send": "Wyślij"
+  },
+  "checkout": {
+    "title": "Zamówienie",
+    "summary": "Podsumowanie",
+    "total": "Razem",
+    "shippingNote": "+ koszt wysyłki zostanie dodany",
+    "empty": "Twój koszyk jest pusty.",
+    "backToShop": "Wróć do sklepu",
+    "connectionError": "Błąd połączenia. Spróbuj ponownie.",
+    "contactDetails": "Dane kontaktowe",
+    "firstName": "Imię *",
+    "lastName": "Nazwisko *",
+    "emailLabel": "E-mail *",
+    "phone": "Telefon",
+    "shippingAddress": "Adres dostawy",
+    "country": "Kraj *",
+    "street": "Ulica i numer *",
+    "postcode": "Kod pocztowy *",
+    "city": "Miasto *",
+    "payment": "Płatność",
+    "note": "Uwagi do zamówienia (opcjonalnie)",
+    "payButton": "Zapłać i zamów",
+    "processing": "Przetwarzanie...",
+    "stripeNote": "Płatność obsługiwana przez Stripe — bezpieczne połączenie SSL"
+  },
+  "success": {
+    "loading": "Finalizowanie zamówienia...",
+    "thankYou": "Dziękujemy za zamówienie",
+    "orderReceived": "Zamówienie #{orderId} zostało przyjęte. Potwierdzenie zostało wysłane na Twój adres email.",
+    "backToShop": "Wróć do sklepu",
+    "paymentFailed": "Płatność nieudana lub anulowana.",
+    "orderNotFound": "Nie znaleziono danych zamówienia.",
+    "connectionError": "Błąd połączenia podczas tworzenia zamówienia.",
+    "backToCheckout": "Wróć do kasy"
+  },
+  "footer": {
+    "copyright": "Ceramika ręcznie robiona",
+    "info": "Informacje",
+    "about": "O mnie",
+    "contact": "Kontakt",
+    "shop": "Sklep",
+    "legal": "Prawne",
+    "terms": "Regulamin",
+    "privacy": "Polityka prywatności",
+    "shipping": "Wysyłka",
+    "returns": "Zwroty i reklamacje",
+    "aboutTitle": "O mnie",
+    "termsTitle": "Regulamin",
+    "privacyTitle": "Polityka prywatności i cookies"
+  },
+  "comingSoon": {
+    "title": "Wkrótce",
+    "message": "Coś pięknego już niedługo."
+  }
+}

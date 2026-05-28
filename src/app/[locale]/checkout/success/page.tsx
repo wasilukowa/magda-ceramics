@@ -2,7 +2,8 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
 import { BillingAddress, OrderItem } from "@/contracts/server/cart";
 
@@ -20,6 +21,7 @@ type PendingOrder = {
 function SuccessContent() {
   const searchParams = useSearchParams();
   const { clearCart } = useCart();
+  const t = useTranslations("success");
   const [state, setState] = useState<OrderState>({ status: "loading" });
 
   useEffect(() => {
@@ -27,13 +29,13 @@ function SuccessContent() {
     const redirectStatus = searchParams.get("redirect_status");
 
     if (redirectStatus !== "succeeded" || !paymentIntent) {
-      setState({ status: "error", message: "Payment failed or was cancelled." });
+      setState({ status: "error", message: t("paymentFailed") });
       return;
     }
 
     const raw = sessionStorage.getItem("pendingOrder");
     if (!raw) {
-      setState({ status: "error", message: "Order data not found." });
+      setState({ status: "error", message: t("orderNotFound") });
       return;
     }
 
@@ -55,14 +57,14 @@ function SuccessContent() {
         }
       })
       .catch(() =>
-        setState({ status: "error", message: "Connection error while creating the order." })
+        setState({ status: "error", message: t("connectionError") })
       );
-  }, [searchParams, clearCart]);
+  }, [searchParams, clearCart, t]);
 
   if (state.status === "loading") {
     return (
       <div className="max-w-xl mx-auto px-6 py-24 text-center">
-        <p className="text-sm text-[var(--muted)]">Finalising your order...</p>
+        <p className="text-sm text-[var(--muted)]">{t("loading")}</p>
       </div>
     );
   }
@@ -75,7 +77,7 @@ function SuccessContent() {
           href="/checkout"
           className="text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"
         >
-          Back to checkout
+          {t("backToCheckout")}
         </Link>
       </div>
     );
@@ -84,27 +86,29 @@ function SuccessContent() {
   return (
     <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-6">
       <p className="text-xs tracking-widest uppercase text-[var(--muted)]">
-        Thank you for your order
+        {t("thankYou")}
       </p>
       <p className="text-sm">
-        Order #{state.orderId} has been received. A confirmation has been sent to your email address.
+        {t("orderReceived", { orderId: state.orderId })}
       </p>
       <Link
-        href="/sklep"
+        href="/shop"
         className="inline-block text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
       >
-        Back to shop
+        {t("backToShop")}
       </Link>
     </div>
   );
 }
 
 export default function SuccessPage() {
+  const t = useTranslations("success");
+
   return (
     <Suspense
       fallback={
         <div className="max-w-xl mx-auto px-6 py-24 text-center">
-          <p className="text-sm text-[var(--muted)]">Finalising your order...</p>
+          <p className="text-sm text-[var(--muted)]">{t("loading")}</p>
         </div>
       }
     >

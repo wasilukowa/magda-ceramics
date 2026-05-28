@@ -12,9 +12,9 @@
   --color-ceramic-hover: #ddd5c8;
 
   /* Navbar / Footer */
-  --color-navbar: #a4b6b8;
-  --color-navbar-border: #8a9e9f;
-  --color-navbar-hover: #8AAAA6;
+  --color-navbar: #faf9f7;
+  --color-navbar-border: #e5e2dc;
+  --color-navbar-hover: #f0ede8;
 }
 
 @theme inline {

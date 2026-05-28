@@ -1,8 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
+import { useParams } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
 import { SHOP_CATEGORIES, INSTAGRAM_URL } from "@/content/data";
 
@@ -10,6 +12,17 @@ export default function Navbar() {
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { itemCount, openCart } = useCart();
+  const t = useTranslations();
+  const locale = useLocale();
+  const pathname = usePathname();
+  const params = useParams();
+  const router = useRouter();
+
+  function switchLocale() {
+    const next = locale === "en" ? "pl" : "en";
+    // @ts-expect-error -- pathname and params always match the current route
+    router.replace({ pathname, params }, { locale: next });
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--color-navbar)]">
@@ -24,11 +37,17 @@ export default function Navbar() {
       {/* Nav row */}
       <div className="max-w-[1200px] mx-auto relative flex items-center justify-center pb-6 px-6">
 
-        {/* Desktop nav links — centered */}
+        {/* Desktop nav — centered */}
         <ul className="hidden md:flex items-center gap-10 text-sm tracking-widest uppercase text-[var(--foreground)]">
           <li>
             <Link href="/" className="hover:opacity-60 transition-opacity">
-              Home
+              {t("nav.home")}
+            </Link>
+          </li>
+
+          <li>
+            <Link href="/about" className="hover:opacity-60 transition-opacity">
+              {t("nav.about")}
             </Link>
           </li>
 
@@ -37,8 +56,8 @@ export default function Navbar() {
             onMouseEnter={() => setShopOpen(true)}
             onMouseLeave={() => setShopOpen(false)}
           >
-            <Link href="/sklep" className="flex items-center gap-1.5 hover:opacity-60 transition-opacity">
-              Shop
+            <Link href="/shop" className="flex items-center gap-1.5 hover:opacity-60 transition-opacity">
+              {t("nav.shop")}
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M6 9l6 6 6-6" />
               </svg>
@@ -47,14 +66,14 @@ export default function Navbar() {
             {shopOpen && (
               <ul className="absolute top-full left-1/2 -translate-x-1/2 bg-[var(--color-navbar)] border border-[var(--color-navbar-border)] min-w-[160px] shadow-sm">
                 <li>
-                  <Link href="/sklep" className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[var(--color-navbar-hover)] transition-colors">
-                    All
+                  <Link href="/shop" className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[var(--color-navbar-hover)] transition-colors">
+                    {t("categories.all")}
                   </Link>
                 </li>
                 {SHOP_CATEGORIES.map((cat) => (
                   <li key={cat.slug}>
-                    <Link href={`/sklep/${cat.slug}`} className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[var(--color-navbar-hover)] transition-colors">
-                      {cat.name}
+                    <Link href={{ pathname: "/shop/[category]", params: { category: cat.slug } }} className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[var(--color-navbar-hover)] transition-colors">
+                      {t(`categories.${cat.slug}`)}
                     </Link>
                   </li>
                 ))}
@@ -63,8 +82,8 @@ export default function Navbar() {
           </li>
 
           <li>
-            <Link href="/kontakt" className="hover:opacity-60 transition-opacity">
-              Contact
+            <Link href="/contact" className="hover:opacity-60 transition-opacity">
+              {t("nav.contact")}
             </Link>
           </li>
 
@@ -85,8 +104,17 @@ export default function Navbar() {
           </li>
         </ul>
 
-        {/* Icons — absolute right */}
+        {/* Right icons */}
         <div className="absolute right-6 flex items-center gap-5 text-[var(--foreground)]">
+          {/* Language switcher */}
+          <button
+            onClick={switchLocale}
+            className="hidden md:block text-xs tracking-widest uppercase hover:opacity-60 transition-opacity"
+            aria-label="Switch language"
+          >
+            {locale === "en" ? "PL" : "EN"}
+          </button>
+
           <button aria-label="Account" className="hidden md:block hover:opacity-60 transition-opacity">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="12" cy="8" r="4" />
@@ -128,18 +156,26 @@ export default function Navbar() {
         <div className="md:hidden border-t border-[var(--color-navbar-border)] bg-[var(--color-navbar)]">
           <div className="max-w-[1200px] mx-auto px-6 py-5">
             <ul className="flex flex-col gap-5 text-sm tracking-widest uppercase text-[var(--foreground)]">
-              <li><Link href="/" onClick={() => setMobileOpen(false)}>Home</Link></li>
-              <li><Link href="/sklep" onClick={() => setMobileOpen(false)}>Shop — all</Link></li>
+              <li><Link href="/" onClick={() => setMobileOpen(false)}>{t("nav.home")}</Link></li>
+              <li><Link href="/about" onClick={() => setMobileOpen(false)}>{t("nav.about")}</Link></li>
+              <li><Link href="/shop" onClick={() => setMobileOpen(false)}>{t("nav.shop")} — {t("categories.all")}</Link></li>
               {SHOP_CATEGORIES.map((cat) => (
                 <li key={cat.slug} className="pl-4">
-                  <Link href={`/sklep/${cat.slug}`} onClick={() => setMobileOpen(false)}>{cat.name}</Link>
+                  <Link href={{ pathname: "/shop/[category]", params: { category: cat.slug } }} onClick={() => setMobileOpen(false)}>
+                    {t(`categories.${cat.slug}`)}
+                  </Link>
                 </li>
               ))}
-              <li><Link href="/kontakt" onClick={() => setMobileOpen(false)}>Contact</Link></li>
+              <li><Link href="/contact" onClick={() => setMobileOpen(false)}>{t("nav.contact")}</Link></li>
               <li>
                 <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)}>
                   Instagram
                 </a>
+              </li>
+              <li>
+                <button onClick={switchLocale} className="text-left hover:opacity-60 transition-opacity">
+                  {locale === "en" ? "Polski" : "English"}
+                </button>
               </li>
             </ul>
           </div>

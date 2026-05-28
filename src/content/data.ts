@@ -1,25 +1,19 @@
-import { NavLink, ShopCategory, Country } from "./types";
-
-export const NAV_LINKS: NavLink[] = [
-  { label: "Home", url: "/" },
-  { label: "Shop", url: "/sklep" },
-  { label: "Contact", url: "/kontakt" },
-];
+import { ShopCategory, Country } from "./types";
 
 export const SHOP_CATEGORIES: ShopCategory[] = [
-  { name: "Mugs", slug: "kubki" },
-  { name: "Bowls", slug: "miski" },
-  { name: "Smalls", slug: "maluszki" },
-  { name: "Vases", slug: "wazony" },
-  { name: "Miscellaneous", slug: "roznosci" },
+  { slug: "kubki" },
+  { slug: "miski" },
+  { slug: "maluszki" },
+  { slug: "wazony" },
+  { slug: "roznosci" },
 ];
 
 export const HOMEPAGE_CATEGORIES: ShopCategory[] = [
-  { name: "Mugs", slug: "kubki", emoji: "☕" },
-  { name: "Bowls", slug: "miski", emoji: "🥣" },
-  { name: "Smalls", slug: "maluszki", emoji: "🌿" },
-  { name: "Vases", slug: "wazony", emoji: "🏺" },
-  { name: "Miscellaneous", slug: "roznosci", emoji: "✨" },
+  { slug: "kubki", emoji: "☕" },
+  { slug: "miski", emoji: "🥣" },
+  { slug: "maluszki", emoji: "🌿" },
+  { slug: "wazony", emoji: "🏺" },
+  { slug: "roznosci", emoji: "✨" },
 ];
 
 export const INSTAGRAM_URL = "https://www.instagram.com/magda_ceramics";
