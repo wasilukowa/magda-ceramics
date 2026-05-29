@@ -7,7 +7,7 @@ const intlMiddleware = createMiddleware(routing);
 const UNLOCK_PASSWORD = "ceramika2025";
 const COOKIE_NAME = "preview_access";
 
-export function proxy(request: NextRequest) {
+export default function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
   if (pathname === "/coming-soon") return NextResponse.next();
