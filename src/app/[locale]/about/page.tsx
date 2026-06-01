@@ -1,4 +1,10 @@
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+
+const photos = [1, 2, 3, 4, 5, 6, 7].map((n) => ({
+  src: `/o-mnie/magda-o-mnie-${n}.jpg`,
+  alt: `Magda ceramics ${n}`,
+}));
 
 export async function generateMetadata() {
   const t = await getTranslations("footer");
@@ -80,6 +86,18 @@ export default async function AboutPage({
         {t("aboutTitle")}
       </h1>
       {locale === "pl" ? <AboutPL /> : <AboutEN />}
+      <div className="mt-16 flex flex-col gap-6">
+        {photos.map((photo) => (
+          <Image
+            key={photo.src}
+            src={photo.src}
+            alt={photo.alt}
+            width={800}
+            height={600}
+            className="w-full object-cover rounded-sm"
+          />
+        ))}
+      </div>
     </div>
   );
 }

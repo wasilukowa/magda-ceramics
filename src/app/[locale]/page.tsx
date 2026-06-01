@@ -1,8 +1,8 @@
 import React from "react";
-import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { HOMEPAGE_CATEGORIES } from "@/content/data";
+import { AboutSlider } from "@/components/AboutSlider";
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   kubki: (
@@ -53,16 +53,8 @@ export default async function Home() {
       {/* Hero */}
       <div className="max-w-[1200px] mx-auto px-6 mt-8">
         <section className="bg-[var(--color-accent)] flex flex-col md:flex-row md:min-h-[580px]">
-          <div className="md:w-[42%] flex-shrink-0 flex p-6 min-h-[300px] md:min-h-0">
-            <div className="relative flex-1">
-              <Image
-                src="/coming-soon.jpg"
-                alt="Magda Ceramics"
-                fill
-                className="object-cover object-center"
-                priority
-              />
-            </div>
+          <div className="md:w-[42%] flex-shrink-0 min-h-[300px] md:min-h-0">
+            <AboutSlider />
           </div>
           <div className="flex-1 flex items-center px-10 md:px-14 py-12">
             <div>
@@ -105,6 +97,7 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
     </>
   );
 }
