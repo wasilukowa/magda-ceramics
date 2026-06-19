@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { INSTAGRAM_URL } from "@/content/data";
+import ContactForm from "@/components/ContactForm";
 
 export async function generateMetadata() {
   const t = await getTranslations("contact");
@@ -15,41 +16,7 @@ export default async function ContactPage() {
         {t("title")}
       </h1>
 
-      <form className="flex flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          <label className="text-xs tracking-widest uppercase text-[var(--muted)]">
-            {t("name")}
-          </label>
-          <input
-            type="text"
-            className="border border-[var(--border)] bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-[var(--foreground)] transition-colors"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <label className="text-xs tracking-widest uppercase text-[var(--muted)]">
-            {t("email")}
-          </label>
-          <input
-            type="email"
-            className="border border-[var(--border)] bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-[var(--foreground)] transition-colors"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <label className="text-xs tracking-widest uppercase text-[var(--muted)]">
-            {t("message")}
-          </label>
-          <textarea
-            rows={6}
-            className="border border-[var(--border)] bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-[var(--foreground)] transition-colors resize-none"
-          />
-        </div>
-        <button
-          type="submit"
-          className="text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors self-start"
-        >
-          {t("send")}
-        </button>
-      </form>
+      <ContactForm />
 
       <div className="mt-16 pt-8 border-t border-[var(--border)] flex flex-col gap-3 text-sm text-[var(--muted)]">
         <a

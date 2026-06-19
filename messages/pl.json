@@ -55,7 +55,16 @@
     "name": "Imię",
     "email": "Email",
     "message": "Wiadomość",
-    "send": "Wyślij"
+    "send": "Wyślij",
+    "sending": "Wysyłanie…",
+    "success": "Dziękujemy! Wiadomość została wysłana — odezwiemy się wkrótce.",
+    "errors": {
+      "name": "Podaj imię.",
+      "email": "Podaj poprawny adres email.",
+      "message": "Wpisz wiadomość.",
+      "validation": "Sprawdź zaznaczone pola i spróbuj ponownie.",
+      "server": "Coś poszło nie tak. Spróbuj ponownie później lub napisz do nas na Instagramie."
+    }
   },
   "checkout": {
     "title": "Zamówienie",
