@@ -51,6 +51,14 @@ class ProductService {
     const results = await this.wcFetch<RawProduct[]>(`products?slug=${slug}`);
     return results[0] ? prepareProduct(results[0]) : null;
   }
+
+  async getProductsByIds(ids: number[]): Promise<ProductProps[]> {
+    if (ids.length === 0) return [];
+    const raw = await this.wcFetch<RawProduct[]>(
+      `products?include=${ids.join(",")}&per_page=${ids.length}`
+    );
+    return raw.map(prepareProduct);
+  }
 }
 
 export const productService = ProductService.getInstance();

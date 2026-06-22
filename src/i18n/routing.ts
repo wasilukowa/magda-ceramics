@@ -16,6 +16,12 @@ export const routing = defineRouting({
     "/about": { en: "/about", pl: "/o-mnie" },
     "/terms": { en: "/terms", pl: "/regulamin" },
     "/privacy": { en: "/privacy", pl: "/polityka-prywatnosci" },
+    "/login": { en: "/login", pl: "/logowanie" },
+    "/register": { en: "/register", pl: "/rejestracja" },
+    "/account": { en: "/account", pl: "/konto" },
+    "/account/orders": { en: "/account/orders", pl: "/konto/zamowienia" },
+    "/account/details": { en: "/account/details", pl: "/konto/dane" },
+    "/wishlist": { en: "/wishlist", pl: "/ulubione" },
   },
 });
 

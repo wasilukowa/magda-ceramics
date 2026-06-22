@@ -8,6 +8,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/lib/store/providers/CartProvider";
 import CartDrawer from "@/components/CartDrawer";
+import { AuthProvider } from "@/lib/store/providers/AuthProvider";
+import { WishlistProvider } from "@/lib/store/providers/WishlistProvider";
+import { getSession } from "@/lib/auth/dal";
 import { routing } from "@/i18n/routing";
 
 const montserrat = Montserrat({
@@ -36,18 +39,28 @@ export default async function LocaleLayout({
 
   if (!hasLocale(routing.locales, locale)) notFound();
 
+  const session = await getSession();
+  const authUser = session
+    ? { id: session.customerId, email: session.email }
+    : null;
+
   return (
     <html lang={locale} className={montserrat.variable}>
       <body className="bg-[var(--background)]">
         <NextIntlClientProvider>
-          <CartProvider>
-            <Navbar />
-            <CartDrawer />
-            <main className="flex-1 w-full">
-              {children}
-            </main>
-            <Footer />
-          </CartProvider>
+          <AuthProvider user={authUser}>
+            <WishlistProvider
+              key={session ? "auth" : "guest"}
+              isAuthenticated={Boolean(session)}
+            >
+              <CartProvider>
+                <Navbar />
+                <CartDrawer />
+                <main className="flex-1 w-full">{children}</main>
+                <Footer />
+              </CartProvider>
+            </WishlistProvider>
+          </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>

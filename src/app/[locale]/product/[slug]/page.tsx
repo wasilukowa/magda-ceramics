@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { productService } from "@/lib/service/product";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductGallery from "@/components/ProductGallery";
+import WishlistButton from "@/components/WishlistButton";
 
 export async function generateStaticParams() {
   try {
@@ -85,6 +86,11 @@ export default async function ProductPage({
               image={product.images[0]?.src ?? ""}
               inStock={product.inStock}
               hasPrice={product.hasPrice}
+            />
+            <WishlistButton
+              productId={product.id}
+              withLabel
+              className="text-[var(--muted)] hover:text-[var(--foreground)]"
             />
           </div>
 

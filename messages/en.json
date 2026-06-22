@@ -5,7 +5,10 @@
     "shop": "Shop",
     "shopAll": "All",
     "contact": "Contact",
-    "instagram": "Instagram"
+    "instagram": "Instagram",
+    "account": "My account",
+    "login": "Sign in",
+    "wishlist": "Wishlist"
   },
   "categories": {
     "all": "All",
@@ -118,5 +121,120 @@
   "comingSoon": {
     "title": "Coming soon",
     "message": "Something beautiful is on its way."
+  },
+  "auth": {
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "password": "Password"
+    },
+    "login": {
+      "title": "Sign in",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "success": "Signed in.",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Create one"
+    },
+    "register": {
+      "title": "Create account",
+      "submit": "Create account",
+      "submitting": "Creating…",
+      "success": "Account created.",
+      "passwordHint": "At least 8 characters.",
+      "haveAccount": "Already have an account?",
+      "loginLink": "Sign in"
+    },
+    "errors": {
+      "firstName": "Please enter your first name.",
+      "lastName": "Please enter your last name.",
+      "email": "Please enter a valid email address.",
+      "passwordRequired": "Please enter your password.",
+      "passwordLength": "Password must be at least 8 characters.",
+      "invalidCredentials": "Incorrect email or password.",
+      "emailExists": "An account with this email already exists.",
+      "validation": "Please check the highlighted fields and try again.",
+      "server": "Something went wrong. Please try again later."
+    }
+  },
+  "account": {
+    "title": "My account",
+    "greeting": "Hello, {name}",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "nav": {
+      "overview": "Overview",
+      "orders": "Orders",
+      "details": "Details",
+      "wishlist": "Wishlist",
+      "logout": "Sign out",
+      "loggingOut": "Signing out…"
+    },
+    "overview": {
+      "intro": "Manage your orders, details and wishlist in one place."
+    },
+    "orders": {
+      "empty": "You have no orders yet.",
+      "number": "Order #{number}",
+      "total": "Total"
+    },
+    "orderStatus": {
+      "pending": "Pending payment",
+      "processing": "Processing",
+      "on-hold": "On hold",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded",
+      "failed": "Failed"
+    },
+    "profile": {
+      "title": "Profile",
+      "success": "Profile updated."
+    },
+    "address": {
+      "title": "Shipping address",
+      "success": "Address updated."
+    },
+    "password": {
+      "title": "Change password",
+      "submit": "Change password",
+      "success": "Password changed."
+    },
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "phone": "Phone",
+      "country": "Country",
+      "street": "Street address",
+      "postcode": "Postcode",
+      "city": "City",
+      "currentPassword": "Current password",
+      "newPassword": "New password"
+    },
+    "errors": {
+      "unauthorized": "Please sign in to continue.",
+      "firstName": "Please enter your first name.",
+      "lastName": "Please enter your last name.",
+      "email": "Please enter a valid email address.",
+      "street": "Please enter your street address.",
+      "city": "Please enter your city.",
+      "postcode": "Please enter your postcode.",
+      "country": "Please select a country.",
+      "passwordRequired": "Please enter your current password.",
+      "passwordLength": "Password must be at least 8 characters.",
+      "wrongPassword": "Current password is incorrect.",
+      "validation": "Please check the highlighted fields and try again.",
+      "server": "Something went wrong. Please try again later."
+    }
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "add": "Add to wishlist",
+    "remove": "Remove from wishlist",
+    "empty": "Your wishlist is empty.",
+    "browse": "Browse the shop",
+    "loading": "Loading…"
   }
 }

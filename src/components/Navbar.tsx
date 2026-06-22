@@ -6,12 +6,17 @@ import { useTranslations, useLocale } from "next-intl";
 import { useParams } from "next/navigation";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useAuth } from "@/lib/store/providers/AuthProvider";
 import { SHOP_CATEGORIES, INSTAGRAM_URL } from "@/content/data";
 
 export default function Navbar() {
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { itemCount, openCart } = useCart();
+  const { count: wishlistCount } = useWishlist();
+  const user = useAuth();
+  const accountHref = user ? "/account" : "/login";
   const t = useTranslations();
   const locale = useLocale();
   const pathname = usePathname();
@@ -115,12 +120,27 @@ export default function Navbar() {
             {locale === "en" ? "PL" : "EN"}
           </button>
 
-          <button aria-label="Account" className="hidden md:block hover:opacity-60 transition-opacity">
+          <Link
+            href={accountHref}
+            aria-label={user ? t("nav.account") : t("nav.login")}
+            className="hidden md:block hover:opacity-60 transition-opacity"
+          >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="12" cy="8" r="4" />
               <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
             </svg>
-          </button>
+          </Link>
+
+          <Link href="/wishlist" aria-label={t("nav.wishlist")} className="relative hover:opacity-60 transition-opacity">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-[var(--foreground)] text-[var(--color-navbar)] text-[9px] w-4 h-4 rounded-full flex items-center justify-center leading-none">
+                {wishlistCount > 9 ? "9+" : wishlistCount}
+              </span>
+            )}
+          </Link>
 
           <button onClick={openCart} aria-label="Cart" className="relative hover:opacity-60 transition-opacity">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -167,6 +187,17 @@ export default function Navbar() {
                 </li>
               ))}
               <li><Link href="/contact" onClick={() => setMobileOpen(false)}>{t("nav.contact")}</Link></li>
+              <li>
+                <Link href="/wishlist" onClick={() => setMobileOpen(false)}>
+                  {t("nav.wishlist")}
+                  {wishlistCount > 0 ? ` (${wishlistCount})` : ""}
+                </Link>
+              </li>
+              <li>
+                <Link href={accountHref} onClick={() => setMobileOpen(false)}>
+                  {user ? t("nav.account") : t("nav.login")}
+                </Link>
+              </li>
               <li>
                 <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)}>
                   Instagram

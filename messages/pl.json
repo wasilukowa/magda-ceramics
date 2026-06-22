@@ -5,7 +5,10 @@
     "shop": "Sklep",
     "shopAll": "Wszystkie",
     "contact": "Kontakt",
-    "instagram": "Instagram"
+    "instagram": "Instagram",
+    "account": "Moje konto",
+    "login": "Zaloguj się",
+    "wishlist": "Ulubione"
   },
   "categories": {
     "all": "Wszystkie",
@@ -118,5 +121,120 @@
   "comingSoon": {
     "title": "Wkrótce",
     "message": "Coś pięknego już niedługo."
+  },
+  "auth": {
+    "fields": {
+      "firstName": "Imię",
+      "lastName": "Nazwisko",
+      "email": "E-mail",
+      "password": "Hasło"
+    },
+    "login": {
+      "title": "Zaloguj się",
+      "submit": "Zaloguj się",
+      "submitting": "Logowanie…",
+      "success": "Zalogowano.",
+      "noAccount": "Nie masz konta?",
+      "registerLink": "Załóż je"
+    },
+    "register": {
+      "title": "Załóż konto",
+      "submit": "Załóż konto",
+      "submitting": "Tworzenie…",
+      "success": "Konto utworzone.",
+      "passwordHint": "Minimum 8 znaków.",
+      "haveAccount": "Masz już konto?",
+      "loginLink": "Zaloguj się"
+    },
+    "errors": {
+      "firstName": "Podaj imię.",
+      "lastName": "Podaj nazwisko.",
+      "email": "Podaj poprawny adres e-mail.",
+      "passwordRequired": "Podaj hasło.",
+      "passwordLength": "Hasło musi mieć co najmniej 8 znaków.",
+      "invalidCredentials": "Nieprawidłowy e-mail lub hasło.",
+      "emailExists": "Konto z tym adresem e-mail już istnieje.",
+      "validation": "Sprawdź zaznaczone pola i spróbuj ponownie.",
+      "server": "Coś poszło nie tak. Spróbuj ponownie później."
+    }
+  },
+  "account": {
+    "title": "Moje konto",
+    "greeting": "Cześć, {name}",
+    "save": "Zapisz zmiany",
+    "saving": "Zapisywanie…",
+    "nav": {
+      "overview": "Przegląd",
+      "orders": "Zamówienia",
+      "details": "Dane",
+      "wishlist": "Ulubione",
+      "logout": "Wyloguj się",
+      "loggingOut": "Wylogowywanie…"
+    },
+    "overview": {
+      "intro": "Zarządzaj zamówieniami, danymi i listą ulubionych w jednym miejscu."
+    },
+    "orders": {
+      "empty": "Nie masz jeszcze żadnych zamówień.",
+      "number": "Zamówienie #{number}",
+      "total": "Razem"
+    },
+    "orderStatus": {
+      "pending": "Oczekuje na płatność",
+      "processing": "W realizacji",
+      "on-hold": "Wstrzymane",
+      "completed": "Zrealizowane",
+      "cancelled": "Anulowane",
+      "refunded": "Zwrócone",
+      "failed": "Nieudane"
+    },
+    "profile": {
+      "title": "Profil",
+      "success": "Profil zaktualizowany."
+    },
+    "address": {
+      "title": "Adres dostawy",
+      "success": "Adres zaktualizowany."
+    },
+    "password": {
+      "title": "Zmień hasło",
+      "submit": "Zmień hasło",
+      "success": "Hasło zmienione."
+    },
+    "fields": {
+      "firstName": "Imię",
+      "lastName": "Nazwisko",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "country": "Kraj",
+      "street": "Ulica i numer",
+      "postcode": "Kod pocztowy",
+      "city": "Miasto",
+      "currentPassword": "Obecne hasło",
+      "newPassword": "Nowe hasło"
+    },
+    "errors": {
+      "unauthorized": "Zaloguj się, aby kontynuować.",
+      "firstName": "Podaj imię.",
+      "lastName": "Podaj nazwisko.",
+      "email": "Podaj poprawny adres e-mail.",
+      "street": "Podaj ulicę i numer.",
+      "city": "Podaj miasto.",
+      "postcode": "Podaj kod pocztowy.",
+      "country": "Wybierz kraj.",
+      "passwordRequired": "Podaj obecne hasło.",
+      "passwordLength": "Hasło musi mieć co najmniej 8 znaków.",
+      "wrongPassword": "Obecne hasło jest nieprawidłowe.",
+      "validation": "Sprawdź zaznaczone pola i spróbuj ponownie.",
+      "server": "Coś poszło nie tak. Spróbuj ponownie później."
+    }
+  },
+  "wishlist": {
+    "title": "Ulubione",
+    "add": "Dodaj do ulubionych",
+    "remove": "Usuń z ulubionych",
+    "empty": "Twoja lista ulubionych jest pusta.",
+    "browse": "Przeglądaj sklep",
+    "loading": "Ładowanie…"
   }
 }
