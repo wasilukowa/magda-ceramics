@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { ProductProps } from "@/contracts/server/product";
+import Price from "@/components/Price";
 
 export default function ProductCard({ product }: { product: ProductProps }) {
   const image = product.images[0];
@@ -23,7 +24,11 @@ export default function ProductCard({ product }: { product: ProductProps }) {
         )}
       </div>
       <p className="text-xs tracking-widest uppercase text-[var(--foreground)]">{product.name}</p>
-      <p className="text-sm text-[var(--muted)] mt-1">{product.price} zł</p>
+      <Price
+        price={product.price}
+        priceEur={product.priceEur}
+        className="block text-sm text-[var(--muted)] mt-1"
+      />
     </Link>
   );
 }

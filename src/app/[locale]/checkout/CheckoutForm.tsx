@@ -5,23 +5,17 @@ import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { CartItem, Address } from "@/contracts/server/cart";
+import { Currency } from "@/contracts/shared";
 import { CHECKOUT_COUNTRIES } from "@/content/data";
+import { getCartTotal } from "@/lib/helpers/currency";
 import { cn } from "@/lib/utils";
 
 type Props = {
   items: CartItem[];
-};
-
-const EMPTY_ADDRESS: Address = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  phone: "",
-  street: "",
-  city: "",
-  postcode: "",
-  country: "PL",
-  note: "",
+  currency: Currency;
+  address: Address;
+  onFieldChange: (field: keyof Address, value: string) => void;
+  shippingCost: number;
 };
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -38,12 +32,17 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const inputClass =
   "w-full border border-[var(--border)] px-3 py-3 text-sm bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:border-[var(--foreground)] transition-colors";
 
-export default function CheckoutForm({ items }: Props) {
+export default function CheckoutForm({
+  items,
+  currency,
+  address,
+  onFieldChange,
+  shippingCost,
+}: Props) {
   const stripe = useStripe();
   const elements = useElements();
   const t = useTranslations("checkout");
   const locale = useLocale();
-  const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +51,7 @@ export default function CheckoutForm({ items }: Props) {
       e: React.ChangeEvent<
         HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       >
-    ) => setAddress((prev) => ({ ...prev, [field]: e.target.value }));
+    ) => onFieldChange(field, e.target.value);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -61,6 +60,8 @@ export default function CheckoutForm({ items }: Props) {
 
     setLoading(true);
     setError(null);
+
+    const paidTotal = getCartTotal(items, currency) + shippingCost;
 
     sessionStorage.setItem(
       "pendingOrder",
@@ -77,6 +78,8 @@ export default function CheckoutForm({ items }: Props) {
         },
         items: items.map((i) => ({ id: i.id, quantity: i.quantity })),
         note: address.note,
+        currency,
+        paidTotal,
       })
     );
 

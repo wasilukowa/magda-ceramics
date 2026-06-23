@@ -1,23 +1,34 @@
 import Stripe from "stripe";
 import { CartItem } from "@/contracts/server/cart";
+import { Currency } from "@/contracts/shared";
+import { getShippingAmount } from "@/lib/helpers/shipping";
+import { getUnitPrice } from "@/lib/helpers/currency";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(request: Request) {
-  const { items } = (await request.json()) as { items: CartItem[] };
+  const { items, country, currency } = (await request.json()) as {
+    items: CartItem[];
+    country: string;
+    currency: Currency;
+  };
 
   if (!items || items.length === 0) {
     return Response.json({ error: "Cart is empty" }, { status: 400 });
   }
 
-  const amount = items.reduce(
-    (sum, item) => sum + Math.round(parseFloat(item.price) * item.quantity * 100),
+  // All amounts in the chosen currency's smallest unit (grosze / euro cents).
+  const productsAmount = items.reduce(
+    (sum, item) =>
+      sum + Math.round(getUnitPrice(item, currency) * item.quantity * 100),
     0
   );
 
+  const amount = productsAmount + getShippingAmount(country, currency);
+
   const paymentIntent = await stripe.paymentIntents.create({
     amount,
-    currency: "pln",
+    currency,
     automatic_payment_methods: { enabled: true },
   });
 

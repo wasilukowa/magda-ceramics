@@ -6,6 +6,8 @@ import { useTranslations, useLocale } from "next-intl";
 import { useParams } from "next/navigation";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
+import { useCurrency } from "@/hooks/useCurrency";
+import { Currency } from "@/contracts/shared";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAuth } from "@/lib/store/providers/AuthProvider";
 import { SHOP_CATEGORIES, INSTAGRAM_URL } from "@/content/data";
@@ -14,6 +16,7 @@ export default function Navbar() {
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { itemCount, openCart } = useCart();
+  const { currency, toggleCurrency } = useCurrency();
   const { count: wishlistCount } = useWishlist();
   const user = useAuth();
   const accountHref = user ? "/account" : "/login";
@@ -111,6 +114,15 @@ export default function Navbar() {
 
         {/* Right icons */}
         <div className="absolute right-6 flex items-center gap-5 text-[var(--foreground)]">
+          {/* Currency switcher */}
+          <button
+            onClick={toggleCurrency}
+            className="hidden md:block text-xs tracking-widest uppercase hover:opacity-60 transition-opacity"
+            aria-label="Switch currency"
+          >
+            {currency === Currency.PLN ? "EUR" : "PLN"}
+          </button>
+
           {/* Language switcher */}
           <button
             onClick={switchLocale}
@@ -206,6 +218,11 @@ export default function Navbar() {
               <li>
                 <button onClick={switchLocale} className="text-left hover:opacity-60 transition-opacity">
                   {locale === "en" ? "Polski" : "English"}
+                </button>
+              </li>
+              <li>
+                <button onClick={toggleCurrency} className="text-left hover:opacity-60 transition-opacity">
+                  {currency === Currency.PLN ? "EUR €" : "PLN zł"}
                 </button>
               </li>
             </ul>

@@ -73,7 +73,7 @@
     "title": "Order",
     "summary": "Summary",
     "total": "Total",
-    "shippingNote": "+ shipping cost will be added",
+    "shipping": "Shipping",
     "empty": "Your cart is empty.",
     "backToShop": "Back to shop",
     "connectionError": "Connection error. Please try again.",

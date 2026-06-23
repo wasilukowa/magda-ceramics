@@ -7,6 +7,7 @@ import "../globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/lib/store/providers/CartProvider";
+import { CurrencyProvider } from "@/lib/store/providers/CurrencyProvider";
 import CartDrawer from "@/components/CartDrawer";
 import { AuthProvider } from "@/lib/store/providers/AuthProvider";
 import { WishlistProvider } from "@/lib/store/providers/WishlistProvider";
@@ -53,12 +54,14 @@ export default async function LocaleLayout({
               key={session ? "auth" : "guest"}
               isAuthenticated={Boolean(session)}
             >
-              <CartProvider>
-                <Navbar />
-                <CartDrawer />
-                <main className="flex-1 w-full">{children}</main>
-                <Footer />
-              </CartProvider>
+              <CurrencyProvider>
+                <CartProvider>
+                  <Navbar />
+                  <CartDrawer />
+                  <main className="flex-1 w-full">{children}</main>
+                  <Footer />
+                </CartProvider>
+              </CurrencyProvider>
             </WishlistProvider>
           </AuthProvider>
         </NextIntlClientProvider>

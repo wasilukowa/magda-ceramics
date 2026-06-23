@@ -5,9 +5,13 @@ import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
+import { useCurrency } from "@/hooks/useCurrency";
+import { getCartTotal, formatPrice } from "@/lib/helpers/currency";
+import Price from "@/components/Price";
 
 export default function CartDrawer() {
-  const { items, removeItem, total, isOpen, closeCart } = useCart();
+  const { items, removeItem, isOpen, closeCart } = useCart();
+  const { currency } = useCurrency();
   const t = useTranslations("cart");
 
   useEffect(() => {
@@ -69,7 +73,11 @@ export default function CartDrawer() {
                   >
                     {item.name}
                   </Link>
-                  <p className="text-sm text-[var(--muted)] mt-1">{item.price} zł</p>
+                  <Price
+                    price={item.price}
+                    priceEur={item.priceEur}
+                    className="block text-sm text-[var(--muted)] mt-1"
+                  />
 
                   <div className="flex items-center mt-3">
                     <button
@@ -90,7 +98,9 @@ export default function CartDrawer() {
           <div className="px-6 py-6 border-t border-[var(--border)] space-y-4">
             <div className="flex justify-between text-sm">
               <span className="text-xs tracking-widest uppercase text-[var(--muted)]">{t("total")}</span>
-              <span className="tracking-wide">{total.toFixed(2)} zł</span>
+              <span className="tracking-wide">
+                {formatPrice(getCartTotal(items, currency), currency)}
+              </span>
             </div>
             <p className="text-xs text-[var(--muted)]">{t("shipping")}</p>
             <Link

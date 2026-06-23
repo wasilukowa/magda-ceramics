@@ -6,7 +6,7 @@ import { useCart } from "@/hooks/useCart";
 import { AddToCartButtonProps } from "@/contracts/shared";
 
 export default function AddToCartButton({
-  id, slug, name, price, image, inStock, hasPrice,
+  id, slug, name, price, priceEur, image, inStock, hasPrice,
 }: AddToCartButtonProps) {
   const { items, addItem, openCart } = useCart();
   const t = useTranslations("addToCart");
@@ -15,7 +15,7 @@ export default function AddToCartButton({
 
   function handleClick() {
     if (alreadyInCart) { openCart(); return; }
-    addItem({ id, slug, name, price, image });
+    addItem({ id, slug, name, price, priceEur, image });
     openCart();
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);

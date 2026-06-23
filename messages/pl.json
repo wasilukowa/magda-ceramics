@@ -73,7 +73,7 @@
     "title": "Zamówienie",
     "summary": "Podsumowanie",
     "total": "Razem",
-    "shippingNote": "+ koszt wysyłki zostanie dodany",
+    "shipping": "Wysyłka",
     "empty": "Twój koszyk jest pusty.",
     "backToShop": "Wróć do sklepu",
     "connectionError": "Błąd połączenia. Spróbuj ponownie.",

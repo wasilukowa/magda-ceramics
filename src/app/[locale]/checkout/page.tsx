@@ -5,27 +5,58 @@ import { useTranslations } from "next-intl";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useCart } from "@/hooks/useCart";
+import { useCurrency } from "@/hooks/useCurrency";
 import CheckoutForm from "./CheckoutForm";
 import { Link } from "@/i18n/navigation";
-import { CartItem } from "@/contracts/server/cart";
+import { CartItem, Address } from "@/contracts/server/cart";
+import { getShippingCost } from "@/lib/helpers/shipping";
+import { getUnitPrice, getCartTotal, formatPrice } from "@/lib/helpers/currency";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 );
 
+const EMPTY_ADDRESS: Address = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  street: "",
+  city: "",
+  postcode: "",
+  country: "PL",
+  note: "",
+};
+
 export default function CheckoutPage() {
-  const { items, total, itemCount } = useCart();
+  const { items, itemCount } = useCart();
+  const { currency } = useCurrency();
   const t = useTranslations("checkout");
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  // Address lives here (not in the form) so it survives the Stripe Elements
+  // remount that happens when the intent is recreated on currency change.
+  const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
   const [error, setError] = useState<string | null>(null);
 
+  const country = address.country;
+  const subtotal = getCartTotal(items, currency);
+  const shippingCost = getShippingCost(country, currency);
+  const grandTotal = subtotal + shippingCost;
+
+  function setField(field: keyof Address, value: string) {
+    setAddress((prev) => ({ ...prev, [field]: value }));
+  }
+
+  // (Re)create the PaymentIntent whenever pricing inputs change. Stripe does
+  // not allow changing an intent's currency after creation, so country and
+  // currency changes recreate it; the new client secret remounts the form.
   useEffect(() => {
     if (items.length === 0) return;
 
     fetch("/api/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items }),
+      body: JSON.stringify({ items, country, currency }),
     })
       .then((r) => r.json())
       .then((data: { error?: string; clientSecret?: string }) => {
@@ -33,7 +64,7 @@ export default function CheckoutPage() {
         else if (data.clientSecret) setClientSecret(data.clientSecret);
       })
       .catch(() => setError(t("connectionError")));
-  }, [items, t]);
+  }, [items, country, currency, t]);
 
   if (itemCount === 0) {
     return (
@@ -58,6 +89,7 @@ export default function CheckoutPage() {
           {error && <p className="text-sm text-red-600 mb-6">{error}</p>}
           {clientSecret ? (
             <Elements
+              key={clientSecret}
               stripe={stripePromise}
               options={{
                 clientSecret,
@@ -91,7 +123,13 @@ export default function CheckoutPage() {
                 },
               }}
             >
-              <CheckoutForm items={items} />
+              <CheckoutForm
+                items={items}
+                currency={currency}
+                address={address}
+                onFieldChange={setField}
+                shippingCost={shippingCost}
+              />
             </Elements>
           ) : (
             !error && (
@@ -121,18 +159,26 @@ export default function CheckoutPage() {
                   )}
                 </span>
                 <span>
-                  {(parseFloat(item.price) * item.quantity).toFixed(2)} zł
+                  {formatPrice(
+                    getUnitPrice(item, currency) * item.quantity,
+                    currency
+                  )}
                 </span>
               </div>
             ))}
           </div>
-          <div className="border-t border-[var(--border)] pt-4 flex justify-between">
-            <span className="text-xs tracking-widest uppercase text-[var(--muted)]">
-              {t("total")}
-            </span>
-            <span className="text-sm">{total.toFixed(2)} zł</span>
+          <div className="border-t border-[var(--border)] pt-4 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-[var(--muted)]">{t("shipping")}</span>
+              <span>{formatPrice(shippingCost, currency)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-xs tracking-widest uppercase text-[var(--muted)]">
+                {t("total")}
+              </span>
+              <span className="text-sm">{formatPrice(grandTotal, currency)}</span>
+            </div>
           </div>
-          <p className="text-xs text-[var(--muted)] mt-2">{t("shippingNote")}</p>
         </div>
       </div>
     </div>

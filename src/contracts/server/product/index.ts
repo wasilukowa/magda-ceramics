@@ -19,6 +19,12 @@ export type RawProduct = {
   images: RawProductImage[];
   categories: RawProductCategory[];
   stock_status: string;
+  meta_data?: RawMetaData[];
+};
+
+export type RawMetaData = {
+  key: string;
+  value: string | number;
 };
 
 export type RawCategory = {
@@ -45,6 +51,7 @@ export type ProductProps = {
   name: string;
   slug: string;
   price: string;
+  priceEur: number | null;
   hasPrice: boolean;
   description: string;
   shortDescription: string;

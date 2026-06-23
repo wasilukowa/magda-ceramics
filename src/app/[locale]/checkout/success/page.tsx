@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
 import { BillingAddress, OrderItem } from "@/contracts/server/cart";
+import { Currency } from "@/contracts/shared";
 
 type OrderState =
   | { status: "loading" }
@@ -16,6 +17,8 @@ type PendingOrder = {
   billing: BillingAddress;
   items: OrderItem[];
   note: string;
+  currency: Currency;
+  paidTotal: number;
 };
 
 function SuccessContent() {
@@ -39,12 +42,19 @@ function SuccessContent() {
       return;
     }
 
-    const { billing, items }: PendingOrder = JSON.parse(raw);
+    const { billing, items, currency, paidTotal }: PendingOrder =
+      JSON.parse(raw);
 
     fetch("/api/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ billing, items, paymentIntentId: paymentIntent }),
+      body: JSON.stringify({
+        billing,
+        items,
+        paymentIntentId: paymentIntent,
+        currency,
+        paidTotal,
+      }),
     })
       .then((r) => r.json())
       .then((data: { error?: string; orderId?: number }) => {

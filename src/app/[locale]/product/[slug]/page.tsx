@@ -5,6 +5,7 @@ import { productService } from "@/lib/service/product";
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductGallery from "@/components/ProductGallery";
 import WishlistButton from "@/components/WishlistButton";
+import Price from "@/components/Price";
 
 export async function generateStaticParams() {
   try {
@@ -60,7 +61,11 @@ export default async function ProductPage({
           </div>
 
           {product.hasPrice ? (
-            <p className="text-xl tracking-wide">{product.price} zł</p>
+            <Price
+              price={product.price}
+              priceEur={product.priceEur}
+              className="block text-xl tracking-wide"
+            />
           ) : (
             <p className="text-sm text-[var(--muted)] tracking-wide">
               {t("priceUnavailable")}
@@ -83,6 +88,7 @@ export default async function ProductPage({
               slug={product.slug}
               name={product.name}
               price={product.price}
+              priceEur={product.priceEur}
               image={product.images[0]?.src ?? ""}
               inStock={product.inStock}
               hasPrice={product.hasPrice}
