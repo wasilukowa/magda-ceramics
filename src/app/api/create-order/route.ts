@@ -1,6 +1,7 @@
 import { serverFetch } from "@/lib/api";
 import { BillingAddress, OrderItem } from "@/contracts/server/cart";
 import { Currency } from "@/contracts/shared";
+import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { getShippingCostInZloty } from "@/lib/helpers/shipping";
 import { EXCHANGE_RATE_PLN_PER_EUR } from "@/lib/helpers/currency";
 
@@ -9,13 +10,15 @@ const WC_KEY = process.env.WC_CONSUMER_KEY;
 const WC_SECRET = process.env.WC_CONSUMER_SECRET;
 
 export async function POST(request: Request) {
-  const { billing, items, paymentIntentId, currency, paidTotal } =
+  const { billing, items, paymentIntentId, currency, paidTotal, deliveryMethod, locker } =
     (await request.json()) as {
       billing: BillingAddress;
       items: OrderItem[];
       paymentIntentId: string;
       currency: Currency;
       paidTotal: number;
+      deliveryMethod?: DeliveryMethod;
+      locker?: InPostPoint | null;
     };
 
   const auth = Buffer.from(`${WC_KEY}:${WC_SECRET}`).toString("base64");
@@ -24,12 +27,29 @@ export async function POST(request: Request) {
   // client) so the order total always matches what Stripe charged.
   const shippingTotal = getShippingCostInZloty(billing.country);
 
+  // Parcel-locker orders (Poland only): ship to the locker's address and label
+  // the shipping line with the locker code so the studio knows where to send it.
+  const isLocker = deliveryMethod === DeliveryMethod.Locker && !!locker;
+  const shipping = isLocker
+    ? {
+        ...billing,
+        company: `Paczkomat ${locker!.code}`,
+        address_1: locker!.description || locker!.code,
+        city: locker!.city,
+        postcode: locker!.postCode,
+      }
+    : billing;
+  const shippingTitle = isLocker
+    ? `Paczkomat InPost ${locker!.code}`
+    : "Shipping";
+
   // Orders are always recorded in the PLN store currency. When the customer
   // paid in EUR, record the actual charged amount + rate so the studio can
   // reconcile it against Stripe.
   const paidInEur = currency === Currency.EUR;
   const metaData = [
     { key: "_stripe_payment_intent", value: paymentIntentId },
+    ...(isLocker ? [{ key: "_inpost_locker_id", value: locker!.code }] : []),
     ...(paidInEur
       ? [
           { key: "_paid_currency", value: "EUR" },
@@ -38,9 +58,20 @@ export async function POST(request: Request) {
         ]
       : []),
   ];
-  const customerNote = paidInEur
-    ? `Zapłacono ${paidTotal.toFixed(2)} € (kurs ${EXCHANGE_RATE_PLN_PER_EUR}).`
-    : undefined;
+  const noteParts: string[] = [];
+  if (isLocker) {
+    noteParts.push(
+      `Paczkomat InPost: ${locker!.code}${
+        locker!.description ? ` (${locker!.description})` : ""
+      }`
+    );
+  }
+  if (paidInEur) {
+    noteParts.push(
+      `Zapłacono ${paidTotal.toFixed(2)} € (kurs ${EXCHANGE_RATE_PLN_PER_EUR}).`
+    );
+  }
+  const customerNote = noteParts.length ? noteParts.join("\n") : undefined;
 
   const res = await serverFetch(`${WP_URL}/wp-json/wc/v3/orders`, {
     method: "POST",
@@ -53,7 +84,7 @@ export async function POST(request: Request) {
       payment_method_title: "Card / Apple Pay / Google Pay",
       set_paid: true,
       billing,
-      shipping: billing,
+      shipping,
       line_items: items.map((item) => ({
         product_id: item.id,
         quantity: item.quantity,
@@ -61,7 +92,7 @@ export async function POST(request: Request) {
       shipping_lines: [
         {
           method_id: "flat_rate",
-          method_title: "Shipping",
+          method_title: shippingTitle,
           total: shippingTotal.toFixed(2),
         },
       ],

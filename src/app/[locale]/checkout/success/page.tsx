@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
 import { BillingAddress, OrderItem } from "@/contracts/server/cart";
 import { Currency } from "@/contracts/shared";
+import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 
 type OrderState =
   | { status: "loading" }
@@ -19,6 +20,8 @@ type PendingOrder = {
   note: string;
   currency: Currency;
   paidTotal: number;
+  deliveryMethod: DeliveryMethod;
+  locker: InPostPoint | null;
 };
 
 function SuccessContent() {
@@ -42,7 +45,7 @@ function SuccessContent() {
       return;
     }
 
-    const { billing, items, currency, paidTotal }: PendingOrder =
+    const { billing, items, currency, paidTotal, deliveryMethod, locker }: PendingOrder =
       JSON.parse(raw);
 
     fetch("/api/create-order", {
@@ -54,6 +57,8 @@ function SuccessContent() {
         paymentIntentId: paymentIntent,
         currency,
         paidTotal,
+        deliveryMethod,
+        locker,
       }),
     })
       .then((r) => r.json())

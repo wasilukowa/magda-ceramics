@@ -6,9 +6,11 @@ import { useLocale } from "next-intl";
 import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { CartItem, Address } from "@/contracts/server/cart";
 import { Currency } from "@/contracts/shared";
+import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { CHECKOUT_COUNTRIES } from "@/content/data";
 import { getCartTotal } from "@/lib/helpers/currency";
 import { cn } from "@/lib/utils";
+import ParcelLockerField from "@/components/checkout/ParcelLockerField";
 
 type Props = {
   items: CartItem[];
@@ -16,6 +18,11 @@ type Props = {
   address: Address;
   onFieldChange: (field: keyof Address, value: string) => void;
   shippingCost: number;
+  isPoland: boolean;
+  deliveryMethod: DeliveryMethod;
+  onDeliveryMethodChange: (method: DeliveryMethod) => void;
+  locker: InPostPoint | null;
+  onLockerSelect: (point: InPostPoint) => void;
 };
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -38,6 +45,11 @@ export default function CheckoutForm({
   address,
   onFieldChange,
   shippingCost,
+  isPoland,
+  deliveryMethod,
+  onDeliveryMethodChange,
+  locker,
+  onLockerSelect,
 }: Props) {
   const stripe = useStripe();
   const elements = useElements();
@@ -45,6 +57,8 @@ export default function CheckoutForm({
   const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const usingLocker = isPoland && deliveryMethod === DeliveryMethod.Locker;
 
   function set(field: keyof Address) {
     return (
@@ -58,10 +72,32 @@ export default function CheckoutForm({
     e.preventDefault();
     if (!stripe || !elements) return;
 
+    if (usingLocker && !locker) {
+      setError(t("lockerRequired"));
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     const paidTotal = getCartTotal(items, currency) + shippingCost;
+
+    // For locker delivery the address fields are blank; fall back to the
+    // locker's own address so Stripe and WooCommerce have a valid destination.
+    const shippingAddress =
+      usingLocker && locker
+        ? {
+            line1: locker.description || locker.code,
+            city: locker.city,
+            postal_code: locker.postCode,
+            country: "PL",
+          }
+        : {
+            line1: address.street,
+            city: address.city,
+            postal_code: address.postcode,
+            country: address.country,
+          };
 
     sessionStorage.setItem(
       "pendingOrder",
@@ -71,15 +107,17 @@ export default function CheckoutForm({
           last_name: address.lastName,
           email: address.email,
           phone: address.phone,
-          address_1: address.street,
-          city: address.city,
-          postcode: address.postcode,
-          country: address.country,
+          address_1: shippingAddress.line1,
+          city: shippingAddress.city,
+          postcode: shippingAddress.postal_code,
+          country: shippingAddress.country,
         },
         items: items.map((i) => ({ id: i.id, quantity: i.quantity })),
         note: address.note,
         currency,
         paidTotal,
+        deliveryMethod,
+        locker: usingLocker ? locker : null,
       })
     );
 
@@ -93,12 +131,7 @@ export default function CheckoutForm({
             name: `${address.firstName} ${address.lastName}`,
             email: address.email,
             phone: address.phone,
-            address: {
-              line1: address.street,
-              city: address.city,
-              postal_code: address.postcode,
-              country: address.country,
-            },
+            address: shippingAddress,
           },
         },
       },
@@ -178,35 +211,64 @@ export default function CheckoutForm({
               ))}
             </select>
           </Field>
-          <Field label={t("street")}>
-            <input
-              required
-              value={address.street}
-              onChange={set("street")}
-              className={inputClass}
-              autoComplete="street-address"
-            />
-          </Field>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label={t("postcode")}>
-              <input
-                required
-                value={address.postcode}
-                onChange={set("postcode")}
-                className={inputClass}
-                autoComplete="postal-code"
-              />
-            </Field>
-            <Field label={t("city")}>
-              <input
-                required
-                value={address.city}
-                onChange={set("city")}
-                className={inputClass}
-                autoComplete="address-level2"
-              />
-            </Field>
-          </div>
+
+          {isPoland && (
+            <div className="grid grid-cols-2 gap-2">
+              {[DeliveryMethod.Locker, DeliveryMethod.Courier].map((method) => (
+                <button
+                  key={method}
+                  type="button"
+                  onClick={() => onDeliveryMethodChange(method)}
+                  className={cn(
+                    "border px-3 py-3 text-[10px] tracking-widest uppercase transition-colors",
+                    deliveryMethod === method
+                      ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
+                      : "border-[var(--border)] hover:border-[var(--foreground)]"
+                  )}
+                >
+                  {method === DeliveryMethod.Locker
+                    ? t("methodLocker")
+                    : t("methodCourier")}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {usingLocker ? (
+            <ParcelLockerField locker={locker} onSelect={onLockerSelect} />
+          ) : (
+            <>
+              <Field label={t("street")}>
+                <input
+                  required
+                  value={address.street}
+                  onChange={set("street")}
+                  className={inputClass}
+                  autoComplete="street-address"
+                />
+              </Field>
+              <div className="grid grid-cols-2 gap-4">
+                <Field label={t("postcode")}>
+                  <input
+                    required
+                    value={address.postcode}
+                    onChange={set("postcode")}
+                    className={inputClass}
+                    autoComplete="postal-code"
+                  />
+                </Field>
+                <Field label={t("city")}>
+                  <input
+                    required
+                    value={address.city}
+                    onChange={set("city")}
+                    className={inputClass}
+                    autoComplete="address-level2"
+                  />
+                </Field>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

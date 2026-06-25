@@ -9,6 +9,7 @@ import { useCurrency } from "@/hooks/useCurrency";
 import CheckoutForm from "./CheckoutForm";
 import { Link } from "@/i18n/navigation";
 import { CartItem, Address } from "@/contracts/server/cart";
+import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { getShippingCost } from "@/lib/helpers/shipping";
 import { getUnitPrice, getCartTotal, formatPrice } from "@/lib/helpers/currency";
 
@@ -36,9 +37,17 @@ export default function CheckoutPage() {
   // Address lives here (not in the form) so it survives the Stripe Elements
   // remount that happens when the intent is recreated on currency change.
   const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
+  // Parcel-locker delivery is offered only for Poland. Method + selected locker
+  // live here (not in the form) so they survive the Stripe Elements remount.
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>(
+    DeliveryMethod.Locker
+  );
+  const [locker, setLocker] = useState<InPostPoint | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const country = address.country;
+  const isPoland = country === "PL";
+  const effectiveMethod = isPoland ? deliveryMethod : DeliveryMethod.Courier;
   const subtotal = getCartTotal(items, currency);
   const shippingCost = getShippingCost(country, currency);
   const grandTotal = subtotal + shippingCost;
@@ -46,6 +55,12 @@ export default function CheckoutPage() {
   function setField(field: keyof Address, value: string) {
     setAddress((prev) => ({ ...prev, [field]: value }));
   }
+
+  // Drop any selected locker when the customer leaves the Poland zone, where
+  // parcel lockers aren't offered.
+  useEffect(() => {
+    if (!isPoland) setLocker(null);
+  }, [isPoland]);
 
   // (Re)create the PaymentIntent whenever pricing inputs change. Stripe does
   // not allow changing an intent's currency after creation, so country and
@@ -129,6 +144,11 @@ export default function CheckoutPage() {
                 address={address}
                 onFieldChange={setField}
                 shippingCost={shippingCost}
+                isPoland={isPoland}
+                deliveryMethod={effectiveMethod}
+                onDeliveryMethodChange={setDeliveryMethod}
+                locker={locker}
+                onLockerSelect={setLocker}
               />
             </Elements>
           ) : (
