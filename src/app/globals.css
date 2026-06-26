@@ -13,6 +13,8 @@
   /* Surface */
   --color-ceramic: #e8e0d5;
   --color-ceramic-hover: #ddd5c8;
+  /* Subtle neutral panel background (e.g. checkout order summary) */
+  --color-surface: #f1efec;
 
   /* Navbar / Footer */
   --color-navbar: #faf9f7;

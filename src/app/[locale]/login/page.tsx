@@ -10,12 +10,26 @@ export async function generateMetadata() {
 
 export default async function LoginPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ redirect?: string }>;
 }) {
   const { locale } = await params;
+  const { redirect: redirectParam } = await searchParams;
+  // Only honour internal paths so the redirect can't be used to bounce the
+  // customer off-site after they log in.
+  const redirectTo =
+    redirectParam?.startsWith("/") && !redirectParam.startsWith("//")
+      ? redirectParam
+      : "/account";
+
   const session = await getSession();
-  if (session) redirect({ href: "/account", locale });
+  if (session)
+    redirect({
+      href: redirectTo as Parameters<typeof redirect>[0]["href"],
+      locale,
+    });
 
   const t = await getTranslations("auth");
 
@@ -24,7 +38,7 @@ export default async function LoginPage({
       <h1 className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] mb-12 text-center">
         {t("login.title")}
       </h1>
-      <LoginForm />
+      <LoginForm redirectTo={redirectTo} />
     </div>
   );
 }

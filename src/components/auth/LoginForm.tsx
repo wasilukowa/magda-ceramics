@@ -13,17 +13,23 @@ const inputClass =
 const labelClass = "text-xs tracking-widest uppercase text-[var(--muted)]";
 const errorClass = "text-xs text-[var(--color-error,#b00020)]";
 
-export default function LoginForm() {
+export default function LoginForm({
+  redirectTo = "/account",
+}: {
+  redirectTo?: string;
+}) {
   const t = useTranslations("auth");
   const router = useRouter();
   const [state, formAction, pending] = useActionState(login, initialState);
 
   useEffect(() => {
     if (state.status === "success") {
-      router.replace("/account");
+      // next-intl types navigation against the known route union; the redirect
+      // path is validated upstream (login page) so cast it back into that type.
+      router.replace(redirectTo as Parameters<typeof router.replace>[0]);
       router.refresh();
     }
-  }, [state.status, router]);
+  }, [state.status, router, redirectTo]);
 
   return (
     <form action={formAction} className="flex flex-col gap-6" noValidate>
