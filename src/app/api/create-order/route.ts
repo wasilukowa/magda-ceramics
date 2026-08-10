@@ -27,8 +27,9 @@ export async function POST(request: Request) {
   // client) so the order total always matches what Stripe charged.
   const shippingTotal = getShippingCostInZloty(billing.country);
 
-  // Parcel-locker orders (Poland only): ship to the locker's address and label
-  // the shipping line with the locker code so the studio knows where to send it.
+  // Parcel-locker orders (Poland + InPost International countries): ship to the
+  // locker's address and label the shipping line with the locker code so the
+  // studio knows where to send it.
   const isLocker = deliveryMethod === DeliveryMethod.Locker && !!locker;
   const shipping = isLocker
     ? {
