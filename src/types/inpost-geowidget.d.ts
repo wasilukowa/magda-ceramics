@@ -11,6 +11,9 @@ type InPostGeowidgetAttributes = DetailedHTMLProps<
   language?: string;
   config?: string;
   onpoint?: string;
+  // International widget only: comma-separated ISO codes; the first one sets
+  // the map's default position.
+  country?: string;
 };
 
 declare module "react" {

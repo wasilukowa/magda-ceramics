@@ -32,11 +32,28 @@ export const CHECKOUT_COUNTRIES: Country[] = [
   { code: "AT", label: "Austria", zone: ShippingZone.InPostEu },
   { code: "IT", label: "Italy", zone: ShippingZone.InPostEu },
   { code: "ES", label: "Spain", zone: ShippingZone.InPostEu },
+  { code: "PT", label: "Portugal", zone: ShippingZone.InPostEu },
+  { code: "LU", label: "Luxembourg", zone: ShippingZone.InPostEu },
   { code: "DE", label: "Germany", zone: ShippingZone.RestEu },
   { code: "CZ", label: "Czech Republic", zone: ShippingZone.RestEu },
   { code: "SE", label: "Sweden", zone: ShippingZone.RestEu },
   { code: "DK", label: "Denmark", zone: ShippingZone.RestEu },
   { code: "FI", label: "Finland", zone: ShippingZone.RestEu },
+];
+
+// Countries where InPost parcel lockers can be picked on the Geowidget map.
+// Poland uses the domestic Geowidget; the rest use the InPost International
+// Geowidget (which only covers these ISO codes). Austria is intentionally
+// absent — InPost has no lockers there, so it stays courier-only.
+export const INPOST_LOCKER_COUNTRIES = [
+  "PL",
+  "FR",
+  "NL",
+  "BE",
+  "IT",
+  "ES",
+  "PT",
+  "LU",
 ];
 
 // Flat shipping rates per zone, in each currency's smallest unit

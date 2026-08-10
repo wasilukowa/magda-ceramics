@@ -1,4 +1,8 @@
-import { CHECKOUT_COUNTRIES, SHIPPING_RATES } from "@/content/data";
+import {
+  CHECKOUT_COUNTRIES,
+  INPOST_LOCKER_COUNTRIES,
+  SHIPPING_RATES,
+} from "@/content/data";
 import { ShippingZone } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
 
@@ -7,6 +11,12 @@ import { Currency } from "@/contracts/shared";
 export const getShippingZone = (countryCode: string): ShippingZone =>
   CHECKOUT_COUNTRIES.find((country) => country.code === countryCode)?.zone ??
   ShippingZone.RestEu;
+
+// Whether the customer can pick an InPost parcel locker for this country.
+// Drives the locker/courier toggle and which Geowidget (PL vs International)
+// is shown.
+export const hasInPostLocker = (countryCode: string): boolean =>
+  INPOST_LOCKER_COUNTRIES.includes(countryCode);
 
 // Shipping cost in the chosen currency's smallest unit (grosze / euro cents),
 // for Stripe.

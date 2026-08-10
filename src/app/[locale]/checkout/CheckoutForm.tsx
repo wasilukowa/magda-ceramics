@@ -13,7 +13,7 @@ type Props = {
   step: CheckoutStep;
   address: Address;
   onFieldChange: (field: keyof Address, value: string) => void;
-  isPoland: boolean;
+  hasLocker: boolean;
   deliveryMethod: DeliveryMethod;
   onDeliveryMethodChange: (method: DeliveryMethod) => void;
   locker: InPostPoint | null;
@@ -72,7 +72,7 @@ export default function CheckoutForm({
   step,
   address,
   onFieldChange,
-  isPoland,
+  hasLocker,
   deliveryMethod,
   onDeliveryMethodChange,
   locker,
@@ -82,7 +82,7 @@ export default function CheckoutForm({
 }: Props) {
   const t = useTranslations("checkout");
 
-  const usingLocker = isPoland && deliveryMethod === DeliveryMethod.Locker;
+  const usingLocker = hasLocker && deliveryMethod === DeliveryMethod.Locker;
   const countryLabel =
     CHECKOUT_COUNTRIES.find((c) => c.code === address.country)?.label ??
     address.country;
@@ -168,7 +168,7 @@ export default function CheckoutForm({
               </select>
             </Field>
 
-            {isPoland && (
+            {hasLocker && (
               <div className="grid grid-cols-2 gap-2">
                 {[DeliveryMethod.Locker, DeliveryMethod.Courier].map(
                   (method) => (
@@ -193,7 +193,11 @@ export default function CheckoutForm({
             )}
 
             {usingLocker ? (
-              <ParcelLockerField locker={locker} onSelect={onLockerSelect} />
+              <ParcelLockerField
+                country={address.country}
+                locker={locker}
+                onSelect={onLockerSelect}
+              />
             ) : (
               <>
                 <Field label={t("street")}>

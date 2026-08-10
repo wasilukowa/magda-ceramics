@@ -6,11 +6,16 @@ import { InPostPoint } from "@/contracts/server/shipping";
 import InPostGeowidget from "./InPostGeowidget";
 
 type Props = {
+  country: string;
   locker: InPostPoint | null;
   onSelect: (point: InPostPoint) => void;
 };
 
-export default function ParcelLockerField({ locker, onSelect }: Props) {
+export default function ParcelLockerField({
+  country,
+  locker,
+  onSelect,
+}: Props) {
   const t = useTranslations("checkout");
   const [open, setOpen] = useState(false);
 
@@ -76,7 +81,7 @@ export default function ParcelLockerField({ locker, onSelect }: Props) {
                 ✕
               </button>
             </div>
-            <InPostGeowidget onSelect={handleSelect} />
+            <InPostGeowidget country={country} onSelect={handleSelect} />
           </div>
         </div>
       )}

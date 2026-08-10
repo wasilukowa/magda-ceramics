@@ -20,7 +20,7 @@ type Props = {
   onFieldChange: (field: keyof Address, value: string) => void;
   shippingCost: number;
   grandTotal: number;
-  isPoland: boolean;
+  hasLocker: boolean;
   deliveryMethod: DeliveryMethod;
   onDeliveryMethodChange: (method: DeliveryMethod) => void;
   locker: InPostPoint | null;
@@ -41,7 +41,7 @@ export default function CheckoutContent({
   onFieldChange,
   shippingCost,
   grandTotal,
-  isPoland,
+  hasLocker,
   deliveryMethod,
   onDeliveryMethodChange,
   locker,
@@ -56,7 +56,7 @@ export default function CheckoutContent({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const usingLocker = isPoland && deliveryMethod === DeliveryMethod.Locker;
+  const usingLocker = hasLocker && deliveryMethod === DeliveryMethod.Locker;
 
   // Every required field for the chosen delivery method is filled in. Drives
   // both the "continue" button's enabled state and step-1 validation.
@@ -115,7 +115,7 @@ export default function CheckoutContent({
             line1: locker.description || locker.code,
             city: locker.city,
             postal_code: locker.postCode,
-            country: "PL",
+            country: address.country,
           }
         : {
             line1: address.street,
@@ -241,7 +241,7 @@ export default function CheckoutContent({
             step={step}
             address={address}
             onFieldChange={onFieldChange}
-            isPoland={isPoland}
+            hasLocker={hasLocker}
             deliveryMethod={deliveryMethod}
             onDeliveryMethodChange={onDeliveryMethodChange}
             locker={locker}

@@ -13,7 +13,7 @@ import OrderSummary from "@/components/checkout/OrderSummary";
 import { Link } from "@/i18n/navigation";
 import { Address } from "@/contracts/server/cart";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
-import { getShippingCost } from "@/lib/helpers/shipping";
+import { getShippingCost, hasInPostLocker } from "@/lib/helpers/shipping";
 import { getCartTotal } from "@/lib/helpers/currency";
 
 const stripePromise = loadStripe(
@@ -49,8 +49,9 @@ export default function CheckoutPage() {
     ...EMPTY_ADDRESS,
     email: user?.email ?? "",
   }));
-  // Parcel-locker delivery is offered only for Poland. Method + selected locker
-  // live here (not in CheckoutContent) so they survive the Elements remount.
+  // Parcel-locker delivery is offered for Poland and the InPost International
+  // countries. Method + selected locker live here (not in CheckoutContent) so
+  // they survive the Elements remount.
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>(
     DeliveryMethod.Locker
   );
@@ -58,9 +59,9 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
 
   const country = address.country;
-  const isPoland = country === "PL";
-  const effectiveMethod = isPoland ? deliveryMethod : DeliveryMethod.Courier;
-  const usingLocker = isPoland && effectiveMethod === DeliveryMethod.Locker;
+  const hasLocker = hasInPostLocker(country);
+  const effectiveMethod = hasLocker ? deliveryMethod : DeliveryMethod.Courier;
+  const usingLocker = hasLocker && effectiveMethod === DeliveryMethod.Locker;
   const subtotal = getCartTotal(items, currency);
   const shippingCost = getShippingCost(country, currency);
   const grandTotal = subtotal + shippingCost;
@@ -70,9 +71,10 @@ export default function CheckoutPage() {
 
   function setField(field: keyof Address, value: string) {
     setAddress((prev) => ({ ...prev, [field]: value }));
-    // Drop any selected locker when the customer leaves the Poland zone, where
-    // parcel lockers aren't offered.
-    if (field === "country" && value !== "PL") setLocker(null);
+    // A locker is tied to one country, so drop the selection on any country
+    // change — whether moving to a courier-only country or another locker
+    // country (the previous locker is invalid there).
+    if (field === "country") setLocker(null);
   }
 
   // (Re)create the PaymentIntent whenever pricing inputs change. Stripe does
@@ -166,7 +168,7 @@ export default function CheckoutPage() {
             onFieldChange={setField}
             shippingCost={shippingCost}
             grandTotal={grandTotal}
-            isPoland={isPoland}
+            hasLocker={hasLocker}
             deliveryMethod={effectiveMethod}
             onDeliveryMethodChange={setDeliveryMethod}
             locker={locker}
