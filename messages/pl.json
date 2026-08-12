@@ -143,7 +143,8 @@
     "returns": "Zwroty i reklamacje",
     "aboutTitle": "O mnie",
     "termsTitle": "Regulamin",
-    "privacyTitle": "Polityka prywatności i cookies"
+    "privacyTitle": "Polityka prywatności i cookies",
+    "cookies": "Polityka cookies"
   },
   "comingSoon": {
     "title": "Wkrótce",
@@ -263,5 +264,88 @@
     "empty": "Twoja lista ulubionych jest pusta.",
     "browse": "Przeglądaj sklep",
     "loading": "Ładowanie…"
+  },
+  "cookies": {
+    "bannerTitle": "Pliki cookies",
+    "bannerText": "Zapisujemy na Twoim urządzeniu tylko to, co niezbędne do działania sklepu — koszyk, logowanie i płatność. Nie używamy narzędzi analitycznych ani marketingowych. Możesz zdecydować, czy zgadzasz się na dodatkowe kategorie.",
+    "policyLink": "Polityka cookies",
+    "settings": "Ustawienia cookies",
+    "settingsTitle": "Ustawienia plików cookies",
+    "settingsIntro": "Zdecyduj, co możemy zapisywać na Twoim urządzeniu. Wybór możesz zmienić w każdej chwili — bez żadnych konsekwencji dla zakupów.",
+    "acceptAll": "Akceptuj wszystkie",
+    "rejectAll": "Odrzuć wszystkie",
+    "save": "Zapisz wybór",
+    "close": "Zamknij",
+    "alwaysOn": "Zawsze aktywne",
+    "decidedAt": "Twój wybór zapisaliśmy: {date}.",
+    "categories": {
+      "necessary": {
+        "label": "Niezbędne",
+        "description": "Utrzymanie sesji logowania, zawartości koszyka, procesu zamówienia i płatności, a także preferencji, które ustawiasz samodzielnie (waluta, lista ulubionych). Bez nich sklep nie działa, dlatego nie wymagają zgody (art. 399 ust. 3 Prawa komunikacji elektronicznej)."
+      },
+      "analytics": {
+        "label": "Analityczne",
+        "description": "Statystyki odwiedzin — które strony są oglądane i jak długo. Pomagają ulepszać sklep. Obecnie nie korzystamy z żadnego narzędzia analitycznego; jeśli to się zmieni, uruchomimy je wyłącznie po Twojej zgodzie."
+      },
+      "marketing": {
+        "label": "Marketingowe",
+        "description": "Dopasowanie reklam i mierzenie ich skuteczności, np. w mediach społecznościowych. Obecnie nie korzystamy z żadnego narzędzia marketingowego; jeśli to się zmieni, uruchomimy je wyłącznie po Twojej zgodzie."
+      }
+    },
+    "pageTitle": "Polityka cookies",
+    "intro": "Ta strona wyjaśnia, jakie informacje zapisujemy na Twoim urządzeniu, w jakim celu i na jak długo. Dotyczy to zarówno klasycznych plików cookies, jak i pamięci przeglądarki (localStorage, sessionStorage).",
+    "legalBasis": "Podstawą jest art. 399 ustawy z dnia 12 lipca 2024 r. — Prawo komunikacji elektronicznej oraz RODO. Informacje niezbędne do świadczenia usługi, o którą sam(a) prosisz — np. utrzymanie koszyka czy realizacja płatności — nie wymagają zgody. Wszystko poza tym zapisujemy dopiero po Twojej zgodzie, a jej wycofanie jest równie proste jak udzielenie.",
+    "tableTitle": "Co dokładnie zapisujemy",
+    "tableName": "Nazwa",
+    "tableProvider": "Dostawca",
+    "tablePurpose": "Cel",
+    "tableDuration": "Czas",
+    "noTrackingNote": "Na dziś sklep nie uruchamia żadnych skryptów analitycznych ani reklamowych — dlatego w tabeli nie ma pozycji w tych kategoriach. Każde takie narzędzie dodane w przyszłości pojawi się tutaj i będzie się ładować dopiero po Twojej zgodzie.",
+    "browserTitle": "Ustawienia przeglądarki",
+    "browserNote": "Niezależnie od powyższego panelu możesz zarządzać plikami cookies w ustawieniach swojej przeglądarki — w tym zablokować je całkowicie lub usunąć już zapisane. Zablokowanie plików niezbędnych może uniemożliwić złożenie zamówienia.",
+    "privacyNote": "Informacje o przetwarzaniu Twoich danych osobowych i o Twoich prawach znajdziesz w",
+    "privacyLink": "Polityce prywatności",
+    "entries": {
+      "session": {
+        "purpose": "Utrzymanie zalogowanej sesji klienta.",
+        "duration": "7 dni"
+      },
+      "previewAccess": {
+        "purpose": "Dostęp do sklepu w okresie przedpremierowym.",
+        "duration": "30 dni"
+      },
+      "consent": {
+        "purpose": "Zapamiętanie Twojego wyboru dotyczącego cookies wraz z datą — to dowód udzielonej zgody.",
+        "duration": "12 miesięcy"
+      },
+      "cart": {
+        "purpose": "Zapamiętanie produktów dodanych do koszyka.",
+        "duration": "Do wyczyszczenia danych przeglądarki"
+      },
+      "pendingOrder": {
+        "purpose": "Przekazanie szczegółów zamówienia na stronę potwierdzenia po płatności.",
+        "duration": "Do zamknięcia karty"
+      },
+      "stripe": {
+        "purpose": "Obsługa płatności i wykrywanie oszustw przez operatora płatności. Ładowane tylko na stronie zamówienia.",
+        "duration": "Do 12 miesięcy"
+      },
+      "inpost": {
+        "purpose": "Mapa wyboru paczkomatu. Ładowana tylko na stronie zamówienia, gdy wybierzesz dostawę do paczkomatu.",
+        "duration": "Sesja"
+      },
+      "locale": {
+        "purpose": "Zapamiętanie języka wybranego przez Ciebie (polski / angielski).",
+        "duration": "12 miesięcy"
+      },
+      "currency": {
+        "purpose": "Zapamiętanie waluty wybranej przez Ciebie (PLN / EUR).",
+        "duration": "Do wyczyszczenia danych przeglądarki"
+      },
+      "wishlist": {
+        "purpose": "Lista ulubionych produktów dla niezalogowanych klientów.",
+        "duration": "Do wyczyszczenia danych przeglądarki"
+      }
+    }
   }
 }

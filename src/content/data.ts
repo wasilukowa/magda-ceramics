@@ -1,5 +1,6 @@
-import { ShopCategory, Country } from "./types";
+import { ShopCategory, Country, CookieRegistryEntry } from "./types";
 import { ShippingZone, ShippingRates } from "@/contracts/server/shipping";
+import { CookieCategory } from "@/contracts/shared";
 
 export const SHOP_CATEGORIES: ShopCategory[] = [
   { slug: "kubki" },
@@ -15,6 +16,75 @@ export const HOMEPAGE_CATEGORIES: ShopCategory[] = [
   { slug: "maluszki" },
   { slug: "wazony" },
   { slug: "roznosci" },
+];
+
+// Everything the store writes to the customer's device, listed for the cookie
+// policy page. Keep this in sync with the code — it is the informational duty
+// under art. 399 PKE. Adding a new tracker means a row here AND a bump of
+// CONSENT_VERSION in lib/helpers/consent.ts, so customers are asked again.
+export const COOKIE_REGISTRY: CookieRegistryEntry[] = [
+  {
+    key: "session",
+    name: "session",
+    provider: "magdaceramics.com",
+    category: CookieCategory.Necessary,
+  },
+  {
+    // Remove this row together with the pre-launch gate in src/middleware.ts
+    key: "previewAccess",
+    name: "preview_access",
+    provider: "magdaceramics.com",
+    category: CookieCategory.Necessary,
+  },
+  {
+    key: "consent",
+    name: "cookie_consent",
+    provider: "magdaceramics.com",
+    category: CookieCategory.Necessary,
+  },
+  {
+    key: "cart",
+    name: "cart",
+    provider: "magdaceramics.com",
+    category: CookieCategory.Necessary,
+  },
+  {
+    key: "pendingOrder",
+    name: "pendingOrder",
+    provider: "magdaceramics.com",
+    category: CookieCategory.Necessary,
+  },
+  {
+    key: "stripe",
+    name: "__stripe_mid, __stripe_sid",
+    provider: "Stripe",
+    category: CookieCategory.Necessary,
+  },
+  {
+    key: "inpost",
+    name: "InPost Geowidget",
+    provider: "InPost",
+    category: CookieCategory.Necessary,
+  },
+  {
+    // Set by next-intl when the customer switches PL/EN in the navbar
+    key: "locale",
+    name: "NEXT_LOCALE",
+    provider: "magdaceramics.com",
+    category: CookieCategory.Necessary,
+  },
+  {
+    key: "currency",
+    name: "currency",
+    provider: "magdaceramics.com",
+    category: CookieCategory.Necessary,
+  },
+  {
+    key: "wishlist",
+    name: "wishlist",
+    provider: "magdaceramics.com",
+    category: CookieCategory.Necessary,
+  },
 ];
 
 export const INSTAGRAM_URL = "https://www.instagram.com/magda_ceramics";

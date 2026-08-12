@@ -16,6 +16,7 @@ export const routing = defineRouting({
     "/about": { en: "/about", pl: "/o-mnie" },
     "/terms": { en: "/terms", pl: "/regulamin" },
     "/privacy": { en: "/privacy", pl: "/polityka-prywatnosci" },
+    "/cookies": { en: "/cookies", pl: "/pliki-cookies" },
     "/login": { en: "/login", pl: "/logowanie" },
     "/register": { en: "/register", pl: "/rejestracja" },
     "/account": { en: "/account", pl: "/konto" },

@@ -143,7 +143,8 @@
     "returns": "Returns",
     "aboutTitle": "About",
     "termsTitle": "Terms & Conditions",
-    "privacyTitle": "Privacy & Cookies Policy"
+    "privacyTitle": "Privacy & Cookies Policy",
+    "cookies": "Cookie Policy"
   },
   "comingSoon": {
     "title": "Coming soon",
@@ -263,5 +264,88 @@
     "empty": "Your wishlist is empty.",
     "browse": "Browse the shop",
     "loading": "Loading…"
+  },
+  "cookies": {
+    "bannerTitle": "Cookies",
+    "bannerText": "We only store what the store needs to work — your cart, login and payment. We use no analytics or marketing trackers. You can decide whether to allow the optional categories.",
+    "policyLink": "Cookie Policy",
+    "settings": "Cookie settings",
+    "settingsTitle": "Cookie settings",
+    "settingsIntro": "Decide what we may store on your device. You can change this at any time — it never affects your ability to shop.",
+    "acceptAll": "Accept all",
+    "rejectAll": "Reject all",
+    "save": "Save choice",
+    "close": "Close",
+    "alwaysOn": "Always on",
+    "decidedAt": "Your choice was saved on {date}.",
+    "categories": {
+      "necessary": {
+        "label": "Necessary",
+        "description": "Keeping you logged in, holding your cart, running checkout and payment, and remembering preferences you set yourself (currency, wishlist). The store cannot work without these, so they need no consent (Art. 399(3) of the Polish Electronic Communications Law)."
+      },
+      "analytics": {
+        "label": "Analytics",
+        "description": "Visit statistics — which pages are viewed and for how long. They help improve the store. We currently use no analytics tool; if that changes, it will only load after you agree."
+      },
+      "marketing": {
+        "label": "Marketing",
+        "description": "Tailoring ads and measuring how they perform, e.g. on social media. We currently use no marketing tool; if that changes, it will only load after you agree."
+      }
+    },
+    "pageTitle": "Cookie Policy",
+    "intro": "This page explains what we store on your device, why, and for how long. It covers both classic cookies and browser storage (localStorage, sessionStorage).",
+    "legalBasis": "The legal basis is Art. 399 of the Polish Electronic Communications Law of 12 July 2024 and the GDPR. Storage strictly needed for a service you asked for — holding your cart, processing your payment — requires no consent. Everything else is stored only after you agree, and withdrawing that agreement is as easy as giving it.",
+    "tableTitle": "What exactly we store",
+    "tableName": "Name",
+    "tableProvider": "Provider",
+    "tablePurpose": "Purpose",
+    "tableDuration": "Duration",
+    "noTrackingNote": "As of today the store loads no analytics or advertising scripts, which is why no rows appear in those categories. Any such tool added in future will be listed here and will load only after you agree.",
+    "browserTitle": "Browser settings",
+    "browserNote": "Regardless of the panel above, you can manage cookies in your browser settings — including blocking them entirely or deleting stored ones. Blocking necessary cookies may make it impossible to place an order.",
+    "privacyNote": "Information about how we process your personal data and about your rights is in the",
+    "privacyLink": "Privacy Policy",
+    "entries": {
+      "session": {
+        "purpose": "Keeps you signed in to your account.",
+        "duration": "7 days"
+      },
+      "previewAccess": {
+        "purpose": "Access to the store during the pre-launch period.",
+        "duration": "30 days"
+      },
+      "consent": {
+        "purpose": "Remembers your cookie choice together with its date — the record of your consent.",
+        "duration": "12 months"
+      },
+      "cart": {
+        "purpose": "Remembers the products you added to the cart.",
+        "duration": "Until you clear browser data"
+      },
+      "pendingOrder": {
+        "purpose": "Carries the order details to the confirmation page after payment.",
+        "duration": "Until the tab is closed"
+      },
+      "stripe": {
+        "purpose": "Payment handling and fraud detection by the payment provider. Loaded on the checkout page only.",
+        "duration": "Up to 12 months"
+      },
+      "inpost": {
+        "purpose": "Parcel locker map. Loaded on the checkout page only, when you choose locker delivery.",
+        "duration": "Session"
+      },
+      "locale": {
+        "purpose": "Remembers the language you selected (Polish / English).",
+        "duration": "12 months"
+      },
+      "currency": {
+        "purpose": "Remembers the currency you selected (PLN / EUR).",
+        "duration": "Until you clear browser data"
+      },
+      "wishlist": {
+        "purpose": "Wishlist for customers who are not signed in.",
+        "duration": "Until you clear browser data"
+      }
+    }
   }
 }

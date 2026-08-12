@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata() {
   const t = await getTranslations("footer");
@@ -67,14 +68,14 @@ function PrivacyEN() {
       <section>
         <h2 className="text-xs tracking-widest uppercase text-[var(--foreground)] mb-4">§ 6. Cookie Policy</h2>
         <div className="space-y-3">
-          <p>The online store uses cookies — small text files saved on the Customer&apos;s device.</p>
-          <p>Cookies are used to:</p>
+          <p>The online store saves information on the Customer&apos;s device (cookies and browser storage) under Art. 399 of the Polish Electronic Communications Law.</p>
+          <p>This information is used to:</p>
           <ul className="list-disc list-inside space-y-1 pl-2">
-            <li>Maintain the Customer&apos;s session (e.g., remembering items added to the cart).</li>
-            <li>Adapt website content to user preferences.</li>
-            <li>Create anonymous website traffic statistics (e.g., Google Analytics).</li>
+            <li>Maintain the Customer&apos;s session, cart and checkout — necessary for the store to work.</li>
+            <li>Remember preferences the Customer sets themselves (currency, wishlist).</li>
           </ul>
-          <p>The Customer can change cookie settings in their web browser at any time, including blocking them completely.</p>
+          <p>The store does not use analytics or marketing trackers. Should that change, they will only run after the Customer opts in, and the choice can be withdrawn at any time.</p>
+          <p>A full list, together with the settings panel, is available in the <Link href="/cookies" className="text-[var(--foreground)] underline">Cookie Policy</Link>. Cookies can also be blocked in the browser settings.</p>
         </div>
       </section>
     </div>
@@ -143,14 +144,14 @@ function PrivacyPL() {
       <section>
         <h2 className="text-xs tracking-widest uppercase text-[var(--foreground)] mb-4">§ 6. Pliki cookies (ciasteczka)</h2>
         <div className="space-y-3">
-          <p>Sklep internetowy używa plików cookies — małych plików tekstowych zapisywanych na urządzeniu końcowym Klienta.</p>
-          <p>Pliki cookies wykorzystywane są w celu:</p>
+          <p>Sklep internetowy zapisuje informacje na urządzeniu końcowym Klienta (pliki cookies i pamięć przeglądarki) na zasadach określonych w art. 399 ustawy Prawo komunikacji elektronicznej.</p>
+          <p>Informacje te wykorzystywane są w celu:</p>
           <ul className="list-disc list-inside space-y-1 pl-2">
-            <li>Utrzymania sesji Klienta (np. zapamiętanie produktów dodanych do koszyka).</li>
-            <li>Dostosowania zawartości strony do preferencji użytkownika.</li>
-            <li>Tworzenia anonimowych statystyk ruchu (np. Google Analytics).</li>
+            <li>Utrzymania sesji Klienta, koszyka i procesu zamówienia — są niezbędne do działania sklepu.</li>
+            <li>Zapamiętania preferencji ustawionych samodzielnie przez Klienta (waluta, lista ulubionych).</li>
           </ul>
-          <p>Klient może w każdej chwili zmienić ustawienia dotyczące plików cookies w swojej przeglądarce, w tym całkowicie je zablokować.</p>
+          <p>Sklep nie korzysta z narzędzi analitycznych ani marketingowych. Jeżeli to się zmieni, będą one uruchamiane wyłącznie po wyrażeniu zgody przez Klienta, a zgodę można w każdej chwili wycofać.</p>
+          <p>Pełna lista wraz z panelem ustawień znajduje się w <Link href="/cookies" className="text-[var(--foreground)] underline">Polityce cookies</Link>. Pliki cookies można również zablokować w ustawieniach przeglądarki.</p>
         </div>
       </section>
     </div>

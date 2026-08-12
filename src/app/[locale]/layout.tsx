@@ -13,6 +13,10 @@ import { AuthProvider } from "@/lib/store/providers/AuthProvider";
 import { WishlistProvider } from "@/lib/store/providers/WishlistProvider";
 import { getSession } from "@/lib/auth/dal";
 import { routing } from "@/i18n/routing";
+import { ConsentProvider } from "@/lib/store/providers/ConsentProvider";
+import { CookieBanner } from "@/components/cookies/CookieBanner";
+import { CONSENT_COOKIE_NAME, parseConsentCookie } from "@/lib/helpers/consent";
+import { cookies } from "next/headers";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -48,30 +52,38 @@ export default async function LocaleLayout({
 
   if (!hasLocale(routing.locales, locale)) notFound();
 
-  const session = await getSession();
+  const [session, cookieStore] = await Promise.all([getSession(), cookies()]);
   const authUser = session
     ? { id: session.customerId, email: session.email }
     : null;
+
+  // Read on the server so the banner never flashes for a returning customer.
+  const initialConsent = parseConsentCookie(
+    cookieStore.get(CONSENT_COOKIE_NAME)?.value,
+  );
 
   return (
     <html lang={locale} className={`${montserrat.variable} ${cormorant.variable}`}>
       <body className="bg-[var(--background)]">
         <NextIntlClientProvider>
-          <AuthProvider user={authUser}>
-            <WishlistProvider
-              key={session ? "auth" : "guest"}
-              isAuthenticated={Boolean(session)}
-            >
-              <CurrencyProvider>
-                <CartProvider>
-                  <Navbar />
-                  <CartDrawer />
-                  <main className="flex-1 w-full">{children}</main>
-                  <Footer />
-                </CartProvider>
-              </CurrencyProvider>
-            </WishlistProvider>
-          </AuthProvider>
+          <ConsentProvider initialConsent={initialConsent}>
+            <AuthProvider user={authUser}>
+              <WishlistProvider
+                key={session ? "auth" : "guest"}
+                isAuthenticated={Boolean(session)}
+              >
+                <CurrencyProvider>
+                  <CartProvider>
+                    <Navbar />
+                    <CartDrawer />
+                    <main className="flex-1 w-full">{children}</main>
+                    <Footer />
+                    <CookieBanner />
+                  </CartProvider>
+                </CurrencyProvider>
+              </WishlistProvider>
+            </AuthProvider>
+          </ConsentProvider>
         </NextIntlClientProvider>
       </body>
     </html>

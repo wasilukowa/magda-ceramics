@@ -2,6 +2,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { INSTAGRAM_URL, INSTAGRAM_HANDLE, SHOP_CATEGORIES } from "@/content/data";
+import { CookieSettingsButton } from "@/components/cookies/CookieSettingsButton";
 
 export default async function Footer() {
   const t = await getTranslations();
@@ -107,6 +108,14 @@ export default async function Footer() {
                   <Link href="/privacy" className="hover:opacity-60 transition-opacity">
                     {t("footer.privacy")}
                   </Link>
+                </li>
+                <li>
+                  <Link href="/cookies" className="hover:opacity-60 transition-opacity">
+                    {t("footer.cookies")}
+                  </Link>
+                </li>
+                <li>
+                  <CookieSettingsButton />
                 </li>
               </ul>
             </div>
