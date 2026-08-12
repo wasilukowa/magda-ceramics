@@ -25,6 +25,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* Display serif for quotes — enables the `font-quote` utility */
+  --font-quote: var(--font-cormorant), Georgia, serif;
 }
 
 body {

@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { HOMEPAGE_CATEGORIES } from "@/content/data";
 import { AboutSlider } from "@/components/AboutSlider";
+import { Quote } from "@/components/Quote";
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   kubki: (
@@ -76,7 +77,7 @@ export default async function Home() {
       </div>
 
       {/* Categories */}
-      <section className="max-w-[1200px] mx-auto px-6 pt-20 pb-20">
+      <section className="max-w-[1200px] mx-auto px-6 pt-20 pb-10">
         <h2 className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] text-center mb-12">
           {t("home.categories")}
         </h2>
@@ -98,6 +99,8 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Quote */}
+      <Quote text={t("home.quote")} author={t("home.quoteAuthor")} />
     </>
   );
 }

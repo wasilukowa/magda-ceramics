@@ -13,6 +13,11 @@ export type ProductGalleryProps = {
   productName: string;
 };
 
+export type QuoteProps = {
+  text: string;
+  author: string;
+};
+
 export type AddToCartButtonProps = {
   id: number;
   slug: string;

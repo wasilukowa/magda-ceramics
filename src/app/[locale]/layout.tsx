@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google";
+import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
@@ -18,6 +18,14 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin", "latin-ext"],
   weight: ["300", "400", "500", "600"],
+});
+
+// Serif companion, used only for display quotes (see Quote.tsx)
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin", "latin-ext"],
+  weight: ["300", "400"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {
@@ -46,7 +54,7 @@ export default async function LocaleLayout({
     : null;
 
   return (
-    <html lang={locale} className={montserrat.variable}>
+    <html lang={locale} className={`${montserrat.variable} ${cormorant.variable}`}>
       <body className="bg-[var(--background)]">
         <NextIntlClientProvider>
           <AuthProvider user={authUser}>
