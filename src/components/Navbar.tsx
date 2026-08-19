@@ -10,9 +10,11 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { Currency } from "@/contracts/shared";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAuth } from "@/lib/store/providers/AuthProvider";
-import { SHOP_CATEGORIES, INSTAGRAM_URL } from "@/content/data";
+import { INSTAGRAM_URL } from "@/content/data";
+import { CategoryNavigationProps } from "@/contracts/shared";
+import { getCategoryLabel } from "@/lib/helpers/category";
 
-export default function Navbar() {
+export default function Navbar({ categories }: CategoryNavigationProps) {
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { itemCount, openCart } = useCart();
@@ -78,10 +80,10 @@ export default function Navbar() {
                     {t("categories.all")}
                   </Link>
                 </li>
-                {SHOP_CATEGORIES.map((cat) => (
+                {categories.map((cat) => (
                   <li key={cat.slug}>
                     <Link href={{ pathname: "/shop/[category]", params: { category: cat.slug } }} className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[var(--color-navbar-hover)] transition-colors">
-                      {t(`categories.${cat.slug}`)}
+                      {getCategoryLabel(t, cat)}
                     </Link>
                   </li>
                 ))}
@@ -191,10 +193,10 @@ export default function Navbar() {
               <li><Link href="/" onClick={() => setMobileOpen(false)}>{t("nav.home")}</Link></li>
               <li><Link href="/about" onClick={() => setMobileOpen(false)}>{t("nav.about")}</Link></li>
               <li><Link href="/shop" onClick={() => setMobileOpen(false)}>{t("nav.shop")} — {t("categories.all")}</Link></li>
-              {SHOP_CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <li key={cat.slug} className="pl-4">
                   <Link href={{ pathname: "/shop/[category]", params: { category: cat.slug } }} onClick={() => setMobileOpen(false)}>
-                    {t(`categories.${cat.slug}`)}
+                    {getCategoryLabel(t, cat)}
                   </Link>
                 </li>
               ))}

@@ -1,10 +1,12 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { INSTAGRAM_URL, INSTAGRAM_HANDLE, SHOP_CATEGORIES } from "@/content/data";
+import { INSTAGRAM_URL, INSTAGRAM_HANDLE } from "@/content/data";
+import { CategoryNavigationProps } from "@/contracts/shared";
+import { getCategoryLabel } from "@/lib/helpers/category";
 import { CookieSettingsButton } from "@/components/cookies/CookieSettingsButton";
 
-export default async function Footer() {
+export default async function Footer({ categories }: CategoryNavigationProps) {
   const t = await getTranslations();
 
   return (
@@ -70,13 +72,13 @@ export default async function Footer() {
                     {t("categories.all")}
                   </Link>
                 </li>
-                {SHOP_CATEGORIES.map((cat) => (
+                {categories.map((cat) => (
                   <li key={cat.slug}>
                     <Link
                       href={{ pathname: "/shop/[category]", params: { category: cat.slug } }}
                       className="hover:opacity-60 transition-opacity"
                     >
-                      {t(`categories.${cat.slug}`)}
+                      {getCategoryLabel(t, cat)}
                     </Link>
                   </li>
                 ))}

@@ -1,10 +1,6 @@
 import { ShippingZone } from "@/contracts/server/shipping";
 import { CookieCategory } from "@/contracts/shared";
 
-export type ShopCategory = {
-  slug: string;
-};
-
 export type Country = {
   code: string;
   label: string;

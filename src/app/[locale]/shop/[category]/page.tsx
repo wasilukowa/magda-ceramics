@@ -4,6 +4,7 @@ import { productService } from "@/lib/service/product";
 import ProductCard from "@/components/ProductCard";
 import EmptyCategory from "@/components/EmptyCategory";
 import { EmptyCategoryReason } from "@/contracts/shared";
+import { getCategoryLabel } from "@/lib/helpers/category";
 import { cn } from "@/lib/utils";
 
 // The slug comes straight from the URL — keep what we echo back on screen short.
@@ -35,7 +36,8 @@ export async function generateMetadata({
     };
   }
 
-  return { title: `${cat.name} — Magda Ceramics` };
+  const t = await getTranslations();
+  return { title: `${getCategoryLabel(t, cat)} — Magda Ceramics` };
 }
 
 export default async function CategoryPage({
@@ -56,7 +58,7 @@ export default async function CategoryPage({
     return (
       <EmptyCategory
         reason={cat ? EmptyCategoryReason.NoProducts : EmptyCategoryReason.Unknown}
-        categoryLabel={cat?.name ?? getSlugLabel(category)}
+        categoryLabel={cat ? getCategoryLabel(t, cat) : getSlugLabel(category)}
         categories={await productService.getCategoryTiles(category)}
       />
     );
@@ -65,7 +67,7 @@ export default async function CategoryPage({
   return (
     <div className="max-w-6xl mx-auto px-6 py-16">
       <h1 className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] mb-12 text-center">
-        {cat.name}
+        {getCategoryLabel(t, cat)}
       </h1>
 
       <div className="flex flex-wrap gap-3 justify-center mb-12">
@@ -86,7 +88,7 @@ export default async function CategoryPage({
                 : "border-[var(--border)] hover:border-[var(--foreground)]"
             )}
           >
-            {c.name}
+            {getCategoryLabel(t, c)}
           </Link>
         ))}
       </div>

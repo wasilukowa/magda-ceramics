@@ -17,6 +17,7 @@ import { ConsentProvider } from "@/lib/store/providers/ConsentProvider";
 import { CookieBanner } from "@/components/cookies/CookieBanner";
 import { CONSENT_COOKIE_NAME, parseConsentCookie } from "@/lib/helpers/consent";
 import { cookies } from "next/headers";
+import { productService } from "@/lib/service/product";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -52,7 +53,12 @@ export default async function LocaleLayout({
 
   if (!hasLocale(routing.locales, locale)) notFound();
 
-  const [session, cookieStore] = await Promise.all([getSession(), cookies()]);
+  const [session, cookieStore, categories] = await Promise.all([
+    getSession(),
+    cookies(),
+    // Fetched once here and handed to both the menu and the footer.
+    productService.getNavigationCategories(),
+  ]);
   const authUser = session
     ? { id: session.customerId, email: session.email }
     : null;
@@ -74,10 +80,10 @@ export default async function LocaleLayout({
               >
                 <CurrencyProvider>
                   <CartProvider>
-                    <Navbar />
+                    <Navbar categories={categories} />
                     <CartDrawer />
                     <main className="flex-1 w-full">{children}</main>
-                    <Footer />
+                    <Footer categories={categories} />
                     <CookieBanner />
                   </CartProvider>
                 </CurrencyProvider>

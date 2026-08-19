@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { productService } from "@/lib/service/product";
 import ProductCard from "@/components/ProductCard";
+import { getCategoryLabel } from "@/lib/helpers/category";
 
 export async function generateMetadata() {
   const t = await getTranslations("shop");
@@ -34,7 +35,7 @@ export default async function ShopPage() {
             href={{ pathname: "/shop/[category]", params: { category: cat.slug } }}
             className="text-xs tracking-widest uppercase border border-[var(--border)] px-5 py-2 hover:border-[var(--foreground)] transition-colors"
           >
-            {cat.name}
+            {getCategoryLabel(t, cat)}
           </Link>
         ))}
       </div>

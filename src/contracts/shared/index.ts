@@ -1,4 +1,4 @@
-import { CategoryTileProps } from "@/contracts/server/product";
+import { CategoryProps, CategoryTileProps } from "@/contracts/server/product";
 
 export enum Currency {
   PLN = "pln",
@@ -79,4 +79,10 @@ export type EmptyCategoryProps = {
   // Categories worth suggesting — prepared by the service (non-empty, current
   // one excluded, each with a thumbnail).
   categories: CategoryTileProps[];
+};
+
+// Menu, footer and homepage tiles all render the same WooCommerce categories,
+// fetched once by the locale layout.
+export type CategoryNavigationProps = {
+  categories: CategoryProps[];
 };

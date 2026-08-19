@@ -1,7 +1,8 @@
 import React from "react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { HOMEPAGE_CATEGORIES } from "@/content/data";
+import { productService } from "@/lib/service/product";
+import { getCategoryLabel } from "@/lib/helpers/category";
 import { AboutSlider } from "@/components/AboutSlider";
 import { Quote } from "@/components/Quote";
 
@@ -44,10 +45,35 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
       <circle cx="23" cy="23" r="2.5"/>
     </svg>
   ),
+  "kubki-na-espresso": (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 14h12v6a5 5 0 01-5 5h-2a5 5 0 01-5-5v-6z"/>
+      <path d="M23 16h2a3 3 0 010 6h-2"/>
+      <path d="M9 29h18"/>
+    </svg>
+  ),
+  "swieczniki-i-kadzielnice": (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 6c2 2.5 3 4.2 3 6a3 3 0 01-6 0c0-1.8 1-3.5 3-6z"/>
+      <path d="M14 17h8v9h-8z"/>
+      <path d="M11 29h14"/>
+    </svg>
+  ),
 };
 
+// Categories come from WooCommerce, so a brand new one still gets a tile.
+const DEFAULT_CATEGORY_ICON = (
+  <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="18" cy="17" r="8"/>
+    <path d="M11 29h14"/>
+  </svg>
+);
+
 export default async function Home() {
-  const t = await getTranslations();
+  const [t, categories] = await Promise.all([
+    getTranslations(),
+    productService.getNavigationCategories(),
+  ]);
 
   return (
     <>
@@ -81,18 +107,20 @@ export default async function Home() {
         <h2 className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] text-center mb-12">
           {t("home.categories")}
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {HOMEPAGE_CATEGORIES.map((cat) => (
+        {/* Wrapping row rather than a fixed grid — the number of categories
+            follows WooCommerce, so the tiles stay centred whatever it is. */}
+        <div className="flex flex-wrap justify-center gap-4">
+          {categories.map((cat) => (
             <Link
               key={cat.slug}
               href={{ pathname: "/shop/[category]", params: { category: cat.slug } }}
-              className="group aspect-square border-2 border-[var(--color-accent)] flex flex-col items-center justify-center gap-3 hover:bg-[var(--color-accent)]/10 transition-colors"
+              className="group aspect-square w-[calc(50%-0.5rem)] md:w-[200px] border-2 border-[var(--color-accent)] flex flex-col items-center justify-center gap-3 px-3 text-center hover:bg-[var(--color-accent)]/10 transition-colors"
             >
               <span className="text-[var(--color-accent)] transition-colors">
-                {CATEGORY_ICONS[cat.slug]}
+                {CATEGORY_ICONS[cat.slug] ?? DEFAULT_CATEGORY_ICON}
               </span>
               <span className="text-xs tracking-widest uppercase text-[var(--foreground)] transition-colors">
-                {t(`categories.${cat.slug}`)}
+                {getCategoryLabel(t, cat)}
               </span>
             </Link>
           ))}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { EmptyCategoryProps, EmptyCategoryReason } from "@/contracts/shared";
+import { getCategoryLabel } from "@/lib/helpers/category";
 
 // How long the customer gets to read the message and pick a tile before the
 // full catalogue takes over.
@@ -16,6 +17,7 @@ export default function EmptyCategory({
   categories,
 }: EmptyCategoryProps) {
   const t = useTranslations("shop.empty");
+  const tRoot = useTranslations();
   const router = useRouter();
   const [secondsLeft, setSecondsLeft] = useState(REDIRECT_SECONDS);
   const [stopped, setStopped] = useState(false);
@@ -88,7 +90,7 @@ export default function EmptyCategory({
                   {category.image ? (
                     <Image
                       src={category.image.src}
-                      alt={category.image.alt || category.name}
+                      alt={category.image.alt || getCategoryLabel(tRoot, category)}
                       width={400}
                       height={400}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -96,7 +98,7 @@ export default function EmptyCategory({
                   ) : null}
                 </div>
                 <p className="text-xs tracking-widest uppercase text-[var(--foreground)]">
-                  {category.name}
+                  {getCategoryLabel(tRoot, category)}
                 </p>
                 <p className="text-sm text-[var(--muted)] mt-1">
                   {t("items", { count: category.count })}

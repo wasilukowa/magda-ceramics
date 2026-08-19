@@ -1,22 +1,6 @@
-import { ShopCategory, Country, CookieRegistryEntry } from "./types";
+import { Country, CookieRegistryEntry } from "./types";
 import { ShippingZone, ShippingRates } from "@/contracts/server/shipping";
 import { CookieCategory } from "@/contracts/shared";
-
-export const SHOP_CATEGORIES: ShopCategory[] = [
-  { slug: "kubki" },
-  { slug: "miski" },
-  { slug: "maluszki" },
-  { slug: "wazony" },
-  { slug: "roznosci" },
-];
-
-export const HOMEPAGE_CATEGORIES: ShopCategory[] = [
-  { slug: "kubki" },
-  { slug: "miski" },
-  { slug: "maluszki" },
-  { slug: "wazony" },
-  { slug: "roznosci" },
-];
 
 // Everything the store writes to the customer's device, listed for the cookie
 // policy page. Keep this in sync with the code — it is the informational duty

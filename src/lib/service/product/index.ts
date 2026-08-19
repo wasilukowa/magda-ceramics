@@ -45,6 +45,18 @@ class ProductService {
       .map(prepareCategory);
   }
 
+  // Categories for the site navigation (menu, footer, homepage tiles): only the
+  // ones that actually hold products. A WooCommerce outage must not take the
+  // whole layout down with it, so a failed call degrades to an empty menu.
+  async getNavigationCategories(): Promise<CategoryProps[]> {
+    try {
+      const categories = await this.getCategories();
+      return categories.filter((category) => category.count > 0);
+    } catch {
+      return [];
+    }
+  }
+
   async getProducts(categoryId?: number): Promise<ProductProps[]> {
     const query = categoryId ? `category=${categoryId}&` : "";
     const raw = await this.wcFetch<RawProduct[]>(`products?${query}per_page=20`);
