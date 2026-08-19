@@ -31,7 +31,19 @@
   "shop": {
     "title": "Shop",
     "noProducts": "No products found.",
-    "noCategoryProducts": "No products in this category."
+    "noCategoryProducts": "No products in this category.",
+    "empty": {
+      "unknownTitle": "No such category",
+      "unknownLead": "The category “{category}” doesn’t exist here — the link may be out of date.",
+      "noProductsTitle": "Nothing here right now",
+      "noProductsLead": "There are no products in “{category}” at the moment.",
+      "countdown": "Taking you to all products in {seconds}s.",
+      "stopped": "Redirect stopped — take your time.",
+      "goNow": "See all products",
+      "stay": "Stay here",
+      "pick": "Or browse another category",
+      "items": "{count, plural, =0 {no products} one {# product} other {# products}}"
+    }
   },
   "product": {
     "backToShop": "← Shop",

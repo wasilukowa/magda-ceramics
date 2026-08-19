@@ -1,3 +1,5 @@
+import { CategoryTileProps } from "@/contracts/server/product";
+
 export enum Currency {
   PLN = "pln",
   EUR = "eur",
@@ -62,4 +64,19 @@ export type AddToCartButtonProps = {
   image: string;
   inStock: boolean;
   hasPrice: boolean;
+};
+
+// Why the category page has nothing to show: the slug matches no category at
+// all, or the category exists but currently holds no purchasable products.
+export enum EmptyCategoryReason {
+  Unknown = "unknown",
+  NoProducts = "no-products",
+}
+
+export type EmptyCategoryProps = {
+  reason: EmptyCategoryReason;
+  categoryLabel: string;
+  // Categories worth suggesting — prepared by the service (non-empty, current
+  // one excluded, each with a thumbnail).
+  categories: CategoryTileProps[];
 };

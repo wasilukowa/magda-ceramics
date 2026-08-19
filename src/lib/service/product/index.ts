@@ -1,5 +1,11 @@
 import { serverFetch } from "@/lib/api";
-import { RawProduct, RawCategory, ProductProps, CategoryProps } from "@/contracts/server/product";
+import {
+  RawProduct,
+  RawCategory,
+  ProductProps,
+  CategoryProps,
+  CategoryTileProps,
+} from "@/contracts/server/product";
 import { prepareProduct, prepareCategory } from "./helpers";
 
 const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
@@ -45,6 +51,27 @@ class ProductService {
     return raw
       .filter((p) => p.price && parseFloat(p.price) > 0)
       .map(prepareProduct);
+  }
+
+  // Categories worth suggesting when a page has nothing to show: the ones that
+  // actually hold products, minus the one the customer is already on. Each gets
+  // a thumbnail — the category picture, or the first product photo as fallback.
+  async getCategoryTiles(excludeSlug?: string): Promise<CategoryTileProps[]> {
+    const categories = await this.getCategories();
+    const candidates = categories.filter(
+      (category) => category.count > 0 && category.slug !== excludeSlug
+    );
+
+    return Promise.all(
+      candidates.map(async (category) => {
+        if (category.image) return category;
+
+        const [product] = await this.wcFetch<RawProduct[]>(
+          `products?category=${category.id}&per_page=1`
+        );
+        return { ...category, image: product ? prepareProduct(product).images[0] ?? null : null };
+      })
+    );
   }
 
   async getProductBySlug(slug: string): Promise<ProductProps | null> {

@@ -31,7 +31,19 @@
   "shop": {
     "title": "Sklep",
     "noProducts": "Brak produktów.",
-    "noCategoryProducts": "Brak produktów w tej kategorii."
+    "noCategoryProducts": "Brak produktów w tej kategorii.",
+    "empty": {
+      "unknownTitle": "Nie ma takiej kategorii",
+      "unknownLead": "Kategoria „{category}” u nas nie istnieje — link może być nieaktualny.",
+      "noProductsTitle": "W tym momencie tu nic nie ma",
+      "noProductsLead": "W kategorii „{category}” nie ma teraz żadnych produktów.",
+      "countdown": "Za {seconds} s przeniesiemy Cię do wszystkich produktów.",
+      "stopped": "Przekierowanie zatrzymane — rozejrzyj się spokojnie.",
+      "goNow": "Zobacz wszystkie produkty",
+      "stay": "Zostaję tutaj",
+      "pick": "Albo zajrzyj do innej kategorii",
+      "items": "{count, plural, =0 {brak produktów} one {# produkt} few {# produkty} other {# produktów}}"
+    }
   },
   "product": {
     "backToShop": "← Sklep",

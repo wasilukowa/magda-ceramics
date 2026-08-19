@@ -67,3 +67,14 @@ export type CategoryProps = {
   count: number;
   image: ProductImage | null;
 };
+
+// A category shown as a tile when the page has no products of its own. The
+// image is the category picture from WooCommerce, or the first product photo
+// when the category has none.
+export type CategoryTileProps = {
+  id: number;
+  name: string;
+  slug: string;
+  count: number;
+  image: ProductImage | null;
+};
