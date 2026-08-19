@@ -361,5 +361,18 @@
         "duration": "Until you clear browser data"
       }
     }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "heading": "We couldn't find that page",
+    "text": "The address may be out of date or have a typo in it. Have a look around the shop — something is bound to catch your eye.",
+    "shop": "Go to the shop",
+    "home": "Home"
+  },
+  "error": {
+    "heading": "Something went wrong",
+    "text": "This page could not be loaded. Please try again in a moment.",
+    "retry": "Try again",
+    "home": "Home"
   }
 }
