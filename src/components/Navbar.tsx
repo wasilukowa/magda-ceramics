@@ -38,9 +38,18 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
     <header className="sticky top-0 z-50 bg-[var(--color-navbar)]">
 
       {/* Logo row */}
-      <div className="max-w-[1200px] mx-auto flex justify-center pt-8 pb-6">
-        <Link href="/">
-          <Image src="/logo.svg" alt="Magda Ceramics" width={300} height={116} className="h-20 w-auto" />
+      {/* The logo is 5.17:1, so h-20 alone measures 414px — wider than a 390px
+          phone. Height steps up with the viewport, and px-6 plus max-w-full
+          keep it inside the screen whatever the device. */}
+      <div className="max-w-[1200px] mx-auto flex justify-center px-6 pt-8 pb-6">
+        <Link href="/" className="block max-w-full">
+          <Image
+            src="/logo.svg"
+            alt="Magda Ceramics"
+            width={501}
+            height={97}
+            className="h-12 sm:h-16 md:h-20 w-auto max-w-full object-contain"
+          />
         </Link>
       </div>
 
