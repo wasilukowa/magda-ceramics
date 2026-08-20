@@ -6,6 +6,7 @@ import AddToCartButton from "@/components/AddToCartButton";
 import ProductGallery from "@/components/ProductGallery";
 import WishlistButton from "@/components/WishlistButton";
 import Price from "@/components/Price";
+import { getCategoryLabel } from "@/lib/helpers/category";
 
 export async function generateStaticParams() {
   try {
@@ -33,9 +34,10 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [product, t] = await Promise.all([
+  const [product, t, tRoot] = await Promise.all([
     productService.getProductBySlug(slug),
     getTranslations("product"),
+    getTranslations(),
   ]);
 
   if (!product) notFound();
@@ -54,9 +56,13 @@ export default async function ProductPage({
 
         <div className="space-y-6">
           <div>
-            <p className="text-xs tracking-widest uppercase text-[var(--muted)] mb-2">
-              {product.categories.map((c) => c.name).join(", ")}
-            </p>
+            {product.categories.length > 0 && (
+              <p className="text-xs tracking-widest uppercase text-[var(--muted)] mb-2">
+                {product.categories
+                  .map((category) => getCategoryLabel(tRoot, category))
+                  .join(", ")}
+              </p>
+            )}
             <h1 className="text-2xl font-light tracking-wide">{product.name}</h1>
           </div>
 

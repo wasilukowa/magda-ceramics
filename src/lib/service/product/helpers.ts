@@ -13,6 +13,11 @@ function getPreparedPriceEur(raw: RawProduct): number | null {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
+// WooCommerce zawsze przypisuje produkt bez kategorii do „Uncategorized".
+// To nazwa techniczna, po angielsku i nieprzetłumaczalna — nie pokazujemy jej
+// klientowi (getCategories() odsiewa ją tak samo).
+export const UNCATEGORIZED_SLUG = "uncategorized";
+
 export function prepareProduct(raw: RawProduct): ProductProps {
   return {
     id: raw.id,
@@ -24,7 +29,9 @@ export function prepareProduct(raw: RawProduct): ProductProps {
     description: raw.description,
     shortDescription: raw.short_description,
     images: raw.images.map((img) => ({ src: img.src, alt: img.alt })),
-    categories: raw.categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug })),
+    categories: raw.categories
+      .filter((c) => c.slug !== UNCATEGORIZED_SLUG)
+      .map((c) => ({ id: c.id, name: c.name, slug: c.slug })),
     inStock: raw.stock_status === "instock",
   };
 }

@@ -6,7 +6,7 @@ import {
   CategoryProps,
   CategoryTileProps,
 } from "@/contracts/server/product";
-import { prepareProduct, prepareCategory } from "./helpers";
+import { prepareProduct, prepareCategory, UNCATEGORIZED_SLUG } from "./helpers";
 
 const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
 const WC_KEY = process.env.WC_CONSUMER_KEY;
@@ -41,7 +41,7 @@ class ProductService {
       "products/categories?per_page=20&hide_empty=false"
     );
     return raw
-      .filter((c) => c.slug !== "uncategorized")
+      .filter((c) => c.slug !== UNCATEGORIZED_SLUG)
       .map(prepareCategory);
   }
 
