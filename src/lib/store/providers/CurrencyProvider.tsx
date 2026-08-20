@@ -23,16 +23,8 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(STORAGE_KEY, next);
   }, []);
 
-  const toggleCurrency = useCallback(() => {
-    setCurrencyState((prev) => {
-      const next = prev === Currency.PLN ? Currency.EUR : Currency.PLN;
-      localStorage.setItem(STORAGE_KEY, next);
-      return next;
-    });
-  }, []);
-
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, toggleCurrency }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency }}>
       {children}
     </CurrencyContext.Provider>
   );

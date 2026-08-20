@@ -86,3 +86,7 @@ export type EmptyCategoryProps = {
 export type CategoryNavigationProps = {
   categories: CategoryProps[];
 };
+
+export type CurrencySwitcherProps = {
+  className?: string;
+};
