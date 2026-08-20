@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-
-const PHOTOS = [1, 2, 3, 4, 5, 6, 7].map((n) => `/o-mnie/magda-o-mnie-${n}.jpg`);
+import { ABOUT_PHOTOS as PHOTOS } from "@/content/data";
 
 export function AboutSlider() {
   const [current, setCurrent] = useState(0);

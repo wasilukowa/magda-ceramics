@@ -2,6 +2,18 @@ import { Country, CookieRegistryEntry } from "./types";
 import { ShippingZone, ShippingRates } from "@/contracts/server/shipping";
 import { CookieCategory } from "@/contracts/shared";
 
+// Zdjęcia w sliderze na stronie głównej i na stronie „O mnie", w kolejności
+// pokazywania. Pliki leżą w public/o-mnie/. Żeby usunąć zdjęcie: skasuj wiersz
+// tutaj (i sam plik, jeśli ma zniknąć z repozytorium). Żeby dodać: wrzuć plik
+// do public/o-mnie/ i dopisz wiersz.
+export const ABOUT_PHOTOS: string[] = [
+  "/o-mnie/magda-o-mnie-1.jpg",
+  "/o-mnie/magda-o-mnie-2.jpg",
+  "/o-mnie/magda-o-mnie-5.jpg",
+  "/o-mnie/magda-o-mnie-6.jpg",
+  "/o-mnie/magda-o-mnie-7.jpg",
+];
+
 // Everything the store writes to the customer's device, listed for the cookie
 // policy page. Keep this in sync with the code — it is the informational duty
 // under art. 399 PKE. Adding a new tracker means a row here AND a bump of

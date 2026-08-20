@@ -1,9 +1,10 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+import { ABOUT_PHOTOS } from "@/content/data";
 
-const photos = [1, 2, 3, 4, 5, 6, 7].map((n) => ({
-  src: `/o-mnie/magda-o-mnie-${n}.jpg`,
-  alt: `Magda ceramics ${n}`,
+const photos = ABOUT_PHOTOS.map((src, index) => ({
+  src,
+  alt: `Magda ceramics ${index + 1}`,
 }));
 
 export async function generateMetadata() {
