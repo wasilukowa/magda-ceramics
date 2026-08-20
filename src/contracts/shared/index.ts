@@ -87,6 +87,7 @@ export type CategoryNavigationProps = {
   categories: CategoryProps[];
 };
 
-export type CurrencySwitcherProps = {
+// Wspólny kształt propsów przełączników w nawigacji (waluta, język).
+export type SwitcherProps = {
   className?: string;
 };

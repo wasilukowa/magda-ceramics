@@ -27,7 +27,11 @@ export default async function CookiesPage() {
           <h2 className="text-xs tracking-widest uppercase text-[var(--foreground)] mb-4">
             {t("tableTitle")}
           </h2>
-          <div className="overflow-x-auto">
+          {/* Szeroka tabela nie mieści się na telefonie — poziome przewijanie
+              było niewidoczne dla klienta, a to treść, którą mamy obowiązek
+              pokazać (art. 399 PKE). Poniżej 640 px te same dane idą jako
+              karty, powyżej zostaje tabela. */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="border-b border-[var(--border)] text-left">
@@ -66,6 +70,42 @@ export default async function CookiesPage() {
               </tbody>
             </table>
           </div>
+
+          <ul className="sm:hidden space-y-4">
+            {COOKIE_REGISTRY.map((entry) => (
+              <li
+                key={entry.key}
+                className="border border-[var(--border)] p-4 space-y-2"
+              >
+                <p className="text-xs tracking-widest uppercase text-[var(--foreground)]">
+                  {entry.name}
+                </p>
+                <p className="text-[10px] tracking-widest uppercase opacity-70">
+                  {t(`categories.${entry.category}.label`)}
+                </p>
+                <dl className="space-y-1.5 text-xs">
+                  <div>
+                    <dt className="text-[10px] tracking-widest uppercase opacity-70">
+                      {t("tableProvider")}
+                    </dt>
+                    <dd>{entry.provider}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] tracking-widest uppercase opacity-70">
+                      {t("tablePurpose")}
+                    </dt>
+                    <dd>{t(`entries.${entry.key}.purpose`)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] tracking-widest uppercase opacity-70">
+                      {t("tableDuration")}
+                    </dt>
+                    <dd>{t(`entries.${entry.key}.duration`)}</dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
           <p className="mt-4 text-xs">{t("noTrackingNote")}</p>
         </section>
 

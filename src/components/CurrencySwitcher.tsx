@@ -3,7 +3,7 @@
 import { Fragment } from "react";
 import { useTranslations } from "next-intl";
 import { useCurrency } from "@/hooks/useCurrency";
-import { Currency, CurrencySwitcherProps } from "@/contracts/shared";
+import { Currency, SwitcherProps } from "@/contracts/shared";
 import { cn } from "@/lib/utils";
 
 // Both currencies are always on screen with the active one marked, instead of a
@@ -14,7 +14,7 @@ const OPTIONS = [
   { value: Currency.EUR, label: "EUR" },
 ];
 
-export default function CurrencySwitcher({ className }: CurrencySwitcherProps) {
+export default function CurrencySwitcher({ className }: SwitcherProps) {
   const t = useTranslations("nav");
   const { currency, setCurrency } = useCurrency();
 

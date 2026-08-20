@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
-import { useParams } from "next/navigation";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
 import CurrencySwitcher from "@/components/CurrencySwitcher";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useAuth } from "@/lib/store/providers/AuthProvider";
 import { INSTAGRAM_URL } from "@/content/data";
@@ -21,16 +21,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
   const user = useAuth();
   const accountHref = user ? "/account" : "/login";
   const t = useTranslations();
-  const locale = useLocale();
-  const pathname = usePathname();
-  const params = useParams();
-  const router = useRouter();
 
-  function switchLocale() {
-    const next = locale === "en" ? "pl" : "en";
-    // @ts-expect-error -- pathname and params always match the current route
-    router.replace({ pathname, params }, { locale: next });
-  }
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--color-navbar)]">
@@ -132,14 +123,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
         <div className="flex-1 flex items-center justify-end gap-4 lg:gap-5 text-[var(--foreground)]">
           <CurrencySwitcher className="hidden md:flex" />
 
-          {/* Language switcher */}
-          <button
-            onClick={switchLocale}
-            className="hidden md:block text-xs tracking-widest uppercase hover:opacity-60 transition-opacity"
-            aria-label="Switch language"
-          >
-            {locale === "en" ? "PL" : "EN"}
-          </button>
+          <LanguageSwitcher className="hidden md:flex" />
 
           <Link
             href={accountHref}
@@ -224,13 +208,22 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                   Instagram
                 </a>
               </li>
-              <li>
-                <button onClick={switchLocale} className="text-left hover:opacity-60 transition-opacity">
-                  {locale === "en" ? "Polski" : "English"}
-                </button>
-              </li>
-              <li>
-                <CurrencySwitcher />
+              {/* Ustawienia jako osobna grupa: wcześniej język i waluta stały
+                  w jednym ciągu z linkami nawigacji, w innej typografii, i
+                  wyglądały jak doklejone. */}
+              <li className="mt-2 pt-5 border-t border-[var(--color-navbar-border)] flex flex-col gap-4">
+                <span className="flex items-center justify-between gap-4">
+                  <span className="text-xs tracking-widest uppercase text-[var(--muted)]">
+                    {t("nav.language")}
+                  </span>
+                  <LanguageSwitcher />
+                </span>
+                <span className="flex items-center justify-between gap-4">
+                  <span className="text-xs tracking-widest uppercase text-[var(--muted)]">
+                    {t("nav.currency")}
+                  </span>
+                  <CurrencySwitcher />
+                </span>
               </li>
             </ul>
           </div>

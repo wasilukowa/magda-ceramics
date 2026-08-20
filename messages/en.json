@@ -9,7 +9,8 @@
     "account": "My account",
     "login": "Sign in",
     "wishlist": "Wishlist",
-    "currency": "Currency"
+    "currency": "Currency",
+    "language": "Language"
   },
   "categories": {
     "all": "All",
