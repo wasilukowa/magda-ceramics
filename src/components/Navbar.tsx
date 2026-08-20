@@ -51,11 +51,18 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
         </Link>
       </div>
 
-      {/* Nav row */}
-      <div className="max-w-[1200px] mx-auto relative flex items-center justify-center pb-6 px-6">
+      {/* Nav row. The icons used to sit in an absolutely positioned box, so
+          they reserved no space and simply lay on top of the centred menu —
+          around 768px "KONTAKT" ran into the PLN/EN switchers. Now the row is
+          three flex columns: a spacer, the menu, the icons. The menu stays
+          centred while there is room and slides left instead of colliding when
+          there is not. */}
+      <div className="max-w-[1200px] mx-auto flex items-center gap-4 pb-6 px-6">
+
+        <div className="flex-1 min-w-0" aria-hidden="true" />
 
         {/* Desktop nav — centered */}
-        <ul className="hidden md:flex items-center gap-10 text-sm tracking-widest uppercase text-[var(--foreground)]">
+        <ul className="hidden md:flex shrink-0 items-center gap-6 lg:gap-10 text-sm tracking-widest uppercase text-[var(--foreground)]">
           <li>
             <Link href="/" className="hover:opacity-60 transition-opacity">
               {t("nav.home")}
@@ -122,7 +129,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
         </ul>
 
         {/* Right icons */}
-        <div className="absolute right-6 flex items-center gap-5 text-[var(--foreground)]">
+        <div className="flex-1 flex items-center justify-end gap-4 lg:gap-5 text-[var(--foreground)]">
           <CurrencySwitcher className="hidden md:flex" />
 
           {/* Language switcher */}
