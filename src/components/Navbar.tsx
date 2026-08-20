@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
@@ -12,6 +12,10 @@ import { useAuth } from "@/lib/store/providers/AuthProvider";
 import { INSTAGRAM_URL } from "@/content/data";
 import { CategoryNavigationProps } from "@/contracts/shared";
 import { getCategoryLabel } from "@/lib/helpers/category";
+import { cn } from "@/lib/utils";
+
+// Po ilu pikselach przewinięcia nagłówek się zwija.
+const SHRINK_AT = 24;
 
 export default function Navbar({ categories }: CategoryNavigationProps) {
   const [shopOpen, setShopOpen] = useState(false);
@@ -22,6 +26,27 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
   const accountHref = user ? "/account" : "/login";
   const t = useTranslations();
 
+  // Nagłówek zajmował na stałe ~150 px, czyli jedną piątą ekranu telefonu.
+  // Po przewinięciu logo i odstępy schodzą do mniejszego rozmiaru, a pasek
+  // zostaje. Nasłuch jest pasywny, a stan zmienia się tylko przy przejściu
+  // przez próg — nie przy każdym pikselu przewijania.
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const sync = () => {
+      const next = window.scrollY > SHRINK_AT;
+      setScrolled((prev) => (prev === next ? prev : next));
+    };
+
+    // Strona mogła zostać otwarta już przewinięta (odświeżenie, powrót wstecz).
+    const initial = requestAnimationFrame(sync);
+    window.addEventListener("scroll", sync, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(initial);
+      window.removeEventListener("scroll", sync);
+    };
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--color-navbar)]">
@@ -30,14 +55,22 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
       {/* The logo is 5.17:1, so h-20 alone measures 414px — wider than a 390px
           phone. Height steps up with the viewport, and px-6 plus max-w-full
           keep it inside the screen whatever the device. */}
-      <div className="max-w-[1200px] mx-auto flex justify-center px-6 pt-8 pb-6">
+      <div
+        className={cn(
+          "max-w-[1200px] mx-auto flex justify-center px-6 motion-safe:transition-all motion-safe:duration-300",
+          scrolled ? "pt-3 pb-2" : "pt-8 pb-6"
+        )}
+      >
         <Link href="/" className="block max-w-full">
           <Image
             src="/logo.svg"
             alt="Magda Ceramics"
             width={501}
             height={97}
-            className="h-12 sm:h-16 md:h-20 w-auto max-w-full object-contain"
+            className={cn(
+              "w-auto max-w-full object-contain motion-safe:transition-all motion-safe:duration-300",
+              scrolled ? "h-8 md:h-10" : "h-12 sm:h-16 md:h-20"
+            )}
           />
         </Link>
       </div>
@@ -48,7 +81,12 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
           three flex columns: a spacer, the menu, the icons. The menu stays
           centred while there is room and slides left instead of colliding when
           there is not. */}
-      <div className="max-w-[1200px] mx-auto flex items-center gap-4 pb-6 px-6">
+      <div
+        className={cn(
+          "max-w-[1200px] mx-auto flex items-center gap-4 px-6 motion-safe:transition-all motion-safe:duration-300",
+          scrolled ? "pb-3" : "pb-6"
+        )}
+      >
 
         <div className="flex-1 min-w-0" aria-hidden="true" />
 
