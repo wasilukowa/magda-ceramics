@@ -37,7 +37,7 @@ function TermsEN() {
         </div>
       </section>
 
-      <section>
+      <section id="delivery" className="scroll-mt-40 md:scroll-mt-52">
         <h2 className="text-xs tracking-widest uppercase text-[var(--foreground)] mb-4">§ 4. Payments and Delivery</h2>
         <div className="space-y-3">
           <p>The Seller provides the following payment methods:</p>
@@ -55,7 +55,7 @@ function TermsEN() {
         </div>
       </section>
 
-      <section>
+      <section id="returns" className="scroll-mt-40 md:scroll-mt-52">
         <h2 className="text-xs tracking-widest uppercase text-[var(--foreground)] mb-4">§ 5. Right of Withdrawal (Returns)</h2>
         <div className="space-y-3">
           <p>A Consumer has the right to withdraw from the sales contract without giving any reason within 14 days from the day of receiving the package.</p>
@@ -131,7 +131,7 @@ function TermsPL() {
         </div>
       </section>
 
-      <section>
+      <section id="delivery" className="scroll-mt-40 md:scroll-mt-52">
         <h2 className="text-xs tracking-widest uppercase text-[var(--foreground)] mb-4">§ 4. Płatności i dostawa</h2>
         <div className="space-y-3">
           <p>Sprzedawca udostępnia następujące formy płatności:</p>
@@ -149,7 +149,7 @@ function TermsPL() {
         </div>
       </section>
 
-      <section>
+      <section id="returns" className="scroll-mt-40 md:scroll-mt-52">
         <h2 className="text-xs tracking-widest uppercase text-[var(--foreground)] mb-4">§ 5. Prawo odstąpienia od umowy (zwroty)</h2>
         <div className="space-y-3">
           <p>Konsument ma prawo odstąpić od umowy sprzedaży bez podania przyczyny w terminie 14 dni od dnia otrzymania przesyłki.</p>

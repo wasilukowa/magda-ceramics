@@ -109,7 +109,7 @@ export default async function CookiesPage() {
           <p className="mt-4 text-xs">{t("noTrackingNote")}</p>
         </section>
 
-        <section id="settings" className="scroll-mt-8">
+        <section id="settings" className="scroll-mt-40 md:scroll-mt-52">
           <h2 className="text-xs tracking-widest uppercase text-[var(--foreground)] mb-4">
             {t("settingsTitle")}
           </h2>
