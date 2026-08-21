@@ -1,41 +1,50 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { CartStore, CartItem } from "@/lib/store/slices/cartSlice";
+import { createLocalStorageStore } from "@/lib/store/localStorageStore";
 
 const CartContext = createContext<CartStore | null>(null);
 
+// Koszyk mieszka w pamięci przeglądarki i to ona jest źródłem prawdy — stąd
+// useSyncExternalStore zamiast czytania w efekcie i przepisywania do stanu.
+const EMPTY: CartItem[] = [];
+const cartStore = createLocalStorageStore<CartItem[]>("cart", EMPTY, (raw) => {
+  const parsed = JSON.parse(raw);
+  return Array.isArray(parsed) ? (parsed as CartItem[]) : EMPTY;
+});
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const items = useSyncExternalStore(
+    cartStore.subscribe,
+    cartStore.getSnapshot,
+    cartStore.getServerSnapshot
+  );
   const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("cart");
-      if (stored) setItems(JSON.parse(stored));
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(items));
-  }, [items]);
-
   const addItem = useCallback((product: Omit<CartItem, "quantity">) => {
-    setItems((prev) => {
-      if (prev.some((i) => i.id === product.id)) return prev;
-      return [...prev, { ...product, quantity: 1 }];
-    });
+    const current = cartStore.read();
+    if (current.some((i) => i.id === product.id)) return;
+    cartStore.write([...current, { ...product, quantity: 1 }]);
   }, []);
 
   const removeItem = useCallback((id: number) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+    cartStore.write(cartStore.read().filter((i) => i.id !== id));
   }, []);
 
-  const clearCart = useCallback(() => setItems([]), []);
+  const clearCart = useCallback(() => cartStore.write([]), []);
 
   const updateQuantity = useCallback((id: number, quantity: number) => {
     if (quantity < 1) return;
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity } : i)));
+    cartStore.write(
+      cartStore.read().map((i) => (i.id === id ? { ...i, quantity } : i))
+    );
   }, []);
 
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);

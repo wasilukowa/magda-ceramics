@@ -88,7 +88,7 @@ function PrivacyPL() {
       <section>
         <h2 className="text-xs tracking-widest uppercase text-[var(--foreground)] mb-4">§ 1. Postanowienia ogólne</h2>
         <div className="space-y-3">
-          <p>Administratorem danych osobowych zbieranych za pośrednictwem Sklepu Internetowego jest Magdalena Łęgowiak, Ul. Pełczyńskiego 14A/198, 01-471 Warszawa. Email: <a href="mailto:info@magdaceramics.com" className="text-[var(--foreground)] underline">info@magdaceramics.com</a> (dalej jako: „Administrator").</p>
+          <p>Administratorem danych osobowych zbieranych za pośrednictwem Sklepu Internetowego jest Magdalena Łęgowiak, Ul. Pełczyńskiego 14A/198, 01-471 Warszawa. Email: <a href="mailto:info@magdaceramics.com" className="text-[var(--foreground)] underline">info@magdaceramics.com</a> (dalej jako: „Administrator”).</p>
           <p>Dane osobowe Klienta są przetwarzane zgodnie z Rozporządzeniem Parlamentu Europejskiego i Rady (UE) 2016/679 z dnia 27 kwietnia 2016 r. (RODO) oraz ustawą o ochronie danych osobowych.</p>
           <p>Administrator dokłada szczególnej staranności w celu ochrony interesów osób, których dane dotyczą, zapewniając że dane przetwarzane są zgodnie z prawem.</p>
         </div>
@@ -132,7 +132,7 @@ function PrivacyPL() {
           <ul className="list-disc list-inside space-y-1 pl-2">
             <li>Wglądu w swoje dane oraz otrzymania ich kopii.</li>
             <li>Sprostowania (poprawiania) swoich danych.</li>
-            <li>Usunięcia danych („prawo do bycia zapomnianym") — jeśli nie ma innych podstaw prawnych do ich przetwarzania.</li>
+            <li>Usunięcia danych („prawo do bycia zapomnianym”) — jeśli nie ma innych podstaw prawnych do ich przetwarzania.</li>
             <li>Ograniczenia przetwarzania lub wniesienia sprzeciwu.</li>
             <li>Cofnięcia zgody w dowolnym momencie.</li>
             <li>Wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych (UODO).</li>

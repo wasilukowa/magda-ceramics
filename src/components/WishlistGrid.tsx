@@ -12,26 +12,24 @@ import WishlistButton from "@/components/WishlistButton";
 export default function WishlistGrid() {
   const t = useTranslations("wishlist");
   const { ids } = useWishlist();
-  const [products, setProducts] = useState<ProductProps[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  // null = jeszcze nie pytaliśmy serwera. Pusta lista ulubionych nie wymaga
+  // żadnego zapytania, więc stan „wczytane" wynika z danych, a nie z osobnego
+  // setState wołanego przy zamontowaniu.
+  const [products, setProducts] = useState<ProductProps[] | null>(null);
 
   useEffect(() => {
+    if (ids.length === 0) return;
+
     let active = true;
-    if (ids.length === 0) {
-      setProducts([]);
-      setLoaded(true);
-      return;
-    }
     getWishlistProducts(ids).then((items) => {
-      if (active) {
-        setProducts(items);
-        setLoaded(true);
-      }
+      if (active) setProducts(items);
     });
     return () => {
       active = false;
     };
   }, [ids]);
+
+  const loaded = ids.length === 0 || products !== null;
 
   if (!loaded) {
     return (
@@ -42,7 +40,7 @@ export default function WishlistGrid() {
   }
 
   // Zachowaj tylko produkty wciąż obecne na liście (po usunięciu).
-  const visible = products.filter((p) => ids.includes(p.id));
+  const visible = (products ?? []).filter((p) => ids.includes(p.id));
 
   if (visible.length === 0) {
     return (

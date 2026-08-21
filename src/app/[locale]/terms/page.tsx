@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata() {
   const t = await getTranslations("footer");
@@ -83,7 +84,7 @@ function TermsEN() {
         <div className="space-y-3">
           <p>The Seller is the administrator of the Customers&apos; personal data.</p>
           <p>Personal data is processed solely for the purpose of fulfilling orders and (if the Customer consents) for marketing purposes.</p>
-          <p>Detailed rules on data protection and cookie policy can be found in the <a href="/privacy" className="text-[var(--foreground)] underline">Privacy Policy</a> available on the Store&apos;s website.</p>
+          <p>Detailed rules on data protection and cookie policy can be found in the <Link href="/privacy" className="text-[var(--foreground)] underline">Privacy Policy</Link> available on the Store&apos;s website.</p>
         </div>
       </section>
 
@@ -125,7 +126,7 @@ function TermsPL() {
         <div className="space-y-3">
           <p>Klient może złożyć zamówienie jako gość lub założyć konto w Sklepie.</p>
           <p>W celu złożenia zamówienia należy wybrać produkty, dodać je do koszyka, wypełnić formularz dostawy oraz wybrać metodę płatności.</p>
-          <p>Warunkiem realizacji zamówienia jest kliknięcie przycisku „Kupuję i płacę" oraz opłacenie zamówienia w wyznaczonym terminie.</p>
+          <p>Warunkiem realizacji zamówienia jest kliknięcie przycisku „Kupuję i płacę” oraz opłacenie zamówienia w wyznaczonym terminie.</p>
           <p>Wszystkie ceny podane w Sklepie są cenami brutto (zawierają podatki) podanymi w polskich złotych (PLN). Ceny nie zawierają kosztów dostawy, które są doliczane w procesie składania zamówienia.</p>
           <p>Po złożeniu zamówienia Klient otrzymuje automatyczną wiadomość e-mail potwierdzającą przyjęcie zamówienia do realizacji. W tym momencie dochodzi do zawarcia umowy sprzedaży.</p>
         </div>
@@ -177,7 +178,7 @@ function TermsPL() {
         <div className="space-y-3">
           <p>Administratorem danych osobowych Klientów jest Sprzedawca.</p>
           <p>Dane osobowe przetwarzane są wyłącznie w celu realizacji zamówień oraz (jeśli Klient wyrazi zgodę) w celach marketingowych.</p>
-          <p>Szczegółowe zasady ochrony danych oraz polityka plików cookies dostępne są w dokumencie <a href="/pl/polityka-prywatnosci" className="text-[var(--foreground)] underline">Polityka prywatności</a>.</p>
+          <p>Szczegółowe zasady ochrony danych oraz polityka plików cookies dostępne są w dokumencie <Link href="/privacy" className="text-[var(--foreground)] underline">Polityka prywatności</Link>.</p>
         </div>
       </section>
 

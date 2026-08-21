@@ -1,26 +1,38 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useSyncExternalStore,
+} from "react";
 import { Currency } from "@/contracts/shared";
 import { CurrencyStore } from "@/lib/store/slices/currencySlice";
+import { createLocalStorageStore } from "@/lib/store/localStorageStore";
 
 const CurrencyContext = createContext<CurrencyStore | null>(null);
 const STORAGE_KEY = "currency";
 
-export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  // Default to PLN; the customer opts into EUR via the navbar switcher.
-  const [currency, setCurrencyState] = useState<Currency>(Currency.PLN);
+// Domyślnie PLN; na EUR klient przechodzi przełącznikiem w pasku. Wartość
+// zapisana jest gołym tekstem ("pln"/"eur"), a nie JSON-em — stąd własny
+// odczyt zamiast JSON.parse.
+const currencyStore = createLocalStorageStore<Currency>(
+  STORAGE_KEY,
+  Currency.PLN,
+  (raw) =>
+    raw === Currency.EUR || raw === Currency.PLN ? (raw as Currency) : Currency.PLN,
+  (value) => value
+);
 
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === Currency.EUR || stored === Currency.PLN) {
-      setCurrencyState(stored);
-    }
-  }, []);
+export function CurrencyProvider({ children }: { children: React.ReactNode }) {
+  const currency = useSyncExternalStore(
+    currencyStore.subscribe,
+    currencyStore.getSnapshot,
+    currencyStore.getServerSnapshot
+  );
 
   const setCurrency = useCallback((next: Currency) => {
-    setCurrencyState(next);
-    localStorage.setItem(STORAGE_KEY, next);
+    currencyStore.write(next);
   }, []);
 
   return (

@@ -5,25 +5,28 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import { WishlistStore } from "@/lib/store/slices/wishlistSlice";
 import { saveWishlist, getServerWishlist } from "@/server-actions/wishlist";
+import { createLocalStorageStore } from "@/lib/store/localStorageStore";
 
 const WishlistContext = createContext<WishlistStore | null>(null);
 const STORAGE_KEY = "wishlist";
 
-const readGuestList = (): number[] => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return [];
-    const parsed = JSON.parse(stored);
-    return Array.isArray(parsed) ? parsed.map(Number) : [];
-  } catch {
-    return [];
+// Lista gościa mieszka w pamięci przeglądarki; dla zalogowanego źródłem prawdy
+// jest konto, więc te dwa stany trzymamy osobno i wybieramy jeden przy
+// renderze. Dzięki temu żaden z nich nie musi być przepisywany w efekcie.
+const EMPTY: number[] = [];
+const guestStore = createLocalStorageStore<number[]>(
+  STORAGE_KEY,
+  EMPTY,
+  (raw) => {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.map(Number) : EMPTY;
   }
-};
+);
 
 export function WishlistProvider({
   isAuthenticated,
@@ -32,55 +35,52 @@ export function WishlistProvider({
   isAuthenticated: boolean;
   children: React.ReactNode;
 }) {
-  const [ids, setIds] = useState<number[]>([]);
-  const initialized = useRef(false);
-  // Lustro aktualnej listy — pozwala wyliczyć kolejny stan poza updaterem
-  // setState (efekty uboczne nie mogą być wywoływane w trakcie renderu).
-  const idsRef = useRef<number[]>(ids);
-  idsRef.current = ids;
+  const guestIds = useSyncExternalStore(
+    guestStore.subscribe,
+    guestStore.getSnapshot,
+    guestStore.getServerSnapshot
+  );
+  const [accountIds, setAccountIds] = useState<number[]>(EMPTY);
 
-  // Inicjalizacja: dla gościa lista z localStorage; dla zalogowanego —
-  // lista z konta scalona z ewentualną listą gościa (i zapisana).
+  // Po zalogowaniu: lista z konta scalona z tym, co gość zdążył polubić.
+  // setState siedzi w odpowiedzi serwera, nie w ciele efektu.
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
+    if (!isAuthenticated) return;
 
-    const guest = readGuestList();
+    let active = true;
+    getServerWishlist().then((server) => {
+      if (!active) return;
 
-    if (isAuthenticated) {
-      getServerWishlist().then((server) => {
-        const merged = Array.from(new Set([...(server ?? []), ...guest]));
-        setIds(merged);
-        if ((server ?? []).length !== merged.length) saveWishlist(merged);
-        localStorage.removeItem(STORAGE_KEY); // źródłem prawdy jest konto
-      });
-    } else {
-      setIds(guest);
-    }
+      const guest = guestStore.read();
+      const merged = Array.from(new Set([...(server ?? []), ...guest]));
+      setAccountIds(merged);
+
+      if ((server ?? []).length !== merged.length) saveWishlist(merged);
+      if (guest.length > 0) guestStore.clear(); // źródłem prawdy jest konto
+    });
+
+    return () => {
+      active = false;
+    };
   }, [isAuthenticated]);
 
-  const persist = useCallback(
-    (next: number[]) => {
-      if (isAuthenticated) {
-        saveWishlist(next);
-      } else {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
-    },
-    [isAuthenticated],
-  );
+  const ids = isAuthenticated ? accountIds : guestIds;
 
   const toggle = useCallback(
     (id: number) => {
-      const prev = idsRef.current;
-      const next = prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : [...prev, id];
-      idsRef.current = next;
-      setIds(next);
-      persist(next); // efekt uboczny w handlerze zdarzenia, poza renderem
+      const current = isAuthenticated ? accountIds : guestStore.read();
+      const next = current.includes(id)
+        ? current.filter((x) => x !== id)
+        : [...current, id];
+
+      if (isAuthenticated) {
+        setAccountIds(next);
+        saveWishlist(next);
+      } else {
+        guestStore.write(next);
+      }
     },
-    [persist],
+    [isAuthenticated, accountIds]
   );
 
   const isInWishlist = useCallback((id: number) => ids.includes(id), [ids]);

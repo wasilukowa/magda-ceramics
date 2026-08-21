@@ -30,39 +30,45 @@ function SuccessContent() {
   const t = useTranslations("success");
   const [state, setState] = useState<OrderState>({ status: "loading" });
 
+  // Wynik płatności widać wprost w adresie, więc nie ma po co trzymać go w
+  // stanie — wyliczamy przy renderze i nie zamawiamy niczego, gdy płatność
+  // nie doszła do skutku.
+  const paymentIntent = searchParams.get("payment_intent");
+  const paymentSucceeded =
+    searchParams.get("redirect_status") === "succeeded" && Boolean(paymentIntent);
+
   useEffect(() => {
-    const paymentIntent = searchParams.get("payment_intent");
-    const redirectStatus = searchParams.get("redirect_status");
+    if (!paymentSucceeded) return;
 
-    if (redirectStatus !== "succeeded" || !paymentIntent) {
-      setState({ status: "error", message: t("paymentFailed") });
-      return;
-    }
+    let active = true;
 
-    const raw = sessionStorage.getItem("pendingOrder");
-    if (!raw) {
-      setState({ status: "error", message: t("orderNotFound") });
-      return;
-    }
+    // Cały przebieg wisi na łańcuchu obietnic, żeby każdy setState działał się
+    // po odpowiedzi, a nie w tej samej fazie co efekt.
+    Promise.resolve()
+      .then(() => {
+        const raw = sessionStorage.getItem("pendingOrder");
+        if (!raw) throw new Error(t("orderNotFound"));
 
-    const { billing, items, currency, paidTotal, deliveryMethod, locker }: PendingOrder =
-      JSON.parse(raw);
+        const { billing, items, currency, paidTotal, deliveryMethod, locker }: PendingOrder =
+          JSON.parse(raw);
 
-    fetch("/api/create-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        billing,
-        items,
-        paymentIntentId: paymentIntent,
-        currency,
-        paidTotal,
-        deliveryMethod,
-        locker,
-      }),
-    })
+        return fetch("/api/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            billing,
+            items,
+            paymentIntentId: paymentIntent,
+            currency,
+            paidTotal,
+            deliveryMethod,
+            locker,
+          }),
+        });
+      })
       .then((r) => r.json())
       .then((data: { error?: string; orderId?: number }) => {
+        if (!active) return;
         if (data.error) {
           setState({ status: "error", message: data.error });
         } else if (data.orderId) {
@@ -71,10 +77,32 @@ function SuccessContent() {
           setState({ status: "success", orderId: data.orderId });
         }
       })
-      .catch(() =>
-        setState({ status: "error", message: t("connectionError") })
-      );
-  }, [searchParams, clearCart, t]);
+      .catch((error: Error) => {
+        if (!active) return;
+        setState({
+          status: "error",
+          message: error.message || t("connectionError"),
+        });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [paymentSucceeded, paymentIntent, clearCart, t]);
+
+  if (!paymentSucceeded) {
+    return (
+      <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-6">
+        <p className="text-sm text-red-600">{t("paymentFailed")}</p>
+        <Link
+          href="/checkout"
+          className="text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"
+        >
+          {t("backToCheckout")}
+        </Link>
+      </div>
+    );
+  }
 
   if (state.status === "loading") {
     return (
