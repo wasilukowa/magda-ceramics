@@ -26,7 +26,7 @@ export const COOKIE_REGISTRY: CookieRegistryEntry[] = [
     category: CookieCategory.Necessary,
   },
   {
-    // Remove this row together with the pre-launch gate in src/middleware.ts
+    // Remove this row together with the pre-launch gate in src/proxy.ts
     key: "previewAccess",
     name: "preview_access",
     provider: "magdaceramics.com",

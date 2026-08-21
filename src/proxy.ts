@@ -1,3 +1,6 @@
+// Next 16 przemianował konwencję „middleware" na „proxy" — nazwa ma jasno
+// mówić, że to warstwa przed aplikacją, a nie middleware w rozumieniu
+// Express.js. Sam next-intl nadal dostarcza to pod nazwą middleware.
 import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
@@ -7,7 +10,7 @@ const intlMiddleware = createMiddleware(routing);
 const UNLOCK_PASSWORD = "ceramika2025";
 const COOKIE_NAME = "preview_access";
 
-export default function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
   if (pathname === "/coming-soon") return NextResponse.next();
