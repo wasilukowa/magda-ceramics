@@ -53,7 +53,15 @@
     "backToShop": "← Shop",
     "priceUnavailable": "Price unavailable",
     "inStock": "In stock",
-    "outOfStock": "Out of stock"
+    "outOfStock": "Out of stock",
+    "dimensionsTitle": "Dimensions",
+    "dimensions": {
+      "capacity": "Capacity",
+      "diameter": "Diameter",
+      "height": "Height",
+      "width": "Width",
+      "length": "Length"
+    }
   },
   "cart": {
     "title": "Cart",

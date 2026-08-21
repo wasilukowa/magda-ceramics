@@ -53,7 +53,15 @@
     "backToShop": "← Sklep",
     "priceUnavailable": "Cena niedostępna",
     "inStock": "Dostępny",
-    "outOfStock": "Niedostępny"
+    "outOfStock": "Niedostępny",
+    "dimensionsTitle": "Wymiary",
+    "dimensions": {
+      "capacity": "Pojemność",
+      "diameter": "Średnica",
+      "height": "Wysokość",
+      "width": "Szerokość",
+      "length": "Długość"
+    }
   },
   "cart": {
     "title": "Koszyk",

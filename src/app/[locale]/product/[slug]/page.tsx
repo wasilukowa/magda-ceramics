@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { productService } from "@/lib/service/product";
 import AddToCartButton from "@/components/AddToCartButton";
@@ -34,10 +34,11 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [product, t, tRoot] = await Promise.all([
+  const [product, t, tRoot, format] = await Promise.all([
     productService.getProductBySlug(slug),
     getTranslations("product"),
     getTranslations(),
+    getFormatter(),
   ]);
 
   if (!product) notFound();
@@ -105,6 +106,24 @@ export default async function ProductPage({
               className="text-[var(--muted)] hover:text-[var(--foreground)]"
             />
           </div>
+
+          {product.dimensions.length > 0 && (
+            <div className="border-t border-[var(--border)] pt-6">
+              <p className="text-xs tracking-widest uppercase text-[var(--muted)] mb-3">
+                {t("dimensionsTitle")}
+              </p>
+              <dl className="text-sm text-[var(--muted)] space-y-1.5">
+                {product.dimensions.map((dimension) => (
+                  <div key={dimension.key} className="flex gap-2">
+                    <dt>{t(`dimensions.${dimension.key}`)}:</dt>
+                    <dd className="text-[var(--foreground)]">
+                      {format.number(dimension.value)} {dimension.unit}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )}
 
           {product.description && (
             <div

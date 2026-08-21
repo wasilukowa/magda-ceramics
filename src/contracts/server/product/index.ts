@@ -46,6 +46,23 @@ export type ProductCategory = {
   slug: string;
 };
 
+// Wymiary trzymane jako liczby w polach ACF, nie w treści opisu. Dzięki temu
+// etykiety biorą się z tłumaczeń i produkt czyta się tak samo po polsku i po
+// angielsku, a Magda wpisuje w WooCommerce same liczby.
+export enum ProductDimensionKey {
+  Capacity = "capacity",
+  Diameter = "diameter",
+  Height = "height",
+  Width = "width",
+  Length = "length",
+}
+
+export type ProductDimension = {
+  key: ProductDimensionKey;
+  value: number;
+  unit: "ml" | "cm";
+};
+
 export type ProductProps = {
   id: number;
   name: string;
@@ -57,6 +74,7 @@ export type ProductProps = {
   shortDescription: string;
   images: ProductImage[];
   categories: ProductCategory[];
+  dimensions: ProductDimension[];
   inStock: boolean;
 };
 
