@@ -191,7 +191,7 @@ export default function CheckoutContent({
 
   const footer = (
     <div className="space-y-4">
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-[var(--color-error)]">{error}</p>}
 
       <div
         className={cn(

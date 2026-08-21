@@ -93,7 +93,7 @@ function SuccessContent() {
   if (!paymentSucceeded) {
     return (
       <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-6">
-        <p className="text-sm text-red-600">{t("paymentFailed")}</p>
+        <p className="text-sm text-[var(--color-error)]">{t("paymentFailed")}</p>
         <Link
           href="/checkout"
           className="text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"
@@ -115,7 +115,7 @@ function SuccessContent() {
   if (state.status === "error") {
     return (
       <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-6">
-        <p className="text-sm text-red-600">{state.message}</p>
+        <p className="text-sm text-[var(--color-error)]">{state.message}</p>
         <Link
           href="/checkout"
           className="text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"

@@ -179,7 +179,7 @@ export default function CheckoutPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           <div>
-            {error && <p className="text-sm text-red-600 mb-6">{error}</p>}
+            {error && <p className="text-sm text-[var(--color-error)] mb-6">{error}</p>}
             {showGate ? (
               <CheckoutAuthGate onGuestContinue={() => setGuestChosen(true)} />
             ) : (

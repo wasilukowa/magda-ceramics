@@ -86,7 +86,7 @@ export default function InPostGeowidget({ country, onSelect }: Props) {
 
   if (!token) {
     return (
-      <p className="text-sm text-red-600 py-8 text-center">
+      <p className="text-sm text-[var(--color-error)] py-8 text-center">
         {t("lockerUnavailable")}
       </p>
     );

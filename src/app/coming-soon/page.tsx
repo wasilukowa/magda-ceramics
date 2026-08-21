@@ -31,21 +31,21 @@ function TextContent() {
         className="mb-10 w-64 sm:w-80 min-[1100px]:w-96 h-auto"
       />
 
-      <p className="text-sm min-[1100px]:text-base tracking-[0.3em] uppercase text-[#1a1a1a] mb-4">
+      <p className="text-sm min-[1100px]:text-base tracking-[0.3em] uppercase text-[var(--foreground)] mb-4">
         Currently in the kiln
       </p>
-      <p className="text-sm min-[1100px]:text-base tracking-[0.3em] uppercase text-[#1a1a1a] mb-12">
+      <p className="text-sm min-[1100px]:text-base tracking-[0.3em] uppercase text-[var(--foreground)] mb-12">
         Shop coming soon
       </p>
 
-      <p className="text-sm min-[1100px]:text-base text-[#1a1a1a] mb-2">
+      <p className="text-sm min-[1100px]:text-base text-[var(--foreground)] mb-2">
         Join me on my instagram:
       </p>
       <a
         href="https://www.instagram.com/magda_ceramics"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 text-sm min-[1100px]:text-base text-[#1a1a1a] underline underline-offset-4 hover:opacity-60 transition-opacity"
+        className="inline-flex items-center gap-2 text-sm min-[1100px]:text-base text-[var(--foreground)] underline underline-offset-4 hover:opacity-60 transition-opacity"
       >
         <InstagramIcon />
         magda_ceramics
@@ -60,7 +60,7 @@ export default function ComingSoon() {
 
       {/* Mobile / tablet (< 1100px): pełnoekranowe zdjęcie z nakładką tekstową */}
       <div className="min-[1100px]:hidden relative w-full h-full">
-        <div className="absolute inset-0 p-[20px] bg-[#8AAAA6]">
+        <div className="absolute inset-0 p-[20px] bg-[var(--color-accent)]">
           <div className="relative w-full h-full">
             <Image
               src="/coming-soon.jpg"
@@ -83,7 +83,7 @@ export default function ComingSoon() {
 
       {/* Desktop (≥ 1100px): dwie kolumny */}
       <div className="hidden min-[1100px]:grid min-[1100px]:grid-cols-2 h-full">
-        <div className="relative p-[20px] bg-[#8AAAA6]">
+        <div className="relative p-[20px] bg-[var(--color-accent)]">
           <div className="relative w-full h-full">
             <Image
               src="/coming-soon.jpg"
@@ -96,7 +96,7 @@ export default function ComingSoon() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-center bg-[#8AAAA6] px-10 py-10 text-center">
+        <div className="flex flex-col items-center justify-center bg-[var(--color-accent)] px-10 py-10 text-center">
           <TextContent />
         </div>
       </div>

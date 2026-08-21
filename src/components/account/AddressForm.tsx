@@ -11,7 +11,7 @@ const initialState: AccountFormState = { status: "idle", message: "" };
 const inputClass =
   "border border-[var(--border)] bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-[var(--foreground)] transition-colors w-full";
 const labelClass = "text-xs tracking-widest uppercase text-[var(--muted)]";
-const errorClass = "text-xs text-[var(--color-error,#b00020)]";
+const errorClass = "text-xs text-[var(--color-error)]";
 
 export default function AddressForm({ billing }: { billing: CustomerAddress }) {
   const t = useTranslations("account");
@@ -138,7 +138,7 @@ export default function AddressForm({ billing }: { billing: CustomerAddress }) {
       </div>
 
       {state.status === "success" && (
-        <p aria-live="polite" className="text-xs text-[var(--color-success,#2e7d32)]">
+        <p aria-live="polite" className="text-xs text-[var(--color-success)]">
           {state.message}
         </p>
       )}

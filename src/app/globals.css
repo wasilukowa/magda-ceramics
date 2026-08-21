@@ -16,6 +16,15 @@
   /* Subtle neutral panel background (e.g. checkout order summary) */
   --color-surface: #f1efec;
 
+  /* Statusy — ziemiste odpowiedniki zamiast domyślnych kolorów Material
+     Design, które odstawały od ceramicznej palety. Każdy sprawdzony pod kątem
+     kontrastu: co najmniej 4,6:1 na tle strony i na jasnym panelu, czyli AA
+     dla drobnego tekstu (dawna ochra #b26a00 miała 4,03 i tego nie spełniała). */
+  --color-error: #a8442a;
+  --color-success: #4f6f52;
+  --color-warning: #8a6425;
+  --color-info: #4a6b82;
+
   /* Navbar / Footer */
   --color-navbar: #faf9f7;
   --color-navbar-border: #e5e2dc;

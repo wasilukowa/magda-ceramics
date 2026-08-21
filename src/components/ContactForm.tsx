@@ -46,7 +46,7 @@ export default function ContactForm() {
           className={inputClass}
         />
         {state.errors?.name && (
-          <p className="text-xs text-[var(--color-error,#b00020)]">
+          <p className="text-xs text-[var(--color-error)]">
             {state.errors.name}
           </p>
         )}
@@ -68,7 +68,7 @@ export default function ContactForm() {
           className={inputClass}
         />
         {state.errors?.email && (
-          <p className="text-xs text-[var(--color-error,#b00020)]">
+          <p className="text-xs text-[var(--color-error)]">
             {state.errors.email}
           </p>
         )}
@@ -90,14 +90,14 @@ export default function ContactForm() {
           className={`${inputClass} resize-none`}
         />
         {state.errors?.message && (
-          <p className="text-xs text-[var(--color-error,#b00020)]">
+          <p className="text-xs text-[var(--color-error)]">
             {state.errors.message}
           </p>
         )}
       </div>
 
       {state.status === "error" && !state.errors && (
-        <p aria-live="polite" className="text-xs text-[var(--color-error,#b00020)]">
+        <p aria-live="polite" className="text-xs text-[var(--color-error)]">
           {state.message}
         </p>
       )}

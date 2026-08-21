@@ -2,13 +2,13 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { OrderProps } from "@/contracts/server/order";
 
 const STATUS_TONE: Record<string, string> = {
-  completed: "var(--color-success,#2e7d32)",
-  processing: "var(--color-info,#1565c0)",
+  completed: "var(--color-success)",
+  processing: "var(--color-info)",
   pending: "var(--muted)",
-  "on-hold": "var(--color-warning,#b26a00)",
-  cancelled: "var(--color-error,#b00020)",
+  "on-hold": "var(--color-warning)",
+  cancelled: "var(--color-error)",
   refunded: "var(--muted)",
-  failed: "var(--color-error,#b00020)",
+  failed: "var(--color-error)",
 };
 
 export default async function OrderList({ orders }: { orders: OrderProps[] }) {

@@ -10,7 +10,7 @@ const initialState: AccountFormState = { status: "idle", message: "" };
 const inputClass =
   "border border-[var(--border)] bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-[var(--foreground)] transition-colors";
 const labelClass = "text-xs tracking-widest uppercase text-[var(--muted)]";
-const errorClass = "text-xs text-[var(--color-error,#b00020)]";
+const errorClass = "text-xs text-[var(--color-error)]";
 
 export default function PasswordForm() {
   const t = useTranslations("account");
@@ -64,7 +64,7 @@ export default function PasswordForm() {
       </div>
 
       {state.status === "success" && (
-        <p aria-live="polite" className="text-xs text-[var(--color-success,#2e7d32)]">
+        <p aria-live="polite" className="text-xs text-[var(--color-success)]">
           {state.message}
         </p>
       )}
