@@ -8,7 +8,7 @@ import { useCart } from "@/hooks/useCart";
 import CurrencySwitcher from "@/components/CurrencySwitcher";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useWishlist } from "@/hooks/useWishlist";
-import { useAuth } from "@/lib/store/providers/AuthProvider";
+import { AccountIconLink, AccountMenuLink } from "@/components/AccountLink";
 import { INSTAGRAM_URL } from "@/content/data";
 import { CategoryNavigationProps } from "@/contracts/shared";
 import { getCategoryLabel } from "@/lib/helpers/category";
@@ -22,8 +22,6 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { itemCount, openCart } = useCart();
   const { count: wishlistCount } = useWishlist();
-  const user = useAuth();
-  const accountHref = user ? "/account" : "/login";
   const t = useTranslations();
 
   // Nagłówek zajmował na stałe ~150 px, czyli jedną piątą ekranu telefonu.
@@ -164,16 +162,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
 
           <LanguageSwitcher className="hidden md:flex" />
 
-          <Link
-            href={accountHref}
-            aria-label={user ? t("nav.account") : t("nav.login")}
-            className="hidden md:block hover:opacity-60 transition-opacity"
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-            </svg>
-          </Link>
+          <AccountIconLink className="hidden md:block hover:opacity-60 transition-opacity" />
 
           <Link href="/wishlist" aria-label={t("nav.wishlist")} className="relative hover:opacity-60 transition-opacity">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -238,9 +227,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                 </Link>
               </li>
               <li>
-                <Link href={accountHref} onClick={() => setMobileOpen(false)}>
-                  {user ? t("nav.account") : t("nav.login")}
-                </Link>
+                <AccountMenuLink onNavigate={() => setMobileOpen(false)} />
               </li>
               <li>
                 <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)}>

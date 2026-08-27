@@ -16,6 +16,7 @@ const lanHosts = Object.values(os.networkInterfaces())
   .map((iface) => iface.address);
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
   allowedDevOrigins: lanHosts,
   images: {
     remotePatterns: [

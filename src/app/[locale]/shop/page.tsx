@@ -4,13 +4,23 @@ import { productService } from "@/lib/service/product";
 import ProductCard from "@/components/ProductCard";
 import { getCategoryLabel } from "@/lib/helpers/category";
 
-export async function generateMetadata() {
-  const t = await getTranslations("shop");
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "shop" });
   return { title: `${t("title")} — Magda Ceramics` };
 }
 
-export default async function ShopPage() {
-  const t = await getTranslations();
+export default async function ShopPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale });
   const [products, categories] = await Promise.all([
     productService.getProducts(),
     productService.getCategories(),

@@ -70,9 +70,14 @@ const DEFAULT_CATEGORY_ICON = (
   </svg>
 );
 
-export default async function Home() {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const [t, categories, featured] = await Promise.all([
-    getTranslations(),
+    getTranslations({ locale }),
     productService.getNavigationCategories(),
     productService.getFeaturedProducts(),
   ]);
@@ -130,7 +135,7 @@ export default async function Home() {
       </section>
 
       {/* Selected works */}
-      <FeaturedWorks products={featured} />
+      <FeaturedWorks products={featured} locale={locale} />
 
       {/* Quote */}
       <Quote text={t("home.quote")} author={t("home.quoteAuthor")} />

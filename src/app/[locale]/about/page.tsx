@@ -7,8 +7,13 @@ const photos = ABOUT_PHOTOS.map((src, index) => ({
   alt: `Magda ceramics ${index + 1}`,
 }));
 
-export async function generateMetadata() {
-  const t = await getTranslations("footer");
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "footer" });
   return { title: `${t("aboutTitle")} — Magda Ceramics` };
 }
 
@@ -79,7 +84,7 @@ export default async function AboutPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations("footer");
+  const t = await getTranslations({ locale, namespace: "footer" });
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-20">

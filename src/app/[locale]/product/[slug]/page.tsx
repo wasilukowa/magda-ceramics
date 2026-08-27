@@ -20,7 +20,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }) {
   const { slug } = await params;
   const product = await productService.getProductBySlug(slug);
@@ -31,14 +31,14 @@ export async function generateMetadata({
 export default async function ProductPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const [product, t, tRoot, format] = await Promise.all([
     productService.getProductBySlug(slug),
-    getTranslations("product"),
-    getTranslations(),
-    getFormatter(),
+    getTranslations({ locale, namespace: "product" }),
+    getTranslations({ locale }),
+    getFormatter({ locale }),
   ]);
 
   if (!product) notFound();

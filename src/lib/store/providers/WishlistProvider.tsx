@@ -9,6 +9,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { WishlistStore } from "@/lib/store/slices/wishlistSlice";
+import { AuthUser } from "@/lib/store/providers/AuthProvider";
 import { saveWishlist, getServerWishlist } from "@/server-actions/wishlist";
 import { createLocalStorageStore } from "@/lib/store/localStorageStore";
 
@@ -29,10 +30,10 @@ const guestStore = createLocalStorageStore<number[]>(
 );
 
 export function WishlistProvider({
-  isAuthenticated,
+  userPromise,
   children,
 }: {
-  isAuthenticated: boolean;
+  userPromise: Promise<AuthUser>;
   children: React.ReactNode;
 }) {
   const guestIds = useSyncExternalStore(
@@ -41,6 +42,26 @@ export function WishlistProvider({
     guestStore.getServerSnapshot
   );
   const [accountIds, setAccountIds] = useState<number[]>(EMPTY);
+  const [isAuthenticated, setAuthenticated] = useState(false);
+
+  // Sesja przychodzi obietnicą (patrz AuthProvider). Provider nie może na nią
+  // czekać, bo zawiesiłby całą stronę do czasu odczytu ciasteczka — więc
+  // startuje jako gość i przełącza się, gdy sesja jest znana. Serce przy
+  // produkcie i tak zapala się dopiero po pobraniu listy z konta.
+  useEffect(() => {
+    let active = true;
+    userPromise.then((user) => {
+      if (!active) return;
+      setAuthenticated(Boolean(user));
+      // Po wylogowaniu lista z konta znika — inaczej mignęłaby przy ponownym
+      // zalogowaniu, zanim przyjdzie ta właściwa. (Wcześniej robił to `key`
+      // na providerze, który wymuszał przemontowanie.)
+      if (!user) setAccountIds(EMPTY);
+    });
+    return () => {
+      active = false;
+    };
+  }, [userPromise]);
 
   // Po zalogowaniu: lista z konta scalona z tym, co gość zdążył polubić.
   // setState siedzi w odpowiedzi serwera, nie w ciele efektu.

@@ -21,14 +21,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ category: string }>;
+  params: Promise<{ locale: string; category: string }>;
 }) {
-  const { category } = await params;
+  const { locale, category } = await params;
   const categories = await productService.getCategories();
   const cat = categories.find((c) => c.slug === category);
 
   if (!cat) {
-    const t = await getTranslations("shop.empty");
+    const t = await getTranslations({ locale, namespace: "shop.empty" });
     return {
       title: `${t("unknownTitle")} — Magda Ceramics`,
       // Nothing to index here — keep bogus slugs out of search results.
@@ -36,17 +36,17 @@ export async function generateMetadata({
     };
   }
 
-  const t = await getTranslations();
+  const t = await getTranslations({ locale });
   return { title: `${getCategoryLabel(t, cat)} — Magda Ceramics` };
 }
 
 export default async function CategoryPage({
   params,
 }: {
-  params: Promise<{ category: string }>;
+  params: Promise<{ locale: string; category: string }>;
 }) {
-  const { category } = await params;
-  const t = await getTranslations();
+  const { locale, category } = await params;
+  const t = await getTranslations({ locale });
   const categories = await productService.getCategories();
   const cat = categories.find((c) => c.slug === category);
   // Never call getProducts() without an id here — without a category filter the

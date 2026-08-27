@@ -7,10 +7,16 @@ import { ProductProps } from "@/contracts/server/product";
 // (gwiazdka „Polecany" w WooCommerce), tutaj zostaje sam widok. Pusta lista
 // znaczy, że nie ma czego pokazać albo WooCommerce nie odpowiedziało — wtedy
 // sekcja znika, zamiast straszyć nagłówkiem nad pustką.
-export async function FeaturedWorks({ products }: { products: ProductProps[] }) {
+export async function FeaturedWorks({
+  products,
+  locale,
+}: {
+  products: ProductProps[];
+  locale: string;
+}) {
   if (products.length === 0) return null;
 
-  const t = await getTranslations("home");
+  const t = await getTranslations({ locale, namespace: "home" });
 
   return (
     <section className="max-w-[1200px] mx-auto px-6 pt-10 pb-16">

@@ -1,15 +1,26 @@
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { COOKIE_REGISTRY } from "@/content/data";
 import { CookieSettings } from "@/components/cookies/CookieSettings";
 
-export async function generateMetadata() {
-  const t = await getTranslations("cookies");
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "cookies" });
   return { title: `${t("pageTitle")} — Magda Ceramics` };
 }
 
-export default async function CookiesPage() {
-  const t = await getTranslations("cookies");
+export default async function CookiesPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "cookies" });
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-20">
@@ -114,7 +125,12 @@ export default async function CookiesPage() {
             {t("settingsTitle")}
           </h2>
           <p className="mb-2">{t("settingsIntro")}</p>
-          <CookieSettings />
+          {/* Panel pokazuje zapamiętaną zgodę, a ta siedzi w ciasteczku — czyli
+              w danych żądania. Własna granica <Suspense> pozwala reszcie
+              podstrony wejść do statycznej skorupy. */}
+          <Suspense fallback={null}>
+            <CookieSettings />
+          </Suspense>
         </section>
 
         <section className="space-y-3">

@@ -2,13 +2,23 @@ import { getTranslations } from "next-intl/server";
 import { INSTAGRAM_URL } from "@/content/data";
 import ContactForm from "@/components/ContactForm";
 
-export async function generateMetadata() {
-  const t = await getTranslations("contact");
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "contact" });
   return { title: `${t("title")} — Magda Ceramics` };
 }
 
-export default async function ContactPage() {
-  const t = await getTranslations("contact");
+export default async function ContactPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "contact" });
 
   return (
     <div className="max-w-xl mx-auto px-6 py-20">

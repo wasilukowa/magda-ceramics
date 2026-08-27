@@ -1,8 +1,13 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
-export async function generateMetadata() {
-  const t = await getTranslations("footer");
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "footer" });
   return { title: `${t("termsTitle")} — Magda Ceramics` };
 }
 
@@ -200,7 +205,7 @@ export default async function TermsPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations("footer");
+  const t = await getTranslations({ locale, namespace: "footer" });
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-20">

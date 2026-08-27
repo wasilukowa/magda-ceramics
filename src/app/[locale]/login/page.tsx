@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { getSession } from "@/lib/auth/dal";
@@ -8,14 +9,16 @@ export async function generateMetadata() {
   return { title: `${t("login.title")} — Magda Ceramics` };
 }
 
-export default async function LoginPage({
-  params,
+// Formularz razem z bramką „zalogowany idzie dalej". Oba czytają dane żądania —
+// adres powrotu z ?redirect= i ciasteczko sesji — więc stoją we wspólnej
+// granicy <Suspense>. Nagłówek strony zostaje w statycznej skorupie.
+async function LoginContent({
+  locale,
   searchParams,
 }: {
-  params: Promise<{ locale: string }>;
+  locale: string;
   searchParams: Promise<{ redirect?: string }>;
 }) {
-  const { locale } = await params;
   const { redirect: redirectParam } = await searchParams;
   // Only honour internal paths so the redirect can't be used to bounce the
   // customer off-site after they log in.
@@ -31,6 +34,17 @@ export default async function LoginPage({
       locale,
     });
 
+  return <LoginForm redirectTo={redirectTo} />;
+}
+
+export default async function LoginPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ redirect?: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations("auth");
 
   return (
@@ -38,7 +52,9 @@ export default async function LoginPage({
       <h1 className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] mb-12 text-center">
         {t("login.title")}
       </h1>
-      <LoginForm redirectTo={redirectTo} />
+      <Suspense fallback={null}>
+        <LoginContent locale={locale} searchParams={searchParams} />
+      </Suspense>
     </div>
   );
 }

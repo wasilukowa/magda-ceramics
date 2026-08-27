@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { cacheLife } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { INSTAGRAM_URL, INSTAGRAM_HANDLE } from "@/content/data";
@@ -6,8 +7,27 @@ import { CategoryNavigationProps } from "@/contracts/shared";
 import { getCategoryLabel } from "@/lib/helpers/category";
 import { CookieSettingsButton } from "@/components/cookies/CookieSettingsButton";
 
-export default async function Footer({ categories }: CategoryNavigationProps) {
-  const t = await getTranslations();
+// Rok w stopce. Odczyt zegara w prerenderze musi być jawnie zacache'owany —
+// inaczej Next nie wie, na jak długo statyczna strona zachowuje ważność.
+// Z profilem „days" strona odświeża się raz na dobę, czyli najpóźniej
+// pierwszego stycznia nad ranem stopka pokaże nowy rok.
+async function getCurrentYear(): Promise<number> {
+  "use cache";
+  cacheLife("days");
+  return new Date().getFullYear();
+}
+
+// `locale` przychodzi propsem z layoutu, a nie z żądania: gdyby stopka pytała
+// next-intl o język przez nagłówki, każda strona z nią (czyli każda) musiałaby
+// być liczona przy każdym wejściu.
+export default async function Footer({
+  categories,
+  locale,
+}: CategoryNavigationProps & { locale: string }) {
+  const [t, year] = await Promise.all([
+    getTranslations({ locale }),
+    getCurrentYear(),
+  ]);
 
   return (
     <footer className="border-t border-[var(--border)] bg-[var(--color-navbar)] text-[var(--foreground)]">
@@ -135,7 +155,7 @@ export default async function Footer({ categories }: CategoryNavigationProps) {
 
         {/* Bottom bar */}
         <div className="mt-12 pt-6 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] tracking-widest uppercase opacity-60">
-          <span>© {new Date().getFullYear()} Magda Ceramics</span>
+          <span>© {year} Magda Ceramics</span>
           <span>{t("footer.copyright")}</span>
         </div>
 

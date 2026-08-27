@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
@@ -32,7 +32,7 @@ const EMPTY_ADDRESS: Address = {
   note: "",
 };
 
-export default function CheckoutPage() {
+function Checkout() {
   const { items, itemCount } = useCart();
   const { currency } = useCurrency();
   const user = useAuth();
@@ -199,5 +199,15 @@ export default function CheckoutPage() {
         </div>
       )}
     </div>
+  );
+}
+
+// Kasa zna sesję (zalogowany pomija bramkę gość/logowanie), a sesja przychodzi
+// obietnicą — stąd granica <Suspense>. Do prerenderu idzie sama rama strony.
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={null}>
+      <Checkout />
+    </Suspense>
   );
 }

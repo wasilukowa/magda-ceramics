@@ -1,6 +1,6 @@
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
-import { redirect } from "@/i18n/navigation";
-import { getSession } from "@/lib/auth/dal";
+import RedirectIfLoggedIn from "@/components/auth/RedirectIfLoggedIn";
 import RegisterForm from "@/components/auth/RegisterForm";
 
 export async function generateMetadata() {
@@ -14,9 +14,6 @@ export default async function RegisterPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const session = await getSession();
-  if (session) redirect({ href: "/account", locale });
-
   const t = await getTranslations("auth");
 
   return (
@@ -24,6 +21,9 @@ export default async function RegisterPage({
       <h1 className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] mb-12 text-center">
         {t("register.title")}
       </h1>
+      <Suspense fallback={null}>
+        <RedirectIfLoggedIn locale={locale} href="/account" />
+      </Suspense>
       <RegisterForm />
     </div>
   );

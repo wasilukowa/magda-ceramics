@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { useConsent } from "@/lib/store/providers/ConsentProvider";
+import { useConsentActions } from "@/lib/store/providers/ConsentProvider";
 import { CookieSettings } from "./CookieSettings";
 
 // Second layer of the banner: the same panel the cookie policy page shows.
 export function CookieSettingsDialog() {
   const t = useTranslations("cookies");
-  const { isSettingsOpen, closeSettings } = useConsent();
+  const { isSettingsOpen, closeSettings } = useConsentActions();
 
   useEffect(() => {
     if (!isSettingsOpen) return;
@@ -51,7 +51,9 @@ export function CookieSettingsDialog() {
           </Link>
         </p>
 
-        <CookieSettings onDone={closeSettings} />
+        <Suspense fallback={null}>
+          <CookieSettings onDone={closeSettings} />
+        </Suspense>
       </div>
     </div>
   );
