@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { productService } from "@/lib/service/product";
 import { getCategoryLabel } from "@/lib/helpers/category";
 import { AboutSlider } from "@/components/AboutSlider";
+import { FeaturedWorks } from "@/components/FeaturedWorks";
 import { Quote } from "@/components/Quote";
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
@@ -70,9 +71,10 @@ const DEFAULT_CATEGORY_ICON = (
 );
 
 export default async function Home() {
-  const [t, categories] = await Promise.all([
+  const [t, categories, featured] = await Promise.all([
     getTranslations(),
     productService.getNavigationCategories(),
+    productService.getFeaturedProducts(),
   ]);
 
   return (
@@ -126,6 +128,9 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      {/* Selected works */}
+      <FeaturedWorks products={featured} />
 
       {/* Quote */}
       <Quote text={t("home.quote")} author={t("home.quoteAuthor")} />

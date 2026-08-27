@@ -57,12 +57,42 @@ class ProductService {
     }
   }
 
-  async getProducts(categoryId?: number): Promise<ProductProps[]> {
-    const query = categoryId ? `category=${categoryId}&` : "";
-    const raw = await this.wcFetch<RawProduct[]>(`products?${query}per_page=20`);
+  // Produkty bez ceny nie trafiają na stronę — cena jest jedyną rzeczą, bez
+  // której karta produktu nie ma sensu, a Magda dodaje ją czasem później.
+  private async fetchPreparedProducts(query: string): Promise<ProductProps[]> {
+    const raw = await this.wcFetch<RawProduct[]>(`products?${query}`);
     return raw
       .filter((p) => p.price && parseFloat(p.price) > 0)
       .map(prepareProduct);
+  }
+
+  async getProducts(categoryId?: number): Promise<ProductProps[]> {
+    const query = categoryId ? `category=${categoryId}&` : "";
+    return this.fetchPreparedProducts(`${query}per_page=20`);
+  }
+
+  // Prace pokazywane na stronie głównej. Wybór należy do Magdy: w WooCommerce
+  // wystarczy zaznaczyć przy produkcie gwiazdkę „Polecany". Dopóki nie zaznaczy
+  // ich tylu, ile mieści sekcja, resztę dopełniają najnowsze produkty — inaczej
+  // jedna gwiazdka dałaby na stronie głównej samotny kafelek. Zapasowe zapytanie
+  // jest tym samym, które wysyła sklep, więc Next liczy je raz. Awaria
+  // WooCommerce kończy się pustą sekcją, nie błędem całej strony głównej.
+  async getFeaturedProducts(limit = 4): Promise<ProductProps[]> {
+    try {
+      const [featured, newest] = await Promise.all([
+        this.fetchPreparedProducts(`featured=true&per_page=${limit}`),
+        this.getProducts(),
+      ]);
+
+      const chosen = featured.slice(0, limit);
+      for (const product of newest) {
+        if (chosen.length >= limit) break;
+        if (!chosen.some((c) => c.id === product.id)) chosen.push(product);
+      }
+      return chosen;
+    } catch {
+      return [];
+    }
   }
 
   // Categories worth suggesting when a page has nothing to show: the ones that

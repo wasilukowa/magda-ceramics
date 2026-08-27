@@ -67,6 +67,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
             alt="Magda Ceramics"
             width={501}
             height={97}
+            priority
             className={cn(
               "w-auto max-w-full object-contain motion-safe:transition-all motion-safe:duration-300",
               scrolled ? "h-8 md:h-10" : "h-12 sm:h-16 md:h-20"
