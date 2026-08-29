@@ -8,7 +8,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { WishlistStore } from "@/lib/store/slices/wishlistSlice";
+import { WishlistStore } from "@/contracts/store";
 import { AuthUser } from "@/lib/store/providers/AuthProvider";
 import { saveWishlist, getServerWishlist } from "@/server-actions/wishlist";
 import { createLocalStorageStore } from "@/lib/store/localStorageStore";

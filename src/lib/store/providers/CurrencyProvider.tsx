@@ -7,7 +7,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { Currency } from "@/contracts/shared";
-import { CurrencyStore } from "@/lib/store/slices/currencySlice";
+import { CurrencyStore } from "@/contracts/store";
 import { createLocalStorageStore } from "@/lib/store/localStorageStore";
 
 const CurrencyContext = createContext<CurrencyStore | null>(null);

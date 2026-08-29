@@ -6,7 +6,7 @@ import {
   ConsentChoices,
   CookieConsent,
 } from "@/contracts/shared";
-import { ConsentStore, ConsentActions } from "@/lib/store/slices/consentSlice";
+import { ConsentStore, ConsentActions } from "@/contracts/store";
 import {
   ACCEPTED_CHOICES,
   CONSENT_COOKIE_NAME,

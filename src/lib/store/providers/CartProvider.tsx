@@ -7,7 +7,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { CartStore, CartItem } from "@/lib/store/slices/cartSlice";
+import { CartStore, CartItem } from "@/contracts/store";
 import { createLocalStorageStore } from "@/lib/store/localStorageStore";
 
 const CartContext = createContext<CartStore | null>(null);
