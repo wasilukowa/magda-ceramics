@@ -83,6 +83,13 @@ export const COOKIE_REGISTRY: CookieRegistryEntry[] = [
   },
 ];
 
+// Dane pracowni — jedno miejsce dla regulaminu, polityki prywatności i strony
+// „Wysyłka i zwroty". Zmiana adresu albo skrzynki to jedna linijka tutaj.
+export const CONTACT_EMAIL = "info@magdaceramics.com";
+export const STUDIO_NAME = "Magdalena Łęgowiak";
+export const STUDIO_ADDRESS_PL = "Ul. Pełczyńskiego 14A/198, 01-471 Warszawa";
+export const STUDIO_ADDRESS_EN = "Ul. Pełczyńskiego 14A/198, 01-471 Warsaw, Poland";
+
 export const INSTAGRAM_URL = "https://www.instagram.com/magda_ceramics";
 export const INSTAGRAM_HANDLE = "@magda_ceramics";
 

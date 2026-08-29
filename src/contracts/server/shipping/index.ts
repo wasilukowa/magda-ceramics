@@ -29,3 +29,14 @@ export type ZoneRate = {
 };
 
 export type ShippingRates = Record<ShippingZone, ZoneRate>;
+
+// Jedna strefa tak, jak pokazuje ją strona „Wysyłka i zwroty": dokąd, czym
+// i za ile. Składane z CHECKOUT_COUNTRIES i SHIPPING_RATES, żeby tabela na
+// stronie nie mogła się rozjechać z tym, co naprawdę liczy checkout.
+export type ShippingZoneSummary = {
+  zone: ShippingZone;
+  countryCodes: string[];
+  rate: ZoneRate;
+  // Kraje strefy, w których paczkomat NIE wchodzi w grę (dziś: Austria).
+  courierOnlyCodes: string[];
+};

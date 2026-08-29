@@ -38,6 +38,16 @@
     "title": "Sklep",
     "noProducts": "Brak produktów.",
     "noCategoryProducts": "Brak produktów w tej kategorii.",
+    "count": "{count, plural, =0 {brak prac} one {# praca} few {# prace} other {# prac}}",
+    "sortLabel": "Sortowanie",
+    "onlyInStock": "Tylko dostępne",
+    "noMatching": "Nic nie pasuje do wybranych ustawień.",
+    "sort": {
+      "newest": "Najnowsze",
+      "price-asc": "Cena rosnąco",
+      "price-desc": "Cena malejąco",
+      "name-asc": "Nazwa A–Z"
+    },
     "empty": {
       "unknownTitle": "Nie ma takiej kategorii",
       "unknownLead": "Kategoria „{category}” u nas nie istnieje — link może być nieaktualny.",
@@ -146,6 +156,22 @@
     "processing": "Przetwarzanie...",
     "stripeNote": "Płatność obsługiwana przez Stripe — bezpieczne połączenie SSL"
   },
+  "shipping": {
+    "pageTitle": "Wysyłka i zwroty",
+    "ratesTitle": "Ile kosztuje wysyłka",
+    "ratesNote": "Koszt dostawy dolicza się w kasie i zależy od kraju dostawy. Kwoty podajemy w walucie wybranej w nagłówku strony.",
+    "tableDestination": "Kierunek",
+    "tableDelivery": "Sposób dostawy",
+    "tableCost": "Koszt",
+    "deliveryLockerOrCourier": "Paczkomat InPost albo kurier",
+    "deliveryCourier": "Kurier",
+    "courierOnlyNote": "{countries} — tylko kurier: InPost nie ma tam paczkomatów.",
+    "zones": {
+      "PL": "Polska",
+      "INPOST_EU": "Kraje z paczkomatami InPost",
+      "REST_EU": "Pozostałe kraje Unii Europejskiej"
+    }
+  },
   "success": {
     "loading": "Finalizowanie zamówienia...",
     "thankYou": "Dziękujemy za zamówienie",
@@ -165,7 +191,7 @@
     "legal": "Prawne",
     "terms": "Regulamin",
     "privacy": "Polityka prywatności",
-    "shipping": "Wysyłka",
+    "shipping": "Wysyłka i zwroty",
     "returns": "Zwroty i reklamacje",
     "aboutTitle": "O mnie",
     "termsTitle": "Regulamin",

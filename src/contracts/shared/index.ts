@@ -1,4 +1,8 @@
-import { CategoryProps, CategoryTileProps } from "@/contracts/server/product";
+import {
+  CategoryProps,
+  CategoryTileProps,
+  ProductProps,
+} from "@/contracts/server/product";
 
 export enum Currency {
   PLN = "pln",
@@ -50,6 +54,15 @@ export type CookieCategoryToggleProps = {
   onChange: (checked: boolean) => void;
 };
 
+// Karta produktu na listingach. `soldOutLabel` przychodzi z zewnątrz, bo karta
+// bywa rysowana i po stronie serwera (sklep, strona główna), i po stronie
+// klienta (ulubione) — nie ma jednego sposobu, w jaki mogłaby sama sięgnąć po
+// tłumaczenie. Bez etykiety plakietka po prostu się nie rysuje.
+export type ProductCardProps = {
+  product: ProductProps;
+  soldOutLabel?: string;
+};
+
 export type QuoteProps = {
   text: string;
   author: string;
@@ -91,3 +104,11 @@ export type CategoryNavigationProps = {
 export type SwitcherProps = {
   className?: string;
 };
+
+// Dokumenty prawne (regulamin, polityka prywatności, wysyłka i zwroty) leżą
+// w src/content/legal jako dane, nie jako JSX. Blok to najmniejszy kawałek
+// treści, jaki widok umie narysować — akapit albo lista wypunktowana.
+export enum LegalBlockType {
+  Paragraph = "paragraph",
+  List = "list",
+}

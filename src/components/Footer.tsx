@@ -111,19 +111,17 @@ export default async function Footer({
                 {t("footer.legal")}
               </p>
               <ul className="space-y-3 text-xs tracking-wide">
-                {/* Wysyłka i zwroty prowadziły dotąd na samą górę regulaminu —
-                    klient musiał przewijać i szukać. Kotwice celują w §4 i §5. */}
+                {/* Oba linki prowadziły dotąd do kotwic w regulaminie — klient
+                    dostawał paragrafy zamiast odpowiedzi „ile i kiedy". Teraz
+                    idą na osobną stronę, a zwroty od razu na swoją sekcję. */}
                 <li>
-                  <Link
-                    href={{ pathname: "/terms", hash: "delivery" }}
-                    className="hover:opacity-60 transition-opacity"
-                  >
+                  <Link href="/shipping" className="hover:opacity-60 transition-opacity">
                     {t("footer.shipping")}
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href={{ pathname: "/terms", hash: "returns" }}
+                    href={{ pathname: "/shipping", hash: "returns" }}
                     className="hover:opacity-60 transition-opacity"
                   >
                     {t("footer.returns")}
