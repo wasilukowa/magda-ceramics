@@ -68,6 +68,7 @@ export function prepareProduct(raw: RawProduct): ProductProps {
       .map((c) => ({ id: c.id, name: c.name, slug: c.slug })),
     dimensions: getPreparedDimensions(raw),
     inStock: raw.stock_status === "instock",
+    createdAt: raw.date_created,
   };
 }
 

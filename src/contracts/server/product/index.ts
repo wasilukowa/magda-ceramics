@@ -14,6 +14,7 @@ export type RawProduct = {
   name: string;
   slug: string;
   price: string;
+  date_created: string;
   description: string;
   short_description: string;
   images: RawProductImage[];
@@ -76,6 +77,8 @@ export type ProductProps = {
   categories: ProductCategory[];
   dimensions: ProductDimension[];
   inStock: boolean;
+  // Data dodania w WooCommerce — po niej idzie domyślne sortowanie „najnowsze".
+  createdAt: string;
 };
 
 export type CategoryProps = {
@@ -96,3 +99,19 @@ export type CategoryTileProps = {
   count: number;
   image: ProductImage | null;
 };
+
+// Porządek listy produktów. Wartości trafiają wprost do adresu (?sort=…), więc
+// zmiana którejkolwiek unieważnia linki, które klienci mogli już zapisać.
+export enum ProductSort {
+  Newest = "newest",
+  PriceAsc = "price-asc",
+  PriceDesc = "price-desc",
+  NameAsc = "name-asc",
+}
+
+// Filtr dostępności. Ceramika to pojedyncze sztuki — sprzedany kubek zostaje
+// na liście (można obejrzeć), ale klient może go schować.
+export enum ProductAvailability {
+  All = "all",
+  InStock = "in-stock",
+}

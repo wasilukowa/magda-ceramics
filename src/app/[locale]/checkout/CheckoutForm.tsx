@@ -1,11 +1,12 @@
 "use client";
 
 import { PaymentElement } from "@stripe/react-stripe-js";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Address } from "@/contracts/server/cart";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { CheckoutStep } from "@/contracts/server/checkout";
 import { CHECKOUT_COUNTRIES } from "@/content/data";
+import { getCountryLabel } from "@/lib/helpers/shipping";
 import { cn } from "@/lib/utils";
 import ParcelLockerField from "@/components/checkout/ParcelLockerField";
 
@@ -81,11 +82,10 @@ export default function CheckoutForm({
   onEditAddress,
 }: Props) {
   const t = useTranslations("checkout");
+  const locale = useLocale();
 
   const usingLocker = hasLocker && deliveryMethod === DeliveryMethod.Locker;
-  const countryLabel =
-    CHECKOUT_COUNTRIES.find((c) => c.code === address.country)?.label ??
-    address.country;
+  const countryLabel = getCountryLabel(address.country, locale);
 
   function set(field: keyof Address) {
     return (
@@ -162,7 +162,7 @@ export default function CheckoutForm({
               >
                 {CHECKOUT_COUNTRIES.map((c) => (
                   <option key={c.code} value={c.code}>
-                    {c.label}
+                    {getCountryLabel(c.code, locale)}
                   </option>
                 ))}
               </select>

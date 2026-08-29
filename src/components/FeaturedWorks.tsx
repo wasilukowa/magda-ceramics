@@ -16,7 +16,10 @@ export async function FeaturedWorks({
 }) {
   if (products.length === 0) return null;
 
-  const t = await getTranslations({ locale, namespace: "home" });
+  const [t, tProduct] = await Promise.all([
+    getTranslations({ locale, namespace: "home" }),
+    getTranslations({ locale, namespace: "product" }),
+  ]);
 
   return (
     <section className="max-w-[1200px] mx-auto px-6 pt-10 pb-16">
@@ -26,7 +29,11 @@ export async function FeaturedWorks({
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard
+            key={product.id}
+            product={product}
+            soldOutLabel={tProduct("outOfStock")}
+          />
         ))}
       </div>
 

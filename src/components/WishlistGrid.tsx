@@ -11,6 +11,7 @@ import WishlistButton from "@/components/WishlistButton";
 
 export default function WishlistGrid() {
   const t = useTranslations("wishlist");
+  const tProduct = useTranslations("product");
   const { ids } = useWishlist();
   // null = jeszcze nie pytaliśmy serwera. Pusta lista ulubionych nie wymaga
   // żadnego zapytania, więc stan „wczytane" wynika z danych, a nie z osobnego
@@ -64,7 +65,7 @@ export default function WishlistGrid() {
             productId={product.id}
             className="absolute top-2 right-2 z-10 bg-[var(--background)]/80 rounded-full p-2 text-[var(--foreground)]"
           />
-          <ProductCard product={product} />
+          <ProductCard product={product} soldOutLabel={tProduct("outOfStock")} />
         </div>
       ))}
     </div>

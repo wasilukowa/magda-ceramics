@@ -1,11 +1,12 @@
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import { productService } from "@/lib/service/product";
-import ProductCard from "@/components/ProductCard";
 import EmptyCategory from "@/components/EmptyCategory";
+import CategoryFilterLinks from "@/components/shop/CategoryFilterLinks";
+import ProductListing from "@/components/shop/ProductListing";
+import { ProductGridSkeleton } from "@/components/ProductsLoading";
 import { EmptyCategoryReason } from "@/contracts/shared";
 import { getCategoryLabel } from "@/lib/helpers/category";
-import { cn } from "@/lib/utils";
 
 // The slug comes straight from the URL — keep what we echo back on screen short.
 const MAX_LABEL_LENGTH = 40;
@@ -42,8 +43,10 @@ export async function generateMetadata({
 
 export default async function CategoryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; category: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { locale, category } = await params;
   const t = await getTranslations({ locale });
@@ -51,7 +54,8 @@ export default async function CategoryPage({
   const cat = categories.find((c) => c.slug === category);
   // Never call getProducts() without an id here — without a category filter the
   // service returns the whole catalogue, which used to make unknown slugs look
-  // like a full shop page.
+  // like a full shop page. Sprawdzamy CAŁĄ kategorię, przed filtrami z adresu:
+  // pusty wynik filtrowania to co innego niż pusta kategoria.
   const products = cat ? await productService.getProducts(cat.id) : [];
 
   if (!cat || products.length === 0) {
@@ -70,34 +74,19 @@ export default async function CategoryPage({
         {getCategoryLabel(t, cat)}
       </h1>
 
-      <div className="flex flex-wrap gap-3 justify-center mb-12">
-        <Link
-          href="/shop"
-          className="text-xs tracking-widest uppercase border border-[var(--border)] px-5 py-2 hover:border-[var(--foreground)] transition-colors"
-        >
-          {t("categories.all")}
-        </Link>
-        {categories.map((c) => (
-          <Link
-            key={c.slug}
-            href={{ pathname: "/shop/[category]", params: { category: c.slug } }}
-            className={cn(
-              "text-xs tracking-widest uppercase border px-5 py-2 transition-colors",
-              c.slug === category
-                ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
-                : "border-[var(--border)] hover:border-[var(--foreground)]"
-            )}
-          >
-            {getCategoryLabel(t, c)}
-          </Link>
-        ))}
-      </div>
+      <CategoryFilterLinks
+        locale={locale}
+        categories={categories}
+        activeSlug={category}
+      />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      <Suspense fallback={<ProductGridSkeleton />}>
+        <ProductListing
+          locale={locale}
+          categoryId={cat.id}
+          searchParams={searchParams}
+        />
+      </Suspense>
     </div>
   );
 }

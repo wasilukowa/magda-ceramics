@@ -1,10 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { updateAddress } from "@/server-actions/account";
 import { AccountFormState, CustomerAddress } from "@/contracts/server/auth";
 import { CHECKOUT_COUNTRIES } from "@/content/data";
+import { getCountryLabel } from "@/lib/helpers/shipping";
 
 const initialState: AccountFormState = { status: "idle", message: "" };
 
@@ -15,6 +16,7 @@ const errorClass = "text-xs text-[var(--color-error)]";
 
 export default function AddressForm({ billing }: { billing: CustomerAddress }) {
   const t = useTranslations("account");
+  const locale = useLocale();
   const [state, formAction, pending] = useActionState(
     updateAddress,
     initialState,
@@ -81,7 +83,7 @@ export default function AddressForm({ billing }: { billing: CustomerAddress }) {
         >
           {CHECKOUT_COUNTRIES.map((c) => (
             <option key={c.code} value={c.code}>
-              {c.label}
+              {getCountryLabel(c.code, locale)}
             </option>
           ))}
         </select>

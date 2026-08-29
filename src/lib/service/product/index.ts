@@ -39,6 +39,37 @@ async function wcFetch<T>(endpoint: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+// WooCommerce oddaje najwyżej 100 pozycji na jedno zapytanie i nie mówi wprost,
+// czy to już wszystko — dopóki strona wraca pełna, pytamy o kolejną. Wcześniej
+// sklep prosił sztywno o 20 pozycji, więc dwudziesty pierwszy produkt Magdy nie
+// pokazałby się nigdzie: ani w sklepie, ani w kategorii.
+const WC_MAX_PER_PAGE = 100;
+
+// Bezpiecznik na wypadek, gdyby WooCommerce w kółko oddawał pełne strony —
+// tysiąc pozycji to i tak wielokrotnie więcej, niż pracownia kiedykolwiek
+// wystawi naraz.
+const WC_MAX_PAGES = 10;
+
+async function wcFetchAll<T>(endpoint: string): Promise<T[]> {
+  const separator = endpoint.includes("?") ? "&" : "?";
+  const collected: T[] = [];
+
+  for (let page = 1; page <= WC_MAX_PAGES; page++) {
+    const batch = await wcFetch<T[]>(
+      `${endpoint}${separator}per_page=${WC_MAX_PER_PAGE}&page=${page}`
+    );
+    collected.push(...batch);
+    if (batch.length < WC_MAX_PER_PAGE) break;
+  }
+
+  return collected;
+}
+
+// Produkty bez ceny nie trafiają na stronę — cena jest jedyną rzeczą, bez
+// której karta produktu nie ma sensu, a Magda dodaje ją czasem później.
+const preparePricedProducts = (raw: RawProduct[]): ProductProps[] =>
+  raw.filter((p) => p.price && parseFloat(p.price) > 0).map(prepareProduct);
+
 class ProductService {
   private static instance: ProductService;
 
@@ -52,8 +83,8 @@ class ProductService {
   }
 
   async getCategories(): Promise<CategoryProps[]> {
-    const raw = await wcFetch<RawCategory[]>(
-      "products/categories?per_page=20&hide_empty=false"
+    const raw = await wcFetchAll<RawCategory>(
+      "products/categories?hide_empty=false"
     );
     return raw
       .filter((c) => c.slug !== UNCATEGORIZED_SLUG)
@@ -72,18 +103,10 @@ class ProductService {
     }
   }
 
-  // Produkty bez ceny nie trafiają na stronę — cena jest jedyną rzeczą, bez
-  // której karta produktu nie ma sensu, a Magda dodaje ją czasem później.
-  private async fetchPreparedProducts(query: string): Promise<ProductProps[]> {
-    const raw = await wcFetch<RawProduct[]>(`products?${query}`);
-    return raw
-      .filter((p) => p.price && parseFloat(p.price) > 0)
-      .map(prepareProduct);
-  }
-
+  // Cały katalog (albo cała kategoria) — bez sufitu, patrz wcFetchAll.
   async getProducts(categoryId?: number): Promise<ProductProps[]> {
-    const query = categoryId ? `category=${categoryId}&` : "";
-    return this.fetchPreparedProducts(`${query}per_page=20`);
+    const query = categoryId ? `?category=${categoryId}` : "";
+    return preparePricedProducts(await wcFetchAll<RawProduct>(`products${query}`));
   }
 
   // Prace pokazywane na stronie głównej. Wybór należy do Magdy: w WooCommerce
@@ -95,7 +118,9 @@ class ProductService {
   async getFeaturedProducts(limit = 4): Promise<ProductProps[]> {
     try {
       const [featured, newest] = await Promise.all([
-        this.fetchPreparedProducts(`featured=true&per_page=${limit}`),
+        wcFetch<RawProduct[]>(`products?featured=true&per_page=${limit}`).then(
+          preparePricedProducts
+        ),
         this.getProducts(),
       ]);
 
