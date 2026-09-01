@@ -82,7 +82,7 @@ export default function ReviewsSlider({ reviews }: { reviews: Review[] }) {
               <Stars
                 rating={item.rating}
                 label={t("rating", { rating: item.rating })}
-                className="text-[var(--color-accent)]"
+                className="text-[var(--color-rating)]"
               />
               <p className="text-sm leading-relaxed max-w-xl text-[var(--muted)]">{item.text}</p>
               <footer className="text-[10px] tracking-[0.25em] uppercase text-[var(--muted)]">

@@ -71,3 +71,14 @@ export type Review = {
   // Wyróżnione trafiają do sliderów; strona „Opinie" pokazuje komplet.
   featured?: boolean;
 };
+
+// --- Strona „O mnie" ---------------------------------------------------------
+// Opowieść Magdy o sobie. To zwykłe akapity, bez paragrafów i list, więc nie
+// używamy tu modelu dokumentów prawnych — wystarczy tekst i podpis.
+export type AboutContent = {
+  paragraphs: string[];
+  // Podpis pod tekstem; w widoku jest wyróżniony, stąd osobne pole.
+  signature: string;
+};
+
+export type AboutByLocale = Record<Locale, AboutContent>;

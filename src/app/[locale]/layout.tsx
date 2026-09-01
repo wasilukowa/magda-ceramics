@@ -117,10 +117,11 @@ export default async function LocaleLayout({
   // z językiem) — a każdy taki odczyt odbiera stronie statyczność. Podajemy
   // więc komplet: język znamy z adresu, a wiadomości i strefę czasową bierzemy
   // Z JAWNYM językiem, dzięki czemu next-intl nie zagląda do nagłówków.
-  const [messages, timeZone, buildTime] = await Promise.all([
+  const [messages, timeZone, buildTime, t] = await Promise.all([
     getMessages({ locale }),
     getTimeZone({ locale }),
     getBuildTime(),
+    getTranslations({ locale, namespace: "nav" }),
   ]);
 
   return (
@@ -142,9 +143,24 @@ export default async function LocaleLayout({
               <WishlistProvider userPromise={userPromise}>
                 <CurrencyProvider>
                   <CartProvider>
+                    {/* Bez tego klawiatura musi przejść przez logo, menu,
+                        rozwijane listy, przełączniki i trzy ikony — kilkanaście
+                        przystanków — zanim dotrze do treści, i to na każdej
+                        podstronie. Link jest niewidoczny, dopóki nie dostanie
+                        fokusu.
+                        ‼️ Warstwa MUSI być wyższa niż z-50 przyklejonego
+                        nagłówka. Przy równej nagłówek wygrywa, bo stoi w kodzie
+                        później — link był wtedy w pełni „widoczny" w pomiarach
+                        i niewidoczny na ekranie. */}
+                    <a
+                      href="#main"
+                      className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60] focus:border focus:border-[var(--foreground)] focus:bg-[var(--background)] focus:px-4 focus:py-2 focus:text-xs focus:tracking-widest focus:uppercase focus:text-[var(--foreground)]"
+                    >
+                      {t("skipToContent")}
+                    </a>
                     <Navbar categories={categories} />
                     <CartDrawer />
-                    <main className="flex-1 w-full">{children}</main>
+                    <main id="main" className="flex-1 w-full">{children}</main>
                     <Footer categories={categories} locale={locale} />
                     <CookieBanner />
                   </CartProvider>

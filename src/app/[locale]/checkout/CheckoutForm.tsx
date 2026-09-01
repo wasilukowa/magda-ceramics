@@ -23,14 +23,19 @@ type Props = {
   onEditAddress: () => void;
 };
 
+// Etykieta MUSI otaczać pole. Wcześniej stała obok niego jako rodzeństwo, bez
+// `htmlFor` — czytnik ekranu ogłaszał więc w kasie dziewięć pól „edycja tekstu,
+// puste", bez nazwy, a kliknięcie w napis nie ustawiało w polu kursora.
+// Każdy Field zawiera dokładnie jedną kontrolkę, więc powiązanie przez
+// zagnieżdżenie jest wystarczające i nie wymaga rozdawania identyfikatorów.
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div>
-      <label className="block text-[10px] tracking-widest uppercase text-[var(--muted)] mb-1.5">
+    <label className="block">
+      <span className="block text-[10px] tracking-widest uppercase text-[var(--muted)] mb-1.5">
         {label}
-      </label>
+      </span>
       {children}
-    </div>
+    </label>
   );
 }
 

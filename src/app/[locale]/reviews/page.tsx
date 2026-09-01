@@ -56,7 +56,7 @@ export default async function ReviewsPage({
           >
             <blockquote className="space-y-3">
               <span
-                className="flex gap-1 text-[var(--color-accent)]"
+                className="flex gap-1 text-[var(--color-rating)]"
                 role="img"
                 aria-label={t("rating", { rating: review.rating })}
               >
