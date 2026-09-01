@@ -38,22 +38,9 @@ function Stars({
   );
 }
 
-// `onAccent` to wariant do hero, gdzie tło jest szałwiowe — przygaszona szarość
-// z reszty strony robi się na nim nieczytelna, więc kolory idą z tekstu hero.
-export default function ReviewsSlider({
-  reviews,
-  onAccent = false,
-}: {
-  reviews: Review[];
-  onAccent?: boolean;
-}) {
+export default function ReviewsSlider({ reviews }: { reviews: Review[] }) {
   const t = useTranslations("reviews");
   const [current, setCurrent] = useState(0);
-
-  const tekst = onAccent ? "text-[var(--foreground)]" : "text-[var(--muted)]";
-  const ramka = onAccent
-    ? "border-[var(--foreground)]/30 hover:border-[var(--foreground)]"
-    : "border-[var(--border)] hover:border-[var(--foreground)]";
 
   const total = reviews.length;
 
@@ -95,10 +82,10 @@ export default function ReviewsSlider({
               <Stars
                 rating={item.rating}
                 label={t("rating", { rating: item.rating })}
-                className={onAccent ? "text-[var(--foreground)]" : "text-[var(--color-accent)]"}
+                className="text-[var(--color-accent)]"
               />
-              <p className={cn("text-sm leading-relaxed max-w-xl", tekst)}>{item.text}</p>
-              <footer className={cn("text-[10px] tracking-[0.25em] uppercase", tekst)}>
+              <p className="text-sm leading-relaxed max-w-xl text-[var(--muted)]">{item.text}</p>
+              <footer className="text-[10px] tracking-[0.25em] uppercase text-[var(--muted)]">
                 {item.author}
               </footer>
             </blockquote>
@@ -115,11 +102,7 @@ export default function ReviewsSlider({
               type="button"
               onClick={() => go(step)}
               aria-label={label}
-              className={cn(
-                "w-9 h-9 flex items-center justify-center border transition-colors",
-                "text-[var(--foreground)]",
-                ramka
-              )}
+              className="w-9 h-9 flex items-center justify-center border border-[var(--border)] text-[var(--foreground)] hover:border-[var(--foreground)] transition-colors"
             >
               <svg
                 width="16"
@@ -137,12 +120,12 @@ export default function ReviewsSlider({
           ))}
         </div>
 
-        <p className={cn("mt-4 text-center text-[10px] tracking-[0.25em] uppercase", tekst)}>
+        <p className="mt-4 text-center text-[10px] tracking-[0.25em] uppercase text-[var(--muted)]">
           {t("counter", { current: current + 1, total })}
         </p>
       </div>
 
-      <p className={cn("mt-8 text-center text-xs", tekst)}>
+      <p className="mt-8 text-center text-xs text-[var(--muted)]">
         {t("source")}{" "}
         <a
           href={REVIEWS_SOURCE_URL}

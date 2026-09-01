@@ -88,34 +88,25 @@ export default async function Home({
     <>
       {/* Hero */}
       <div className="max-w-[1200px] mx-auto px-6 mt-8">
-        <section className="bg-[var(--color-accent)] flex flex-col">
-          <div className="flex flex-col md:flex-row md:min-h-[580px]">
-            <div className="md:w-[42%] flex-shrink-0 min-h-[300px] md:min-h-0">
-              <AboutSlider />
-            </div>
-            <div className="flex-1 flex items-center px-10 md:px-14 py-12">
-              <div>
-                <h1 className="text-2xl font-light tracking-wide mb-5">
-                  {t("home.heroTitle")}
-                </h1>
-                <p className="text-sm leading-relaxed mb-10">
-                  {t("home.heroText")}
-                </p>
-                <Link
-                  href="/about"
-                  className="inline-block border border-current px-7 py-3 text-xs tracking-widest uppercase hover:opacity-60 transition-opacity"
-                >
-                  {t("home.heroLink")}
-                </Link>
-              </div>
-            </div>
+        <section className="bg-[var(--color-accent)] flex flex-col md:flex-row md:min-h-[580px]">
+          <div className="md:w-[42%] flex-shrink-0 min-h-[300px] md:min-h-0">
+            <AboutSlider />
           </div>
-
-          {/* Opinie na dole hero, w tym samym szałwiowym pudełku — stąd wariant
-              `onAccent`, bo przygaszona szarość z reszty strony jest na tym tle
-              nieczytelna. */}
-          <div className="border-t border-[var(--foreground)]/15 px-6 sm:px-10 md:px-14 py-10">
-            <ReviewsSlider reviews={getFeaturedReviews()} onAccent />
+          <div className="flex-1 flex items-center px-10 md:px-14 py-12">
+            <div>
+              <h1 className="text-2xl font-light tracking-wide mb-5">
+                {t("home.heroTitle")}
+              </h1>
+              <p className="text-sm leading-relaxed mb-10">
+                {t("home.heroText")}
+              </p>
+              <Link
+                href="/about"
+                className="inline-block border border-current px-7 py-3 text-xs tracking-widest uppercase hover:opacity-60 transition-opacity"
+              >
+                {t("home.heroLink")}
+              </Link>
+            </div>
           </div>
         </section>
       </div>
@@ -150,6 +141,15 @@ export default async function Home({
 
       {/* Quote */}
       <Quote text={t("home.quote")} author={t("home.quoteAuthor")} />
+
+      {/* Opinie zamykają stronę główną. Slider pokazuje wybraną dziesiątkę,
+          a komplet siedzi na osobnej stronie „Opinie". */}
+      <section className="max-w-[1200px] mx-auto px-6 py-20">
+        <h2 className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] text-center mb-12">
+          {t("reviews.title")}
+        </h2>
+        <ReviewsSlider reviews={getFeaturedReviews()} />
+      </section>
     </>
   );
 }
