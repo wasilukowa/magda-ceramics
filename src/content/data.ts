@@ -109,6 +109,7 @@ export const SITEMAP_ROUTES: StaticRoute[] = [
   "/terms",
   "/privacy",
   "/cookies",
+  "/sitemap",
 ];
 
 export const INSTAGRAM_URL = "https://www.instagram.com/magda_ceramics";

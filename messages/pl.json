@@ -187,6 +187,16 @@
     "source": "Opinie kupujących z profilu Magdy na Vinted, w oryginalnym brzmieniu.",
     "sourceLink": "Zobacz wszystkie na Vinted"
   },
+  "siteMap": {
+    "title": "Mapa strony",
+    "intro": "Wszystko, co znajdziesz w tym sklepie, na jednej liście.",
+    "shop": "Sklep",
+    "info": "Informacje",
+    "account": "Twoje konto",
+    "legal": "Prawne",
+    "products": "Prace",
+    "productsUnavailable": "Lista prac chwilowo niedostępna — zajrzyj do sklepu."
+  },
   "success": {
     "loading": "Finalizowanie zamówienia...",
     "thankYou": "Dziękujemy za zamówienie",
@@ -212,7 +222,8 @@
     "aboutTitle": "O mnie",
     "termsTitle": "Regulamin",
     "privacyTitle": "Polityka prywatności i cookies",
-    "cookies": "Polityka cookies"
+    "cookies": "Polityka cookies",
+    "sitemap": "Mapa strony"
   },
   "comingSoon": {
     "title": "Wkrótce",

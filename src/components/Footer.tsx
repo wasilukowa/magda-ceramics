@@ -148,6 +148,11 @@ export default async function Footer({
                   </Link>
                 </li>
                 <li>
+                  <Link href="/sitemap" className="hover:opacity-60 transition-opacity">
+                    {t("footer.sitemap")}
+                  </Link>
+                </li>
+                <li>
                   <CookieSettingsButton />
                 </li>
               </ul>

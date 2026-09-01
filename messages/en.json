@@ -187,6 +187,16 @@
     "source": "What buyers wrote on Magda's Vinted profile, in their own words.",
     "sourceLink": "See them all on Vinted"
   },
+  "siteMap": {
+    "title": "Site map",
+    "intro": "Everything this shop holds, on a single list.",
+    "shop": "Shop",
+    "info": "About the studio",
+    "account": "Your account",
+    "legal": "Legal",
+    "products": "Pieces",
+    "productsUnavailable": "The list of pieces is unavailable right now — have a look in the shop."
+  },
   "success": {
     "loading": "Finalising your order...",
     "thankYou": "Thank you for your order",
@@ -212,7 +222,8 @@
     "aboutTitle": "About",
     "termsTitle": "Terms & Conditions",
     "privacyTitle": "Privacy & Cookies Policy",
-    "cookies": "Cookie Policy"
+    "cookies": "Cookie Policy",
+    "sitemap": "Site map"
   },
   "comingSoon": {
     "title": "Coming soon",
