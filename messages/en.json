@@ -2,6 +2,7 @@
   "nav": {
     "home": "Home",
     "about": "About me",
+    "reviews": "Reviews",
     "shop": "Shop",
     "shopAll": "All",
     "contact": "Contact",
@@ -172,6 +173,16 @@
       "REST_EU": "Rest of the European Union"
     }
   },
+  "reviews": {
+    "title": "Reviews",
+    "intro": "All {count} reviews buyers left for Magda on Vinted. Not a word of them has been changed.",
+    "rating": "Rated {rating} out of 5",
+    "previous": "Previous review",
+    "next": "Next review",
+    "counter": "{current} of {total}",
+    "source": "What buyers wrote on Magda's Vinted profile, in their own words.",
+    "sourceLink": "See them all on Vinted"
+  },
   "success": {
     "loading": "Finalising your order...",
     "thankYou": "Thank you for your order",
@@ -186,6 +197,7 @@
     "copyright": "Handmade ceramics",
     "info": "Info",
     "about": "About",
+    "reviews": "Reviews",
     "contact": "Contact",
     "shop": "Shop",
     "legal": "Legal",

@@ -56,3 +56,14 @@ export type LegalDocument = LegalSection[];
 
 // Ten sam dokument w obu językach — pliki w content/legal eksportują właśnie to.
 export type LegalDocumentByLocale = Record<Locale, LegalDocument>;
+
+// --- Opinie kupujących -------------------------------------------------------
+// Jedna opinia przeniesiona z profilu na Vinted. `author` to nick, pod którym
+// opinia widnieje tam publicznie; treść zostaje w oryginalnym języku.
+export type Review = {
+  author: string;
+  rating: number;
+  text: string;
+  // Wyróżnione trafiają do sliderów; strona „Opinie" pokazuje komplet.
+  featured?: boolean;
+};

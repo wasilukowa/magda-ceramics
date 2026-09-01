@@ -2,6 +2,7 @@
   "nav": {
     "home": "Strona główna",
     "about": "O mnie",
+    "reviews": "Opinie",
     "shop": "Sklep",
     "shopAll": "Wszystkie",
     "contact": "Kontakt",
@@ -172,6 +173,16 @@
       "REST_EU": "Pozostałe kraje Unii Europejskiej"
     }
   },
+  "reviews": {
+    "title": "Opinie",
+    "intro": "Wszystkie {count} opinii, które kupujący zostawili Magdzie na Vinted. Nie zmieniamy w nich ani słowa.",
+    "rating": "Ocena {rating} na 5",
+    "previous": "Poprzednia opinia",
+    "next": "Następna opinia",
+    "counter": "{current} z {total}",
+    "source": "Opinie kupujących z profilu Magdy na Vinted, w oryginalnym brzmieniu.",
+    "sourceLink": "Zobacz wszystkie na Vinted"
+  },
   "success": {
     "loading": "Finalizowanie zamówienia...",
     "thankYou": "Dziękujemy za zamówienie",
@@ -186,6 +197,7 @@
     "copyright": "Ceramika ręcznie robiona",
     "info": "Informacje",
     "about": "O mnie",
+    "reviews": "Opinie",
     "contact": "Kontakt",
     "shop": "Sklep",
     "legal": "Prawne",

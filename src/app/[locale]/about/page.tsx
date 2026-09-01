@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { ABOUT_PHOTOS } from "@/content/data";
+import ReviewsSlider from "@/components/ReviewsSlider";
+import { getFeaturedReviews } from "@/lib/helpers/reviews";
 
 const photos = ABOUT_PHOTOS.map((src, index) => ({
   src,
@@ -84,7 +86,10 @@ export default async function AboutPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "footer" });
+  const [t, tReviews] = await Promise.all([
+    getTranslations({ locale, namespace: "footer" }),
+    getTranslations({ locale, namespace: "reviews" }),
+  ]);
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-20">
@@ -92,7 +97,19 @@ export default async function AboutPage({
         {t("aboutTitle")}
       </h1>
       {locale === "pl" ? <AboutPL /> : <AboutEN />}
-      <div className="mt-16 flex flex-col gap-6">
+
+      {/* Opinie stoją zaraz pod opisem Magdy, a nie w osobnej pozycji menu —
+          w stopce jest do nich link z kotwicą. Odstęp od góry taki jak przy
+          zdjęciach; `scroll-mt` odsuwa nagłówek spod przyklejonego paska,
+          dokładnie jak kotwice w regulaminie. */}
+      <section id="reviews" className="mt-20 scroll-mt-40 md:scroll-mt-52">
+        <h2 className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] mb-10 text-center">
+          {tReviews("title")}
+        </h2>
+        <ReviewsSlider reviews={getFeaturedReviews()} />
+      </section>
+
+      <div className="mt-20 flex flex-col gap-6">
         {photos.map((photo) => (
           <Image
             key={photo.src}

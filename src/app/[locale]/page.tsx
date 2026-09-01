@@ -6,6 +6,8 @@ import { getCategoryLabel } from "@/lib/helpers/category";
 import { AboutSlider } from "@/components/AboutSlider";
 import { FeaturedWorks } from "@/components/FeaturedWorks";
 import { Quote } from "@/components/Quote";
+import ReviewsSlider from "@/components/ReviewsSlider";
+import { getFeaturedReviews } from "@/lib/helpers/reviews";
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   kubki: (
@@ -86,25 +88,34 @@ export default async function Home({
     <>
       {/* Hero */}
       <div className="max-w-[1200px] mx-auto px-6 mt-8">
-        <section className="bg-[var(--color-accent)] flex flex-col md:flex-row md:min-h-[580px]">
-          <div className="md:w-[42%] flex-shrink-0 min-h-[300px] md:min-h-0">
-            <AboutSlider />
-          </div>
-          <div className="flex-1 flex items-center px-10 md:px-14 py-12">
-            <div>
-              <h1 className="text-2xl font-light tracking-wide mb-5">
-                {t("home.heroTitle")}
-              </h1>
-              <p className="text-sm leading-relaxed mb-10">
-                {t("home.heroText")}
-              </p>
-              <Link
-                href="/about"
-                className="inline-block border border-current px-7 py-3 text-xs tracking-widest uppercase hover:opacity-60 transition-opacity"
-              >
-                {t("home.heroLink")}
-              </Link>
+        <section className="bg-[var(--color-accent)] flex flex-col">
+          <div className="flex flex-col md:flex-row md:min-h-[580px]">
+            <div className="md:w-[42%] flex-shrink-0 min-h-[300px] md:min-h-0">
+              <AboutSlider />
             </div>
+            <div className="flex-1 flex items-center px-10 md:px-14 py-12">
+              <div>
+                <h1 className="text-2xl font-light tracking-wide mb-5">
+                  {t("home.heroTitle")}
+                </h1>
+                <p className="text-sm leading-relaxed mb-10">
+                  {t("home.heroText")}
+                </p>
+                <Link
+                  href="/about"
+                  className="inline-block border border-current px-7 py-3 text-xs tracking-widest uppercase hover:opacity-60 transition-opacity"
+                >
+                  {t("home.heroLink")}
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Opinie na dole hero, w tym samym szałwiowym pudełku — stąd wariant
+              `onAccent`, bo przygaszona szarość z reszty strony jest na tym tle
+              nieczytelna. */}
+          <div className="border-t border-[var(--foreground)]/15 px-6 sm:px-10 md:px-14 py-10">
+            <ReviewsSlider reviews={getFeaturedReviews()} onAccent />
           </div>
         </section>
       </div>
