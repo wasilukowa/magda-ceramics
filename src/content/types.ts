@@ -22,12 +22,16 @@ export type CookieRegistryEntry = {
 // jako dane. Dzięki temu poprawka w paragrafie to edycja tekstu, a nie grzebanie
 // w JSX-ie, i obie wersje językowe stoją obok siebie w jednym pliku.
 
-// Adresy, na które wolno wskazać z dokumentu — tylko trasy bez segmentów
-// dynamicznych, bo do produktu ani kategorii żaden paragraf nie linkuje.
-export type LegalRoute = Exclude<
+// Trasy bez segmentów dynamicznych — te, które da się wskazać samym adresem,
+// bez podawania produktu czy kategorii.
+export type StaticRoute = Exclude<
   keyof typeof routing.pathnames,
   `${string}[${string}`
 >;
+
+// Adresy, na które wolno wskazać z dokumentu prawnego. Żaden paragraf nie
+// linkuje do konkretnego produktu, więc wystarczą trasy statyczne.
+export type LegalRoute = StaticRoute;
 
 // Kawałek zdania. Bez `href`/`route` to zwykły tekst; `href` daje odnośnik
 // zewnętrzny (dziś wyłącznie mailto:), `route` — wewnętrzny, świadomy języka.

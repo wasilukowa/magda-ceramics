@@ -1,4 +1,4 @@
-import { Country, CookieRegistryEntry } from "./types";
+import { Country, CookieRegistryEntry, StaticRoute } from "./types";
 import { ShippingZone, ShippingRates } from "@/contracts/server/shipping";
 import { CookieCategory } from "@/contracts/shared";
 
@@ -89,6 +89,27 @@ export const CONTACT_EMAIL = "info@magdaceramics.com";
 export const STUDIO_NAME = "Magdalena Łęgowiak";
 export const STUDIO_ADDRESS_PL = "Ul. Pełczyńskiego 14A/198, 01-471 Warszawa";
 export const STUDIO_ADDRESS_EN = "Ul. Pełczyńskiego 14A/198, 01-471 Warsaw, Poland";
+
+// Adres kanoniczny sklepu. Nie mylić z getBaseUrl() z lib/api.ts — tamto służy
+// do wołania własnego API i zmienia się między środowiskami; ten jest jeden,
+// bo mapa strony i podgląd linku muszą wskazywać na prawdziwą domenę.
+export const SITE_URL = "https://www.magdaceramics.com";
+
+// Strony, które mają trafić do mapy strony. Świadomie NIE MA tu kasy, konta,
+// logowania, ulubionych ani zaślepki „coming soon" — to strony do używania,
+// nie do znajdowania w wyszukiwarce. Trasy z segmentem dynamicznym (produkty,
+// kategorie) dokłada sam sitemap.ts, prosto z WooCommerce.
+export const SITEMAP_ROUTES: StaticRoute[] = [
+  "/",
+  "/shop",
+  "/about",
+  "/reviews",
+  "/contact",
+  "/shipping",
+  "/terms",
+  "/privacy",
+  "/cookies",
+];
 
 export const INSTAGRAM_URL = "https://www.instagram.com/magda_ceramics";
 export const INSTAGRAM_HANDLE = "@magda_ceramics";

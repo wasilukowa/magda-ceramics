@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { cacheLife } from "next/cache";
 import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, getTimeZone, setRequestLocale } from "next-intl/server";
+import {
+  getMessages,
+  getTimeZone,
+  getTranslations,
+  setRequestLocale,
+} from "next-intl/server";
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import "../globals.css";
@@ -19,6 +24,7 @@ import { ConsentProvider } from "@/lib/store/providers/ConsentProvider";
 import { CookieBanner } from "@/components/cookies/CookieBanner";
 import { getServerConsent } from "@/lib/helpers/consentCookie";
 import { productService } from "@/lib/service/product";
+import { SITE_URL } from "@/content/data";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -34,10 +40,39 @@ const cormorant = Cormorant_Garamond({
   style: ["normal", "italic"],
 });
 
-export const metadata: Metadata = {
-  title: "Magda Ceramics",
-  description: "Handmade functional ceramics",
-};
+// Bez `metadataBase` względny adres obrazka nie zamieniłby się w pełny link,
+// a bez pełnego linku Facebook, Instagram czy komunikator nie pokażą podglądu.
+// Opis i tekst alternatywny idą z tłumaczeń, więc polski link udostępniony
+// znajomej wygląda po polsku.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
+  const description = t("description");
+
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: "Magda Ceramics",
+    description,
+    openGraph: {
+      type: "website",
+      siteName: "Magda Ceramics",
+      locale: locale === "pl" ? "pl_PL" : "en_GB",
+      title: "Magda Ceramics",
+      description,
+      images: [{ url: "/og.jpg", width: 1200, height: 630, alt: t("ogAlt") }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Magda Ceramics",
+      description,
+      images: ["/og.jpg"],
+    },
+  };
+}
 
 // Zegar odczytany w prerenderze musi siedzieć w zacache'owanej funkcji —
 // inaczej Next nie wie, jak długo statyczna strona zachowuje ważność.
