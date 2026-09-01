@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 const SHRINK_AT = 24;
 
 export default function Navbar({ categories }: CategoryNavigationProps) {
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { itemCount, openCart } = useCart();
@@ -97,10 +98,39 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
             </Link>
           </li>
 
-          <li>
-            <Link href="/about" className="hover:opacity-60 transition-opacity">
+          {/* „O mnie" działa tak samo jak „Sklep": sam jest linkiem, a pod nim
+              siedzą Opinie i Kontakt. Dzięki temu doszła nowa pozycja, a górny
+              pasek nie urósł. */}
+          <li
+            className="relative"
+            onMouseEnter={() => setAboutOpen(true)}
+            onMouseLeave={() => setAboutOpen(false)}
+          >
+            <Link href="/about" className="flex items-center gap-1.5 hover:opacity-60 transition-opacity">
               {t("nav.about")}
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
             </Link>
+
+            {aboutOpen && (
+              <ul className="absolute top-full left-1/2 -translate-x-1/2 bg-[var(--color-navbar)] border border-[var(--color-navbar-border)] min-w-[160px] shadow-sm">
+                {[
+                  { href: "/about" as const, label: t("nav.about") },
+                  { href: "/reviews" as const, label: t("nav.reviews") },
+                  { href: "/contact" as const, label: t("nav.contact") },
+                ].map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[var(--color-navbar-hover)] transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </li>
 
           <li
@@ -131,12 +161,6 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                 ))}
               </ul>
             )}
-          </li>
-
-          <li>
-            <Link href="/contact" className="hover:opacity-60 transition-opacity">
-              {t("nav.contact")}
-            </Link>
           </li>
 
           <li>
@@ -211,6 +235,8 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
             <ul className="flex flex-col gap-5 text-sm tracking-widest uppercase text-[var(--foreground)]">
               <li><Link href="/" onClick={() => setMobileOpen(false)}>{t("nav.home")}</Link></li>
               <li><Link href="/about" onClick={() => setMobileOpen(false)}>{t("nav.about")}</Link></li>
+              <li className="pl-4"><Link href="/reviews" onClick={() => setMobileOpen(false)}>{t("nav.reviews")}</Link></li>
+              <li className="pl-4"><Link href="/contact" onClick={() => setMobileOpen(false)}>{t("nav.contact")}</Link></li>
               <li><Link href="/shop" onClick={() => setMobileOpen(false)}>{t("nav.shop")} — {t("categories.all")}</Link></li>
               {categories.map((cat) => (
                 <li key={cat.slug} className="pl-4">
@@ -219,7 +245,6 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                   </Link>
                 </li>
               ))}
-              <li><Link href="/contact" onClick={() => setMobileOpen(false)}>{t("nav.contact")}</Link></li>
               <li>
                 <Link href="/wishlist" onClick={() => setMobileOpen(false)}>
                   {t("nav.wishlist")}
