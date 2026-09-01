@@ -68,7 +68,7 @@ export default function ProductToolbar({ sort, availability, count }: Props) {
           "ml-auto border px-3 py-2 sm:px-4 tracking-widest uppercase whitespace-nowrap transition-colors",
           onlyInStock
             ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
-            : "border-[var(--border)] hover:border-[var(--foreground)]"
+            : "border-[var(--color-control-border)] hover:border-[var(--foreground)]"
         )}
       >
         {t("onlyInStock")}
@@ -85,7 +85,7 @@ export default function ProductToolbar({ sort, availability, count }: Props) {
               event.target.value === ProductSort.Newest
             )
           }
-          className="w-full sm:w-auto border border-[var(--border)] bg-transparent px-3 py-2 sm:px-4 text-xs tracking-widest uppercase text-[var(--foreground)] hover:border-[var(--foreground)] transition-colors"
+          className="w-full sm:w-auto border border-[var(--color-control-border)] bg-transparent px-3 py-2 sm:px-4 text-xs tracking-widest uppercase text-[var(--foreground)] hover:border-[var(--foreground)] transition-colors"
         >
           {SORT_OPTIONS.map((option) => (
             <option key={option} value={option}>

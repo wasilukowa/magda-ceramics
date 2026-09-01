@@ -10,7 +10,7 @@ import { getCountryLabel } from "@/lib/helpers/shipping";
 const initialState: AccountFormState = { status: "idle", message: "" };
 
 const inputClass =
-  "border border-[var(--border)] bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-[var(--foreground)] transition-colors w-full";
+  "border border-[var(--color-control-border)] bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-[var(--foreground)] transition-colors w-full";
 const labelClass = "text-xs tracking-widest uppercase text-[var(--muted)]";
 const errorClass = "text-xs text-[var(--color-error)]";
 

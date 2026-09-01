@@ -8,7 +8,7 @@ import { ContactFormState } from "@/contracts/server/contact";
 const initialState: ContactFormState = { status: "idle", message: "" };
 
 const inputClass =
-  "border border-[var(--border)] bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-[var(--foreground)] transition-colors";
+  "border border-[var(--color-control-border)] bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-[var(--foreground)] transition-colors";
 
 export default function ContactForm() {
   const t = useTranslations("contact");

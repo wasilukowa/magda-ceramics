@@ -32,7 +32,7 @@ const primaryButtonClass =
   "w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 hover:opacity-80 transition-opacity disabled:opacity-40";
 
 const secondaryButtonClass =
-  "w-full border border-[var(--border)] text-xs tracking-widest uppercase py-4 hover:border-[var(--foreground)] transition-colors";
+  "w-full border border-[var(--color-control-border)] text-xs tracking-widest uppercase py-4 hover:border-[var(--foreground)] transition-colors";
 
 export default function CheckoutContent({
   items,

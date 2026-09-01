@@ -102,7 +102,7 @@ export default function ReviewsSlider({ reviews }: { reviews: Review[] }) {
               type="button"
               onClick={() => go(step)}
               aria-label={label}
-              className="w-9 h-9 flex items-center justify-center border border-[var(--border)] text-[var(--foreground)] hover:border-[var(--foreground)] transition-colors"
+              className="w-9 h-9 flex items-center justify-center border border-[var(--color-control-border)] text-[var(--foreground)] hover:border-[var(--foreground)] transition-colors"
             >
               <svg
                 width="16"

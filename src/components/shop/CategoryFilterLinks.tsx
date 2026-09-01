@@ -22,7 +22,7 @@ export default async function CategoryFilterLinks({
       "text-xs tracking-widest uppercase border px-5 py-2 transition-colors",
       isActive
         ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
-        : "border-[var(--border)] hover:border-[var(--foreground)]"
+        : "border-[var(--color-control-border)] hover:border-[var(--foreground)]"
     );
 
   return (

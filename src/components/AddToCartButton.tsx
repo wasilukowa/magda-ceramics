@@ -25,7 +25,7 @@ export default function AddToCartButton({
     return (
       <button
         disabled
-        className="w-full border border-[var(--border)] text-xs tracking-widest uppercase py-4 text-[var(--muted)] cursor-not-allowed"
+        className="w-full border border-[var(--color-control-border)] text-xs tracking-widest uppercase py-4 text-[var(--muted)] cursor-not-allowed"
       >
         {t("unavailable")}
       </button>
@@ -36,7 +36,7 @@ export default function AddToCartButton({
     return (
       <button
         disabled
-        className="w-full border border-[var(--border)] text-xs tracking-widest uppercase py-4 text-[var(--muted)] cursor-not-allowed"
+        className="w-full border border-[var(--color-control-border)] text-xs tracking-widest uppercase py-4 text-[var(--muted)] cursor-not-allowed"
       >
         {t("outOfStock")}
       </button>

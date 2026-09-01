@@ -31,7 +31,7 @@ export default function ParcelLockerField({
       </label>
 
       {locker ? (
-        <div className="border border-[var(--border)] px-3 py-3 text-sm space-y-1">
+        <div className="border border-[var(--color-control-border)] px-3 py-3 text-sm space-y-1">
           <p className="font-medium">{locker.code}</p>
           {locker.description && (
             <p className="text-[var(--muted)] text-xs">{locker.description}</p>
@@ -53,7 +53,7 @@ export default function ParcelLockerField({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="w-full border border-[var(--border)] px-3 py-3 text-sm text-left hover:border-[var(--foreground)] transition-colors"
+          className="w-full border border-[var(--color-control-border)] px-3 py-3 text-sm text-left hover:border-[var(--foreground)] transition-colors"
         >
           {t("chooseLocker")}
         </button>

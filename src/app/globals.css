@@ -7,6 +7,13 @@
   --muted: #6b6b6b;
   --border: #e5e2dc;
 
+  /* Obramowanie KONTROLEK (pola, listy, przyciski). Zwykły --border ma na tle
+     strony 1,23:1 — dobrze wygląda jako linia rozdzielająca, ale jako granica
+     kontrolki jest praktycznie niewidoczna, a WCAG 1.4.11 chce 3:1. Ten sam
+     ciepły odcień, tylko głębszy: 3,52:1 na tle strony i 3,23:1 na jasnym
+     panelu. Linie rozdzielające zostają przy --border, żeby nie pociemnieć. */
+  --color-control-border: #8B8477;
+
   /* Accent */
   --color-accent: #8AAAA6;
 

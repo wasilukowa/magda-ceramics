@@ -39,7 +39,7 @@ export default async function AccountOverviewPage() {
           <Link
             key={card.href}
             href={card.href}
-            className="border border-[var(--border)] p-5 flex flex-col gap-2 hover:bg-[var(--color-navbar-hover)] transition-colors"
+            className="border border-[var(--color-control-border)] p-5 flex flex-col gap-2 hover:bg-[var(--color-navbar-hover)] transition-colors"
           >
             <span className="text-xs tracking-widest uppercase text-[var(--muted)]">
               {t(`nav.${card.key}`)}

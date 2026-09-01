@@ -63,7 +63,7 @@ export default function EmptyCategory({
             <button
               type="button"
               onClick={() => setStopped(true)}
-              className="text-xs tracking-widest uppercase border border-[var(--border)] px-8 py-3 hover:border-[var(--foreground)] transition-colors"
+              className="text-xs tracking-widest uppercase border border-[var(--color-control-border)] px-8 py-3 hover:border-[var(--foreground)] transition-colors"
             >
               {t("stay")}
             </button>

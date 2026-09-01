@@ -70,7 +70,7 @@ function ReviewBlock({
 }
 
 const inputClass =
-  "w-full border border-[var(--border)] px-3 py-3 text-sm bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:border-[var(--foreground)] transition-colors";
+  "w-full border border-[var(--color-control-border)] px-3 py-3 text-sm bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:border-[var(--foreground)] transition-colors";
 
 // Renders the fields for the active checkout step. Step state, Stripe actions
 // and navigation live in the parent (CheckoutContent).
@@ -185,7 +185,7 @@ export default function CheckoutForm({
                         "border px-3 py-3 text-[10px] tracking-widest uppercase transition-colors",
                         deliveryMethod === method
                           ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
-                          : "border-[var(--border)] hover:border-[var(--foreground)]"
+                          : "border-[var(--color-control-border)] hover:border-[var(--foreground)]"
                       )}
                     >
                       {method === DeliveryMethod.Locker
