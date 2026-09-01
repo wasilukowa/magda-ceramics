@@ -83,11 +83,16 @@ export default function ShippingRatesTable() {
         </table>
       </div>
 
+      {/* Na telefonie nagłówki kolumn znikają razem z tabelą, więc „Kurier"
+          wylądowałby trzecią z rzędu linijką takiego samego szarego tekstu —
+          tuż pod listą krajów, do złudzenia jak kolejny kraj. Sposób dostawy
+          jest więc odcięty kreską: u góry karty „dokąd i za ile", pod kreską
+          „czym". */}
       <ul className="sm:hidden space-y-4">
         {summaries.map((summary) => (
           <li
             key={summary.zone}
-            className="border border-[var(--border)] p-4 space-y-2 text-xs"
+            className="border border-[var(--border)] p-4 text-xs"
           >
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-[var(--foreground)] tracking-widest uppercase text-[10px]">
@@ -98,17 +103,17 @@ export default function ShippingRatesTable() {
               </span>
             </div>
             {countryDetail(summary.countryCodes) && (
-              <p>{countryDetail(summary.countryCodes)}</p>
+              <p className="mt-2">{countryDetail(summary.countryCodes)}</p>
             )}
-            <p>{deliveryLabel(summary)}</p>
+            <p className="mt-3 pt-3 border-t border-[var(--border)]">
+              {deliveryLabel(summary)}
+            </p>
           </li>
         ))}
       </ul>
 
       {courierOnlyExceptions.length > 0 && (
-        <p className="text-xs">
-          {t("courierOnlyNote", { countries: countryList(courierOnlyExceptions) })}
-        </p>
+        <p>{t("courierOnlyNote", { countries: countryList(courierOnlyExceptions) })}</p>
       )}
     </div>
   );
