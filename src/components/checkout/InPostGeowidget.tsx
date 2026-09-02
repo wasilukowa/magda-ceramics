@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Script from "next/script";
 import { useLocale, useTranslations } from "next-intl";
 import { InPostPoint } from "@/contracts/server/shipping";
@@ -23,21 +23,47 @@ const CSS_URL = `${WIDGET_BASE}/inpost-geowidget.css`;
 // picked. The chosen point arrives in the event's detail.
 const POINT_EVENT = "inpostPointSelected";
 
-// Custom element the SDK registers. We build it by hand (see the effect below)
-// instead of writing it in JSX, so React never touches its properties.
+// Custom element the SDK registers. We hand it to the browser as markup rather
+// than as JSX (see below), so React never touches its properties.
 const WIDGET_TAG = "inpost-geowidget";
+
+// Values here are all ours — a token from the environment, a locale, an ISO
+// code from CHECKOUT_COUNTRIES — but they are going into an HTML string, so
+// they get escaped rather than trusted.
+const escapeAttribute = (value: string) =>
+  value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+
+const htmlAttributes = (attributes: Record<string, string>) =>
+  Object.entries(attributes)
+    .map(([name, value]) => `${name}="${escapeAttribute(value)}"`)
+    .join(" ");
 
 // Raw shape InPost hands back on point selection — only the fields we map.
 type RawInPostPoint = {
   name?: string;
+  country?: string;
   address?: { line1?: string; line2?: string };
   address_details?: { city?: string; post_code?: string };
+};
+
+// ‼️ The International widget prefixes point names with the country:
+// `PL_POP-WAW722`, `FR_FR021607`. The domestic one never did, and the bare code
+// is what InPost itself prints and what Magda types into epaka when she buys a
+// label — so the prefix comes off here, at the edge, and the rest of the app
+// (order note, `_inpost_locker_id`, the shipping line title) keeps seeing the
+// code it always saw. No Polish code contains an underscore, so the pattern
+// cannot eat part of a real one.
+const stripCountryPrefix = (name: string, country?: string) => {
+  if (country && name.startsWith(`${country}_`)) {
+    return name.slice(country.length + 1);
+  }
+  return name.replace(/^[A-Z]{2}_/, "");
 };
 
 function mapPoint(raw: RawInPostPoint): InPostPoint | null {
   if (!raw?.name) return null;
   return {
-    code: raw.name,
+    code: stripCountryPrefix(raw.name, raw.country),
     description: [raw.address?.line1, raw.address?.line2]
       .filter(Boolean)
       .join(", "),
@@ -57,7 +83,6 @@ export default function InPostGeowidget({ country, onSelect }: Props) {
   const t = useTranslations("checkout");
   const locale = useLocale();
   const [ready, setReady] = useState(false);
-  const hostRef = useRef<HTMLDivElement>(null);
   const token = process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN;
 
   // The widget fires a DOM event (named by the `onpoint` attribute) on the
@@ -84,7 +109,7 @@ export default function InPostGeowidget({ country, onSelect }: Props) {
     document.head.appendChild(link);
   }, []);
 
-  // Build the widget by hand once its SDK has loaded.
+  // The widget's markup, handed to the browser as HTML rather than as JSX.
   //
   // ‼️ DO NOT PUT <inpost-geowidget …> BACK IN JSX. Before the SDK registers
   // the element React writes plain attributes and all is well — but on every
@@ -94,35 +119,26 @@ export default function InPostGeowidget({ country, onSelect }: Props) {
   // whole checkout down to the error screen. The first opening always worked,
   // which is how this survived in production from June to September.
   //
-  // The node is built OUTSIDE the document on purpose: `createElement` runs the
-  // constructor immediately, while `connectedCallback` — which reads the token
-  // and boots the map — waits for insertion. Hence attributes first, append last.
-  useEffect(() => {
-    const host = hostRef.current;
-    if (!host || !ready || !token) return;
-
-    const attributes: Record<string, string> = {
-      token,
-      language: locale === "pl" ? "pl" : "en",
-      config: "parcelCollect",
-      onpoint: POINT_EVENT,
-      // Comma-separated ISO codes; the first one sets the map's default
-      // position. One code means: only this country's points, centred there.
-      country,
-    };
-
-    const widget = document.createElement(WIDGET_TAG);
-    for (const [name, value] of Object.entries(attributes)) {
-      widget.setAttribute(name, value);
-    }
-    widget.style.width = "100%";
-    widget.style.height = "100%";
-    widget.style.display = "block";
-    host.appendChild(widget);
-
-    // Country change rebuilds the widget, so the map re-centres on the new one.
-    return () => widget.remove();
-  }, [ready, token, locale, country]);
+  // Parsing the markup instead keeps React away from the element's properties
+  // while leaving everything else exactly as the SDK expects it: the node is
+  // built with its attributes already in place and enters the page as part of
+  // the same commit that opens the dialog. Building it by hand afterwards
+  // (`createElement` + `appendChild`) also avoids the crash, but the map then
+  // renders a small patch of tiles with no locker pins — this SDK cares when
+  // and how it arrives, so leave the element in the markup.
+  const markup =
+    ready && token
+      ? `<${WIDGET_TAG} ${htmlAttributes({
+          token,
+          language: locale === "pl" ? "pl" : "en",
+          config: "parcelCollect",
+          onpoint: POINT_EVENT,
+          // Comma-separated ISO codes; the first one sets the map's default
+          // position. One code means: this country's points, centred there.
+          country,
+          style: "width:100%;height:100%;display:block",
+        })}></${WIDGET_TAG}>`
+      : "";
 
   if (!token) {
     return (
@@ -146,7 +162,12 @@ export default function InPostGeowidget({ country, onSelect }: Props) {
           </p>
         </div>
       )}
-      <div ref={hostRef} className="w-full h-full" />
+      <div
+        // Rebuild on country change so the map re-centres on the new one.
+        key={country}
+        className="w-full h-full"
+        dangerouslySetInnerHTML={{ __html: markup }}
+      />
     </div>
   );
 }
