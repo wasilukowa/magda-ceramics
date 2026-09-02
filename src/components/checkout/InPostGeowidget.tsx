@@ -1,23 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { useLocale, useTranslations } from "next-intl";
 import { InPostPoint } from "@/contracts/server/shipping";
 
-// Poland uses the domestic Geowidget; every other supported country uses the
-// InPost International Geowidget. Both take the same public token and fire the
-// same point event — they only differ in the host they load from and the
-// `country` attribute (International needs it to scope + centre the map).
-const PL_BASE = "https://geowidget.inpost.pl";
-const INTL_BASE = "https://geowidget.inpost-group.com";
-
-const widgetBase = (country: string) =>
-  country === "PL" ? PL_BASE : INTL_BASE;
+// ONE widget for every country we ship lockers to, Poland included.
+//
+// InPost publishes two SDKs — a domestic one (geowidget.inpost.pl) and an
+// International one — and both register the SAME custom element name. Only the
+// first `customElements.define` wins, so loading both left whichever map the
+// customer opened first in charge of every later one: after a Polish map, the
+// French map ignored `country` and stayed centred on Warsaw. The International
+// SDK covers all eight locker countries (PL, FR, NL, BE, IT, ES, PT, LU — the
+// same list as INPOST_LOCKER_COUNTRIES), so using it everywhere removes the
+// clash instead of trying to sequence around it.
+const WIDGET_BASE = "https://geowidget.inpost-group.com";
+const SCRIPT_URL = `${WIDGET_BASE}/inpost-geowidget.js`;
+const CSS_URL = `${WIDGET_BASE}/inpost-geowidget.css`;
 
 // DOM event the widget fires (via the `onpoint` attribute) once a point is
 // picked. The chosen point arrives in the event's detail.
 const POINT_EVENT = "inpostPointSelected";
+
+// Custom element the SDK registers. We build it by hand (see the effect below)
+// instead of writing it in JSX, so React never touches its properties.
+const WIDGET_TAG = "inpost-geowidget";
 
 // Raw shape InPost hands back on point selection — only the fields we map.
 type RawInPostPoint = {
@@ -39,8 +47,8 @@ function mapPoint(raw: RawInPostPoint): InPostPoint | null {
 }
 
 type Props = {
-  // ISO code of the shipping country; selects the SDK (PL vs International) and,
-  // for International, scopes the map and centres it on this country.
+  // ISO code of the shipping country: scopes the map to that country's lockers
+  // and centres it there.
   country: string;
   onSelect: (point: InPostPoint) => void;
 };
@@ -48,16 +56,9 @@ type Props = {
 export default function InPostGeowidget({ country, onSelect }: Props) {
   const t = useTranslations("checkout");
   const locale = useLocale();
-  // Track which SDK has loaded rather than a plain boolean, so the loading
-  // overlay reappears automatically when the script URL changes (PL ↔ Intl).
-  const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+  const hostRef = useRef<HTMLDivElement>(null);
   const token = process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN;
-
-  const isPl = country === "PL";
-  const base = widgetBase(country);
-  const scriptUrl = `${base}/inpost-geowidget.js`;
-  const cssUrl = `${base}/inpost-geowidget.css`;
-  const ready = loadedUrl === scriptUrl;
 
   // The widget fires a DOM event (named by the `onpoint` attribute) on the
   // document; we map the payload to our domain point and bubble it up.
@@ -74,15 +75,54 @@ export default function InPostGeowidget({ country, onSelect }: Props) {
     return () => document.removeEventListener(POINT_EVENT, handle);
   }, [onSelect]);
 
-  // Load the active widget's stylesheet once (PL and International ship their
-  // own; switching country may bring in a second one — both are harmless).
+  // The widget ships its own stylesheet; load it once per page.
   useEffect(() => {
-    if (document.querySelector(`link[href="${cssUrl}"]`)) return;
+    if (document.querySelector(`link[href="${CSS_URL}"]`)) return;
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = cssUrl;
+    link.href = CSS_URL;
     document.head.appendChild(link);
-  }, [cssUrl]);
+  }, []);
+
+  // Build the widget by hand once its SDK has loaded.
+  //
+  // ‼️ DO NOT PUT <inpost-geowidget …> BACK IN JSX. Before the SDK registers
+  // the element React writes plain attributes and all is well — but on every
+  // later opening of the map the element is already registered, so React sets
+  // `token` as a PROPERTY, and InPost's class exposes only a getter for it.
+  // The resulting "Cannot set property token" is caught by nobody and takes the
+  // whole checkout down to the error screen. The first opening always worked,
+  // which is how this survived in production from June to September.
+  //
+  // The node is built OUTSIDE the document on purpose: `createElement` runs the
+  // constructor immediately, while `connectedCallback` — which reads the token
+  // and boots the map — waits for insertion. Hence attributes first, append last.
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host || !ready || !token) return;
+
+    const attributes: Record<string, string> = {
+      token,
+      language: locale === "pl" ? "pl" : "en",
+      config: "parcelCollect",
+      onpoint: POINT_EVENT,
+      // Comma-separated ISO codes; the first one sets the map's default
+      // position. One code means: only this country's points, centred there.
+      country,
+    };
+
+    const widget = document.createElement(WIDGET_TAG);
+    for (const [name, value] of Object.entries(attributes)) {
+      widget.setAttribute(name, value);
+    }
+    widget.style.width = "100%";
+    widget.style.height = "100%";
+    widget.style.display = "block";
+    host.appendChild(widget);
+
+    // Country change rebuilds the widget, so the map re-centres on the new one.
+    return () => widget.remove();
+  }, [ready, token, locale, country]);
 
   if (!token) {
     return (
@@ -95,10 +135,9 @@ export default function InPostGeowidget({ country, onSelect }: Props) {
   return (
     <div className="relative h-[480px] w-full">
       <Script
-        key={scriptUrl}
-        src={scriptUrl}
-        onReady={() => setLoadedUrl(scriptUrl)}
-        onLoad={() => setLoadedUrl(scriptUrl)}
+        src={SCRIPT_URL}
+        onReady={() => setReady(true)}
+        onLoad={() => setReady(true)}
       />
       {!ready && (
         <div className="absolute inset-0 flex items-center justify-center bg-[var(--color-ceramic)] animate-pulse">
@@ -107,17 +146,7 @@ export default function InPostGeowidget({ country, onSelect }: Props) {
           </p>
         </div>
       )}
-      <inpost-geowidget
-        // Remount on country change so the widget re-reads `country` and
-        // re-centres the map (the International SDK reads it on init).
-        key={country}
-        token={token}
-        language={locale === "pl" ? "pl" : "en"}
-        config="parcelCollect"
-        country={isPl ? undefined : country}
-        onpoint={POINT_EVENT}
-        style={{ width: "100%", height: "100%", display: "block" }}
-      />
+      <div ref={hostRef} className="w-full h-full" />
     </div>
   );
 }
