@@ -1,43 +1,9 @@
-import Image from "next/image";
-import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
+import NotFoundView from "@/components/NotFoundView";
 
-// Rendered inside the locale layout, so the customer keeps the logo, the menu
-// and the footer. The locale itself comes from setRequestLocale() in that
-// layout — not-found.tsx receives no params of its own.
-export default async function NotFound() {
-  const t = await getTranslations("notFound");
-
-  return (
-    <div className="max-w-3xl mx-auto px-6 py-24 text-center flex flex-col items-center gap-6">
-      <Image
-        src="/magda_round_one.svg"
-        alt=""
-        width={96}
-        height={96}
-        className="w-20 h-20 opacity-70"
-      />
-
-      <p className="text-xs tracking-[0.3em] uppercase text-[var(--muted)]">404</p>
-      <h1 className="text-2xl font-light tracking-wide">{t("heading")}</h1>
-      <p className="text-sm text-[var(--muted)] leading-relaxed max-w-md">
-        {t("text")}
-      </p>
-
-      <div className="flex flex-wrap gap-3 justify-center mt-2">
-        <Link
-          href="/shop"
-          className="text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
-        >
-          {t("shop")}
-        </Link>
-        <Link
-          href="/"
-          className="text-xs tracking-widest uppercase border border-[var(--color-control-border)] px-8 py-3 hover:border-[var(--foreground)] transition-colors"
-        >
-          {t("home")}
-        </Link>
-      </div>
-    </div>
-  );
+// Granica dla `notFound()` rzuconego w tym segmencie — dziś woła je już tylko
+// layout `[locale]`, gdy w adresie stoi nieznany język. Nieznane adresy i
+// nieistniejące produkty rysują ten sam widok WPROST, bez `notFound()`;
+// dlaczego — patrz `[locale]/[...rest]/page.tsx`.
+export default function NotFound() {
+  return <NotFoundView />;
 }

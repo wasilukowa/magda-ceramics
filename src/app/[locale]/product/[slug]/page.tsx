@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { productService } from "@/lib/service/product";
@@ -7,6 +6,7 @@ import ProductGallery from "@/components/ProductGallery";
 import WishlistButton from "@/components/WishlistButton";
 import Price from "@/components/Price";
 import { getCategoryLabel } from "@/lib/helpers/category";
+import NotFoundView from "@/components/NotFoundView";
 
 export async function generateStaticParams() {
   try {
@@ -22,9 +22,15 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const product = await productService.getProductBySlug(slug);
-  if (!product) return { title: "Product — Magda Ceramics" };
+  // Nieistniejący produkt rysuje widok 404 zamiast wołać `notFound()` — powód
+  // w `[locale]/[...rest]/page.tsx`. Skoro status zostaje 200, wyszukiwarkę
+  // trzyma z dala `robots`.
+  if (!product) {
+    const t = await getTranslations({ locale, namespace: "notFound" });
+    return { title: `${t("title")} — Magda Ceramics`, robots: { index: false } };
+  }
   return { title: `${product.name} — Magda Ceramics` };
 }
 
@@ -41,7 +47,7 @@ export default async function ProductPage({
     getFormatter({ locale }),
   ]);
 
-  if (!product) notFound();
+  if (!product) return <NotFoundView />;
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-16">
