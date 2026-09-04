@@ -8,6 +8,7 @@ import { ProductGridSkeleton } from "@/components/ProductsLoading";
 import { EmptyCategoryReason } from "@/contracts/shared";
 import { getCategoryLabel } from "@/lib/helpers/category";
 import { buildPageMetadata } from "@/lib/helpers/metadata";
+import { PLACEHOLDER_PARAM, staticParamsOrPlaceholder } from "@/lib/helpers/staticParams";
 
 // The slug comes straight from the URL — keep what we echo back on screen short.
 const MAX_LABEL_LENGTH = 40;
@@ -16,8 +17,10 @@ const getSlugLabel = (slug: string) =>
   slug.length > MAX_LABEL_LENGTH ? `${slug.slice(0, MAX_LABEL_LENGTH)}…` : slug;
 
 export async function generateStaticParams() {
-  const categories = await productService.getCategories();
-  return categories.map((cat) => ({ category: cat.slug }));
+  return staticParamsOrPlaceholder(
+    async () => (await productService.getCategories()).map((cat) => ({ category: cat.slug })),
+    { category: PLACEHOLDER_PARAM }
+  );
 }
 
 export async function generateMetadata({

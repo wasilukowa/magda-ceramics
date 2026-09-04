@@ -8,14 +8,13 @@ import Price from "@/components/Price";
 import { getCategoryLabel } from "@/lib/helpers/category";
 import NotFoundView from "@/components/NotFoundView";
 import { buildPageMetadata, toMetaDescription } from "@/lib/helpers/metadata";
+import { PLACEHOLDER_PARAM, staticParamsOrPlaceholder } from "@/lib/helpers/staticParams";
 
 export async function generateStaticParams() {
-  try {
-    const products = await productService.getProducts();
-    return products.map((p) => ({ slug: p.slug }));
-  } catch {
-    return [];
-  }
+  return staticParamsOrPlaceholder(
+    async () => (await productService.getProducts()).map((p) => ({ slug: p.slug })),
+    { slug: PLACEHOLDER_PARAM }
+  );
 }
 
 export async function generateMetadata({
