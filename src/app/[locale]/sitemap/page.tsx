@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { buildPageMetadata } from "@/lib/helpers/metadata";
 import { Link } from "@/i18n/navigation";
 import { StaticRoute } from "@/content/types";
 import { getCategoryLabel } from "@/lib/helpers/category";
@@ -11,7 +12,12 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "siteMap" });
-  return { title: `${t("title")} — Magda Ceramics`, description: t("intro") };
+  return buildPageMetadata({
+    locale,
+    route: "/sitemap",
+    title: t("title"),
+    description: t("intro"),
+  });
 }
 
 // Mapa strony dla ludzi — ta druga, w `src/app/sitemap.ts`, jest dla

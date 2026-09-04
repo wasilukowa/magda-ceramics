@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { buildPageMetadata } from "@/lib/helpers/metadata";
 import { REVIEWS, REVIEWS_SOURCE_URL } from "@/content/reviews";
 
 export async function generateMetadata({
@@ -11,10 +12,12 @@ export async function generateMetadata({
   // `intro` ma w sobie {count} — bez podanej liczby next-intl rzuca
   // FORMATTING_ERROR już na etapie metadanych, a strona i tak się renderuje,
   // więc widać to wyłącznie w konsoli.
-  return {
-    title: `${t("title")} — Magda Ceramics`,
+  return buildPageMetadata({
+    locale,
+    route: "/reviews",
+    title: t("title"),
     description: t("intro", { count: REVIEWS.length }),
-  };
+  });
 }
 
 // Wszystkie opinie, jedna pod drugą. Slidery na stronie głównej i „O mnie"

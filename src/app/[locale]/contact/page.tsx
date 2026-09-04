@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { buildPageMetadata } from "@/lib/helpers/metadata";
 import { INSTAGRAM_URL } from "@/content/data";
 import ContactForm from "@/components/ContactForm";
 
@@ -9,7 +10,12 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "contact" });
-  return { title: `${t("title")} — Magda Ceramics` };
+  return buildPageMetadata({
+    locale,
+    route: "/contact",
+    title: t("title"),
+    descriptionKey: "pages.contact",
+  });
 }
 
 export default async function ContactPage({

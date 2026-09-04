@@ -1,7 +1,18 @@
 {
   "meta": {
     "description": "Handmade ceramics from a home studio in Warsaw. Mugs, candle holders and vessels carved and painted by hand — no two alike.",
-    "ogAlt": "Three handmade Magda Ceramics mugs held in someone's hands"
+    "ogAlt": "Three handmade Magda Ceramics mugs held in someone's hands",
+    "pages": {
+      "shop": "Every piece from Magda's home studio — mugs, bowls, candle holders and vases. Each one hand-sculpted and hand-painted.",
+      "about": "Magda on herself and her studio in Warsaw: how the ceramics began, how each piece is made and why no two are alike.",
+      "contact": "Write to Magda — about a piece, an order or a parcel on its way. We answer on Instagram @magda_ceramics too.",
+      "shipping": "How orders travel — parcel locker or courier, Poland and the European Union — how long it takes, and how to return a purchase.",
+      "terms": "Magda Ceramics terms and conditions: ordering, payment, delivery, withdrawal from the contract and complaints.",
+      "privacy": "How we handle buyers' personal data and which cookies we store — the Magda Ceramics privacy policy.",
+      "cookies": "The full list of cookies this shop stores: what each one does, how long it lives and how to change your choice at any time."
+    },
+    "category": "{category} from a home studio in Warsaw — hand-sculpted and hand-painted. Every piece one of a kind.",
+    "product": "{name} — handmade ceramics from Magda's studio in Warsaw. There is only one of it."
   },
   "nav": {
     "home": "Home",

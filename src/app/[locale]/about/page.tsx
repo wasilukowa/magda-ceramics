@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+import { buildPageMetadata } from "@/lib/helpers/metadata";
 import { ABOUT_PHOTOS } from "@/content/data";
 import { ABOUT } from "@/content/about";
 import ReviewsSlider from "@/components/ReviewsSlider";
@@ -19,7 +20,12 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "footer" });
-  return { title: `${t("aboutTitle")} — Magda Ceramics` };
+  return buildPageMetadata({
+    locale,
+    route: "/about",
+    title: t("aboutTitle"),
+    descriptionKey: "pages.about",
+  });
 }
 
 export default async function AboutPage({

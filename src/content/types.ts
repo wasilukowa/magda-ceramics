@@ -29,6 +29,14 @@ export type StaticRoute = Exclude<
   `${string}[${string}`
 >;
 
+// Adres wskazany na tyle dokładnie, że da się z niego policzyć link: trasa
+// statyczna albo dynamiczna z kompletem parametrów. Używa go mapa strony
+// (sitemap.ts) i metadane każdej podstrony (lib/helpers/metadata.ts).
+export type AppRoute =
+  | StaticRoute
+  | { pathname: "/shop/[category]"; params: { category: string } }
+  | { pathname: "/product/[slug]"; params: { slug: string } };
+
 // Adresy, na które wolno wskazać z dokumentu prawnego. Żaden paragraf nie
 // linkuje do konkretnego produktu, więc wystarczą trasy statyczne.
 export type LegalRoute = StaticRoute;

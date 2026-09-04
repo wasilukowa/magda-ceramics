@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { getPathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { SITE_URL, SITEMAP_ROUTES } from "@/content/data";
-import { StaticRoute } from "@/content/types";
+import { AppRoute } from "@/content/types";
 import { productService } from "@/lib/service/product";
 
 const absolute = (path: string) => new URL(path, SITE_URL).toString();
@@ -11,10 +11,7 @@ const absolute = (path: string) => new URL(path, SITE_URL).toString();
 // językowej. Adres główny wpisu jest w języku domyślnym (angielski, bez
 // prefiksu); polski siedzi w `alternates`, dokładnie tak, jak zaleca
 // dokumentacja next-intl.
-function entry(
-  href: StaticRoute | { pathname: "/shop/[category]"; params: { category: string } }
-  | { pathname: "/product/[slug]"; params: { slug: string } }
-): MetadataRoute.Sitemap[number] {
+function entry(href: AppRoute): MetadataRoute.Sitemap[number] {
   const languages = Object.fromEntries(
     routing.locales.map((locale) => [locale, absolute(getPathname({ locale, href }))])
   );

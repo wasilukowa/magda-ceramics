@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
+import { buildPageMetadata } from "@/lib/helpers/metadata";
 import { productService } from "@/lib/service/product";
 import CategoryFilterLinks from "@/components/shop/CategoryFilterLinks";
 import ProductListing from "@/components/shop/ProductListing";
@@ -12,7 +13,12 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "shop" });
-  return { title: `${t("title")} — Magda Ceramics` };
+  return buildPageMetadata({
+    locale,
+    route: "/shop",
+    title: t("title"),
+    descriptionKey: "pages.shop",
+  });
 }
 
 export default async function ShopPage({

@@ -7,6 +7,7 @@ import ProductListing from "@/components/shop/ProductListing";
 import { ProductGridSkeleton } from "@/components/ProductsLoading";
 import { EmptyCategoryReason } from "@/contracts/shared";
 import { getCategoryLabel } from "@/lib/helpers/category";
+import { buildPageMetadata } from "@/lib/helpers/metadata";
 
 // The slug comes straight from the URL — keep what we echo back on screen short.
 const MAX_LABEL_LENGTH = 40;
@@ -37,8 +38,21 @@ export async function generateMetadata({
     };
   }
 
-  const t = await getTranslations({ locale });
-  return { title: `${getCategoryLabel(t, cat)} — Magda Ceramics` };
+  const [t, tMeta] = await Promise.all([
+    getTranslations({ locale }),
+    getTranslations({ locale, namespace: "meta" }),
+  ]);
+  const label = getCategoryLabel(t, cat);
+
+  return buildPageMetadata({
+    locale,
+    route: { pathname: "/shop/[category]", params: { category: cat.slug } },
+    title: label,
+    description: tMeta("category", { category: label }),
+    // Zdjęcie kategorii z WooCommerce, jeśli Magda je wstawiła — inaczej
+    // zostaje ogólny obrazek sklepu.
+    image: cat.image ?? undefined,
+  });
 }
 
 export default async function CategoryPage({

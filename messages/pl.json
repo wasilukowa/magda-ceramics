@@ -1,7 +1,18 @@
 {
   "meta": {
     "description": "Ręcznie robiona ceramika z domowej pracowni w Warszawie. Kubki, świeczniki i naczynia rzeźbione i malowane ręcznie — każde inne.",
-    "ogAlt": "Trzy ręcznie robione kubki Magda Ceramics trzymane w dłoniach"
+    "ogAlt": "Trzy ręcznie robione kubki Magda Ceramics trzymane w dłoniach",
+    "pages": {
+      "shop": "Wszystkie prace z domowej pracowni Magdy — kubki, miski, świeczniki i wazony. Każdy egzemplarz rzeźbiony i malowany ręcznie.",
+      "about": "Magda o sobie i o swojej pracowni w Warszawie: skąd wzięła się ceramika, jak powstają naczynia i dlaczego żadne nie jest takie samo.",
+      "contact": "Napisz do Magdy — pytanie o pracę, zamówienie albo przesyłkę. Odpowiadamy też na Instagramie @magda_ceramics.",
+      "shipping": "Jak wysyłamy zamówienia — paczkomat i kurier, Polska i Unia Europejska — ile to trwa i jak zwrócić albo zareklamować zakup.",
+      "terms": "Regulamin sklepu Magda Ceramics: zamawianie, płatności, dostawa, odstąpienie od umowy i reklamacje.",
+      "privacy": "Jak przetwarzamy dane osobowe kupujących i jakie pliki cookies zapisujemy — polityka prywatności sklepu Magda Ceramics.",
+      "cookies": "Pełna lista plików cookies zapisywanych przez sklep: co robią, jak długo żyją i jak w każdej chwili zmienić swoją zgodę."
+    },
+    "category": "{category} z domowej pracowni w Warszawie — ręcznie rzeźbione i malowane. Każda sztuka jedyna w swoim rodzaju.",
+    "product": "{name} — ręcznie robiona ceramika z pracowni Magdy w Warszawie. Jedyny taki egzemplarz."
   },
   "nav": {
     "home": "Strona główna",

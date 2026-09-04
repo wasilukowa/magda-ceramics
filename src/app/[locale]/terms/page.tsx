@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { buildPageMetadata } from "@/lib/helpers/metadata";
 import { hasLocale } from "next-intl";
 import LegalPage from "@/components/legal/LegalPage";
 import LegalSections from "@/components/legal/LegalSections";
@@ -12,7 +13,12 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "footer" });
-  return { title: `${t("termsTitle")} — Magda Ceramics` };
+  return buildPageMetadata({
+    locale,
+    route: "/terms",
+    title: t("termsTitle"),
+    descriptionKey: "pages.terms",
+  });
 }
 
 export default async function TermsPage({

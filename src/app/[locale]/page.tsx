@@ -1,5 +1,6 @@
 import React from "react";
 import { getTranslations } from "next-intl/server";
+import { buildPageMetadata } from "@/lib/helpers/metadata";
 import { Link } from "@/i18n/navigation";
 import { productService } from "@/lib/service/product";
 import { getCategoryLabel } from "@/lib/helpers/category";
@@ -71,6 +72,18 @@ const DEFAULT_CATEGORY_ICON = (
     <path d="M11 29h14"/>
   </svg>
 );
+
+// Strona główna zostaje przy opisie całego sklepu — to ten sam tekst, bo to ta
+// sama treść. Własny ma za to `canonical`, żeby /pl/ i / nie konkurowały ze sobą
+// w wynikach wyszukiwania.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  return buildPageMetadata({ locale, route: "/" });
+}
 
 export default async function Home({
   params,

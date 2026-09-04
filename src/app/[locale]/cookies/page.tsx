@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
+import { buildPageMetadata } from "@/lib/helpers/metadata";
 import { Link } from "@/i18n/navigation";
 import { COOKIE_REGISTRY } from "@/content/data";
 import { CookieSettings } from "@/components/cookies/CookieSettings";
@@ -11,7 +12,12 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "cookies" });
-  return { title: `${t("pageTitle")} — Magda Ceramics` };
+  return buildPageMetadata({
+    locale,
+    route: "/cookies",
+    title: t("pageTitle"),
+    descriptionKey: "pages.cookies",
+  });
 }
 
 export default async function CookiesPage({

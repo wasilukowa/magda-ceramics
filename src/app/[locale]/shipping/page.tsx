@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { buildPageMetadata } from "@/lib/helpers/metadata";
 import { hasLocale } from "next-intl";
 import LegalPage from "@/components/legal/LegalPage";
 import LegalSections, { LegalHeading } from "@/components/legal/LegalSections";
@@ -13,7 +14,12 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "shipping" });
-  return { title: `${t("pageTitle")} — Magda Ceramics` };
+  return buildPageMetadata({
+    locale,
+    route: "/shipping",
+    title: t("pageTitle"),
+    descriptionKey: "pages.shipping",
+  });
 }
 
 // Wysyłka i zwroty w jednym miejscu. Dotąd oba linki ze stopki prowadziły do

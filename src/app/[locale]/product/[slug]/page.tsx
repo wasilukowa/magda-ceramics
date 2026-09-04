@@ -7,6 +7,7 @@ import WishlistButton from "@/components/WishlistButton";
 import Price from "@/components/Price";
 import { getCategoryLabel } from "@/lib/helpers/category";
 import NotFoundView from "@/components/NotFoundView";
+import { buildPageMetadata, toMetaDescription } from "@/lib/helpers/metadata";
 
 export async function generateStaticParams() {
   try {
@@ -31,7 +32,30 @@ export async function generateMetadata({
     const t = await getTranslations({ locale, namespace: "notFound" });
     return { title: `${t("title")} — Magda Ceramics`, robots: { index: false } };
   }
-  return { title: `${product.name} — Magda Ceramics` };
+  // Opis pod wynik wyszukiwania bierzemy WYŁĄCZNIE z „krótkiego opisu"
+  // w WooCommerce — to jedyne pole pomyślane jako streszczenie, i jedyne, które
+  // idzie tu jako HTML, stąd `toMetaDescription`.
+  // ‼️ Długi opis ŚWIADOMIE pominięty: dziś Magda trzyma w nim wymiary
+  // („Wymiary: pojemność 115 ml…"), więc w Google zrobiłby się z tego bełkot
+  // powtórzony przy każdym kubku. Gdy któryś produkt dostanie krótki opis,
+  // wskoczy tu sam. Reszta dostaje zdanie z szablonu — z nazwą, więc i tak
+  // każdy kubek ma własne.
+  const tMeta = await getTranslations({ locale, namespace: "meta" });
+  const summary = toMetaDescription(product.shortDescription);
+
+  return buildPageMetadata({
+    locale,
+    route: { pathname: "/product/[slug]", params: { slug: product.slug } },
+    title: product.name,
+    description: summary || tMeta("product", { name: product.name }),
+    // Pierwsze zdjęcie produktu — to ono ma się pokazać, gdy ktoś wrzuci link
+    // do kubka na Instagram czy do komunikatora. Zdjęcia wrzucone bez tekstu
+    // alternatywnego zapożyczają nazwę produktu.
+    image: product.images[0] && {
+      ...product.images[0],
+      alt: product.images[0].alt || product.name,
+    },
+  });
 }
 
 export default async function ProductPage({

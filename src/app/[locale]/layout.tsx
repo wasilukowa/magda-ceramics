@@ -25,6 +25,7 @@ import { CookieBanner } from "@/components/cookies/CookieBanner";
 import { getServerConsent } from "@/lib/helpers/consentCookie";
 import { productService } from "@/lib/service/product";
 import { SITE_URL } from "@/content/data";
+import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/helpers/metadata";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -40,6 +41,10 @@ const cormorant = Cormorant_Garamond({
   style: ["normal", "italic"],
 });
 
+// Metadane WSPÓLNE dla całej aplikacji — i zapas dla stron, które nie mają
+// własnych (konto, logowanie, koszyk, 404). Podstrony widoczne w wyszukiwarce
+// budują swoje przez `buildPageMetadata`, razem z `canonical` i hreflangiem.
+//
 // Bez `metadataBase` względny adres obrazka nie zamieniłby się w pełny link,
 // a bez pełnego linku Facebook, Instagram czy komunikator nie pokażą podglądu.
 // Opis i tekst alternatywny idą z tłumaczeń, więc polski link udostępniony
@@ -55,21 +60,21 @@ export async function generateMetadata({
 
   return {
     metadataBase: new URL(SITE_URL),
-    title: "Magda Ceramics",
+    title: SITE_NAME,
     description,
     openGraph: {
       type: "website",
-      siteName: "Magda Ceramics",
+      siteName: SITE_NAME,
       locale: locale === "pl" ? "pl_PL" : "en_GB",
-      title: "Magda Ceramics",
+      title: SITE_NAME,
       description,
-      images: [{ url: "/og.jpg", width: 1200, height: 630, alt: t("ogAlt") }],
+      images: [{ ...DEFAULT_OG_IMAGE, alt: t("ogAlt") }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Magda Ceramics",
+      title: SITE_NAME,
       description,
-      images: ["/og.jpg"],
+      images: [DEFAULT_OG_IMAGE.url],
     },
   };
 }
