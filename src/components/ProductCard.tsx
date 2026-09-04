@@ -4,7 +4,24 @@ import { ProductCardProps } from "@/contracts/shared";
 import Price from "@/components/Price";
 import WishlistButton from "@/components/WishlistButton";
 
-export default function ProductCard({ product, soldOutLabel }: ProductCardProps) {
+// Ile kart z początku siatki ładuje zdjęcie od razu. Cztery, bo tyle stoi
+// w pierwszym rzędzie na komputerze — a na telefonie (dwie kolumny) to dwa
+// rzędy, czyli też mniej więcej pierwszy ekran.
+export const EAGER_CARDS = 4;
+
+// Zdjęcie karty jest responsywne (`w-full h-full`), więc bez `sizes` przeglądarka
+// zakłada, że zajmie CAŁĄ szerokość ekranu, i ściąga najcięższy plik z listy.
+// Wartości policzone z rzeczywistej siatki: kontener ma px-6 (2 × 24 px),
+// odstępy między kartami to 24 px, kolumn jest 2 / 3 / 4, a najszerszy
+// kontener zatrzymuje się na 1200 px. Stąd 270 px na dużym ekranie i odjęcia
+// w `calc` niżej — sam „50vw" na telefonie zamawiałby plik 640 px tam, gdzie
+// wystarczy 384 px.
+// ‼️ Te liczby nie mogą być ZANIŻONE: przeglądarka wzięłaby wtedy plik mniejszy
+// niż kafelek i zdjęcie byłoby rozmyte. Lepiej zaokrąglać w górę.
+const CARD_IMAGE_SIZES =
+  "(min-width: 1224px) 270px, (min-width: 1024px) calc(25vw - 30px), (min-width: 768px) calc(33.33vw - 32px), calc(50vw - 36px)";
+
+export default function ProductCard({ product, soldOutLabel, eager }: ProductCardProps) {
   const image = product.images[0];
   const showSoldOut = !product.inStock && !!soldOutLabel;
 
@@ -28,6 +45,20 @@ export default function ProductCard({ product, soldOutLabel }: ProductCardProps)
               alt={image.alt || product.name}
               width={400}
               height={400}
+              sizes={CARD_IMAGE_SIZES}
+              // Zdjęcia z pierwszego ekranu nie czekają na przewinięcie —
+              // inaczej sklep otwiera się jako plansza pustych kafelków, a
+              // kubki wchodzą sekundę później.
+              // ‼️ NIE `preload` (następca przestarzałego `priority`) i NIE
+              // `fetchPriority="high"`. Dokumentacja Next 16 odradza preload
+              // tam, gdzie największym elementem strony może być KTÓREKOLWIEK
+              // z kilku zdjęć — a w siatce zależy to od szerokości okna.
+              // SPRAWDZONE NA WYGENEROWANYM HTML-u: przy `eager` Next i tak
+              // wstawia do nagłówka `<link rel=preload>` dla tych czterech
+              // zdjęć i nie da się tego wyłączyć. Różnica jest w priorytecie:
+              // bez `fetchPriority` te wpisy nie wyprzedzają arkusza stylów
+              // ani krojów pisma — i dlatego go tu nie ma.
+              loading={eager ? "eager" : "lazy"}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           )}

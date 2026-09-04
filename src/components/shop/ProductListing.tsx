@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import ProductCard from "@/components/ProductCard";
+import ProductCard, { EAGER_CARDS } from "@/components/ProductCard";
 import ProductToolbar from "@/components/shop/ProductToolbar";
 import { productService } from "@/lib/service/product";
 import {
@@ -51,11 +51,12 @@ export default async function ProductListing({
         <p className="text-center text-[var(--muted)] py-12">{t("noMatching")}</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {visible.map((product) => (
+          {visible.map((product, index) => (
             <ProductCard
               key={product.id}
               product={product}
               soldOutLabel={tProduct("outOfStock")}
+              eager={index < EAGER_CARDS}
             />
           ))}
         </div>

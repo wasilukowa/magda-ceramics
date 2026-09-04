@@ -61,6 +61,9 @@ export type CookieCategoryToggleProps = {
 export type ProductCardProps = {
   product: ProductProps;
   soldOutLabel?: string;
+  // Karty z pierwszego ekranu ładują zdjęcie od razu, zamiast czekać, aż
+  // przewinięcie je „odkryje" — patrz ProductCard.
+  eager?: boolean;
 };
 
 export type QuoteProps = {

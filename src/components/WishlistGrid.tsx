@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { useWishlist } from "@/hooks/useWishlist";
 import { getWishlistProducts } from "@/server-actions/wishlist";
 import { ProductProps } from "@/contracts/server/product";
-import ProductCard from "@/components/ProductCard";
+import ProductCard, { EAGER_CARDS } from "@/components/ProductCard";
 
 export default function WishlistGrid() {
   const t = useTranslations("wishlist");
@@ -60,11 +60,12 @@ export default function WishlistGrid() {
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
       {/* Serce siedzi teraz w samej karcie (ProductCard), więc ta strona nie
           dokłada już własnego — jedno miejsce, jeden wygląd. */}
-      {visible.map((product) => (
+      {visible.map((product, index) => (
         <ProductCard
           key={product.id}
           product={product}
           soldOutLabel={tProduct("outOfStock")}
+          eager={index < EAGER_CARDS}
         />
       ))}
     </div>
