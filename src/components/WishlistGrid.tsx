@@ -7,7 +7,6 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { getWishlistProducts } from "@/server-actions/wishlist";
 import { ProductProps } from "@/contracts/server/product";
 import ProductCard from "@/components/ProductCard";
-import WishlistButton from "@/components/WishlistButton";
 
 export default function WishlistGrid() {
   const t = useTranslations("wishlist");
@@ -59,14 +58,14 @@ export default function WishlistGrid() {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
+      {/* Serce siedzi teraz w samej karcie (ProductCard), więc ta strona nie
+          dokłada już własnego — jedno miejsce, jeden wygląd. */}
       {visible.map((product) => (
-        <div key={product.id} className="relative">
-          <WishlistButton
-            productId={product.id}
-            className="absolute top-2 right-2 z-10 bg-[var(--background)]/80 rounded-full p-2 text-[var(--foreground)]"
-          />
-          <ProductCard product={product} soldOutLabel={tProduct("outOfStock")} />
-        </div>
+        <ProductCard
+          key={product.id}
+          product={product}
+          soldOutLabel={tProduct("outOfStock")}
+        />
       ))}
     </div>
   );

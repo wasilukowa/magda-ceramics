@@ -6,10 +6,17 @@ import { cn } from "@/lib/utils";
 
 export default function WishlistButton({
   productId,
+  productName,
   className,
   withLabel = false,
 }: {
   productId: number;
+  // Nazwa produktu trafia do etykiety dla czytnika ekranu. Na stronie produktu
+  // jest zbędna (jest nagłówek), ale w siatce dwadzieścia serc mówiących samo
+  // „Dodaj do ulubionych" nie mówi nic — nie wiadomo, przy czym się stoi.
+  // Etykieta ma postać „Dodaj do ulubionych: {nazwa}", bez cudzysłowu wokół
+  // nazwy: połowa kubków ma cudzysłów już w samej nazwie („Kubek „Kakao"").
+  productName?: string;
   className?: string;
   withLabel?: boolean;
 }) {
@@ -17,12 +24,16 @@ export default function WishlistButton({
   const { isInWishlist, toggle } = useWishlist();
   const active = isInWishlist(productId);
 
+  const label = productName
+    ? t(active ? "removeNamed" : "addNamed", { name: productName })
+    : t(active ? "remove" : "add");
+
   return (
     <button
       type="button"
       onClick={() => toggle(productId)}
       aria-pressed={active}
-      aria-label={active ? t("remove") : t("add")}
+      aria-label={label}
       className={cn(
         "flex items-center gap-2 transition-opacity hover:opacity-60",
         className,

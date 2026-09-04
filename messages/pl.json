@@ -354,7 +354,9 @@
     "remove": "Usuń z ulubionych",
     "empty": "Twoja lista ulubionych jest pusta.",
     "browse": "Przeglądaj sklep",
-    "loading": "Ładowanie…"
+    "loading": "Ładowanie…",
+    "addNamed": "Dodaj do ulubionych: {name}",
+    "removeNamed": "Usuń z ulubionych: {name}"
   },
   "cookies": {
     "bannerTitle": "Pliki cookies",

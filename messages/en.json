@@ -354,7 +354,9 @@
     "remove": "Remove from wishlist",
     "empty": "Your wishlist is empty.",
     "browse": "Browse the shop",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "addNamed": "Add to wishlist: {name}",
+    "removeNamed": "Remove from wishlist: {name}"
   },
   "cookies": {
     "bannerTitle": "Cookies",
