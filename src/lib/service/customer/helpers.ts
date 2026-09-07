@@ -43,6 +43,7 @@ export const prepareCustomer = (raw: RawWcCustomer): Customer => ({
   lastName: raw.last_name ?? raw.billing?.last_name ?? "",
   billing: prepareAddress(raw.billing),
   wishlist: prepareWishlist(raw),
+  modifiedAt: raw.date_modified_gmt ?? "",
 });
 
 const toOrderStatus = (status: string): OrderStatus =>

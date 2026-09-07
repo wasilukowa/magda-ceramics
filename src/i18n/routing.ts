@@ -22,6 +22,8 @@ export const routing = defineRouting({
     "/sitemap": { en: "/sitemap", pl: "/mapa-strony" },
     "/login": { en: "/login", pl: "/logowanie" },
     "/register": { en: "/register", pl: "/rejestracja" },
+    "/forgot-password": { en: "/forgot-password", pl: "/nie-pamietam-hasla" },
+    "/reset-password": { en: "/reset-password", pl: "/nowe-haslo" },
     "/account": { en: "/account", pl: "/konto" },
     "/account/orders": { en: "/account/orders", pl: "/konto/zamowienia" },
     "/account/details": { en: "/account/details", pl: "/konto/dane" },

@@ -254,7 +254,35 @@
       "submitting": "Signing in…",
       "success": "Signed in.",
       "noAccount": "Don't have an account?",
-      "registerLink": "Create one"
+      "registerLink": "Create one",
+      "forgotLink": "I forgot my password"
+    },
+    "forgot": {
+      "title": "Forgotten password",
+      "intro": "Enter the email address you sign in with and we'll send you a link to set a new password.",
+      "submit": "Send the link",
+      "submitting": "Sending…",
+      "success": "If an account with that address exists, a link to change the password is on its way. Have a look in your inbox — and in the spam folder. The link is valid for one hour.",
+      "backToLogin": "Back to sign in"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "newPassword": "New password",
+      "confirmPassword": "Repeat new password",
+      "submit": "Save new password",
+      "submitting": "Saving…",
+      "success": "Password changed. You can sign in now.",
+      "invalidLink": "This link is no longer valid — it has expired or has already been used.",
+      "requestAgain": "Ask for a new link",
+      "email": {
+        "subject": "Password change — Magda Ceramics",
+        "heading": "Set a new password",
+        "intro": "We received a request to change the password for your Magda Ceramics account. Use the button below — the link is valid for one hour and works only once.",
+        "button": "Set a new password",
+        "fallback": "If the button doesn't work, paste this address into your browser:",
+        "ignore": "If you didn't ask for a new password, simply ignore this message. Your password stays as it is.",
+        "signature": "Magda Ceramics — handmade ceramics"
+      }
     },
     "register": {
       "title": "Create account",
@@ -271,6 +299,8 @@
       "email": "Please enter a valid email address.",
       "passwordRequired": "Please enter your password.",
       "passwordLength": "Password must be at least 8 characters.",
+      "confirmRequired": "Please repeat the new password.",
+      "passwordsDiffer": "The passwords don't match.",
       "invalidCredentials": "Incorrect email or password.",
       "emailExists": "An account with this email already exists.",
       "validation": "Please check the highlighted fields and try again.",

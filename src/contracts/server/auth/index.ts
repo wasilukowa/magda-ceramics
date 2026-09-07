@@ -7,6 +7,17 @@ export type SessionPayload = {
   exp: number; // znacznik czasu wygaśnięcia (ms)
 };
 
+// Ładunek linku „ustaw nowe hasło". `modifiedAt` to data ostatniej zmiany
+// konta w chwili wystawienia linku — dzięki niej link działa tylko raz,
+// patrz lib/auth/resetToken.ts.
+export type PasswordResetPayload = {
+  purpose: "password-reset";
+  customerId: number;
+  email: string;
+  modifiedAt: string;
+  exp: number;
+};
+
 // --- Klient (domena) ---
 
 export type CustomerAddress = {
@@ -26,6 +37,9 @@ export type Customer = {
   lastName: string;
   billing: CustomerAddress;
   wishlist: number[];
+  // Data ostatniej zmiany konta (czas UTC, prosto z WooCommerce). Używa jej
+  // link do zmiany hasła, żeby dało się go użyć tylko raz.
+  modifiedAt: string;
 };
 
 // --- Surowe typy WooCommerce ---
@@ -49,6 +63,7 @@ export type RawWcMeta = {
 export type RawWcCustomer = {
   id: number;
   email: string;
+  date_modified_gmt?: string;
   first_name?: string;
   last_name?: string;
   billing?: RawWcAddress;
@@ -94,6 +109,24 @@ export type RegisterFormState = {
   message: string;
   errors?: RegisterFieldErrors;
   values?: RegisterFormValues;
+};
+
+export type ForgotPasswordFormState = {
+  status: AuthFormStatus;
+  message: string;
+  errors?: { email?: string };
+  values?: { email: string };
+};
+
+export type ResetPasswordFieldErrors = {
+  password?: string;
+  confirm?: string;
+};
+
+export type ResetPasswordFormState = {
+  status: AuthFormStatus;
+  message: string;
+  errors?: ResetPasswordFieldErrors;
 };
 
 export type AccountFormState = {

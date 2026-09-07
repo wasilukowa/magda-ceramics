@@ -254,7 +254,35 @@
       "submitting": "Logowanie…",
       "success": "Zalogowano.",
       "noAccount": "Nie masz konta?",
-      "registerLink": "Załóż je"
+      "registerLink": "Załóż je",
+      "forgotLink": "Nie pamiętam hasła"
+    },
+    "forgot": {
+      "title": "Nie pamiętam hasła",
+      "intro": "Podaj adres e-mail, którym logujesz się do sklepu. Wyślemy na niego link do ustawienia nowego hasła.",
+      "submit": "Wyślij link",
+      "submitting": "Wysyłanie…",
+      "success": "Jeśli konto z tym adresem istnieje, link do zmiany hasła jest już w drodze. Zajrzyj do skrzynki — także do spamu. Link jest ważny przez godzinę.",
+      "backToLogin": "Wróć do logowania"
+    },
+    "reset": {
+      "title": "Ustaw nowe hasło",
+      "newPassword": "Nowe hasło",
+      "confirmPassword": "Powtórz nowe hasło",
+      "submit": "Zapisz nowe hasło",
+      "submitting": "Zapisywanie…",
+      "success": "Hasło zmienione. Możesz się już zalogować.",
+      "invalidLink": "Ten link jest nieważny — wygasł albo ktoś już z niego skorzystał.",
+      "requestAgain": "Poproś o nowy link",
+      "email": {
+        "subject": "Zmiana hasła — Magda Ceramics",
+        "heading": "Ustaw nowe hasło",
+        "intro": "Dostaliśmy prośbę o zmianę hasła do Twojego konta w Magda Ceramics. Kliknij przycisk poniżej — link jest ważny przez godzinę i zadziała tylko raz.",
+        "button": "Ustaw nowe hasło",
+        "fallback": "Gdyby przycisk nie zadziałał, wklej ten adres do przeglądarki:",
+        "ignore": "Jeśli to nie Ty prosiłaś lub prosiłeś o zmianę hasła, po prostu zignoruj tę wiadomość. Hasło zostaje bez zmian.",
+        "signature": "Magda Ceramics — ceramika ręcznie robiona"
+      }
     },
     "register": {
       "title": "Załóż konto",
@@ -271,6 +299,8 @@
       "email": "Podaj poprawny adres e-mail.",
       "passwordRequired": "Podaj hasło.",
       "passwordLength": "Hasło musi mieć co najmniej 8 znaków.",
+      "confirmRequired": "Powtórz nowe hasło.",
+      "passwordsDiffer": "Hasła nie są takie same.",
       "invalidCredentials": "Nieprawidłowy e-mail lub hasło.",
       "emailExists": "Konto z tym adresem e-mail już istnieje.",
       "validation": "Sprawdź zaznaczone pola i spróbuj ponownie.",

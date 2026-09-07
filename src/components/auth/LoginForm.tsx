@@ -64,6 +64,11 @@ export default function LoginForm({
         {state.errors?.password && (
           <p className={errorClass}>{state.errors.password}</p>
         )}
+        <p className="text-xs text-[var(--muted)]">
+          <Link href="/forgot-password" className="underline hover:opacity-60">
+            {t("login.forgotLink")}
+          </Link>
+        </p>
       </div>
 
       {state.status === "error" && !state.errors && (
