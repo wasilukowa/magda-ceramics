@@ -90,3 +90,25 @@ export type AboutContent = {
 };
 
 export type AboutByLocale = Record<Locale, AboutContent>;
+
+// --- Strona „Pytania i odpowiedzi" -------------------------------------------
+// Pytania, które wracają najczęściej, pogrupowane tematycznie. `moreRoute`
+// odsyła tam, gdzie temat jest opisany wiążąco (wysyłka, regulamin) — dzięki
+// temu FAQ mówi krótko i po ludzku, a nie powiela paragrafów.
+export type FaqEntry = {
+  question: string;
+  answer: string[];
+  moreRoute?: StaticRoute;
+  moreHash?: string;
+  // Pytanie czeka na odpowiedź Magdy i DOPÓTY NIE TRAFIA NA STRONĘ. Lepiej
+  // pokazać krótsze FAQ niż zmyśloną odpowiedź o tym, czy kubek wolno wstawić
+  // do zmywarki.
+  draft?: boolean;
+};
+
+export type FaqGroup = {
+  heading: string;
+  entries: FaqEntry[];
+};
+
+export type FaqByLocale = Record<Locale, FaqGroup[]>;

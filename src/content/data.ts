@@ -104,6 +104,7 @@ export const SITEMAP_ROUTES: StaticRoute[] = [
   "/shop",
   "/about",
   "/reviews",
+  "/faq",
   "/contact",
   "/shipping",
   "/terms",

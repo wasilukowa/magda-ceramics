@@ -27,7 +27,8 @@
     "login": "Zaloguj się",
     "wishlist": "Ulubione",
     "currency": "Waluta",
-    "language": "Język"
+    "language": "Język",
+    "faq": "Pytania i odpowiedzi"
   },
   "categories": {
     "all": "Wszystkie",
@@ -243,7 +244,8 @@
     "termsTitle": "Regulamin",
     "privacyTitle": "Polityka prywatności i cookies",
     "cookies": "Polityka cookies",
-    "sitemap": "Mapa strony"
+    "sitemap": "Mapa strony",
+    "faq": "Pytania i odpowiedzi"
   },
   "comingSoon": {
     "title": "Wkrótce",
@@ -491,5 +493,12 @@
     "text": "Nie udało się wczytać tej strony. Spróbuj ponownie za chwilę.",
     "retry": "Spróbuj ponownie",
     "home": "Strona główna"
+  },
+  "faq": {
+    "title": "Pytania i odpowiedzi",
+    "intro": "Najczęstsze pytania o zamówienia, wysyłkę i same prace.",
+    "metaDescription": "Odpowiedzi na najczęstsze pytania: płatności, wysyłka do Polski i Unii Europejskiej, zwroty w 14 dni i ręcznie robione naczynia.",
+    "more": "Czytaj więcej →",
+    "stillStuck": "Nie ma tu Twojego pytania? <link>Napisz do mnie</link> — odpowiem osobiście."
   }
 }

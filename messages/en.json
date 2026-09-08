@@ -27,7 +27,8 @@
     "login": "Sign in",
     "wishlist": "Wishlist",
     "currency": "Currency",
-    "language": "Language"
+    "language": "Language",
+    "faq": "Questions & answers"
   },
   "categories": {
     "all": "All",
@@ -243,7 +244,8 @@
     "termsTitle": "Terms & Conditions",
     "privacyTitle": "Privacy & Cookies Policy",
     "cookies": "Cookie Policy",
-    "sitemap": "Site map"
+    "sitemap": "Site map",
+    "faq": "Questions & answers"
   },
   "comingSoon": {
     "title": "Coming soon",
@@ -491,5 +493,12 @@
     "text": "This page could not be loaded. Please try again in a moment.",
     "retry": "Try again",
     "home": "Home"
+  },
+  "faq": {
+    "title": "Questions & answers",
+    "intro": "The questions that come up most often — about orders, shipping and the pieces themselves.",
+    "metaDescription": "Answers to the most common questions: payment, shipping to Poland and the EU, 14-day returns and handmade ceramics.",
+    "more": "Read more →",
+    "stillStuck": "Your question is not here? <link>Write to me</link> — I answer personally."
   }
 }
