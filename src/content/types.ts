@@ -109,16 +109,18 @@ export type CeramicsContent = {
 export type CeramicsByLocale = Record<Locale, CeramicsContent>;
 
 // --- Strona „Pytania i odpowiedzi" -------------------------------------------
-// Pytania, które wracają najczęściej. `route` przy odpowiedzi pozwala odesłać
-// do strony, która mówi o tym więcej (wysyłka, regulamin) — bez powtarzania
-// tam całej treści.
+// Pytania, które wracają najczęściej, pogrupowane tematycznie. `moreRoute`
+// odsyła tam, gdzie temat jest opisany wiążąco (wysyłka, regulamin) — dzięki
+// temu FAQ mówi krótko i po ludzku, a nie powiela paragrafów.
 export type FaqEntry = {
   question: string;
   answer: string[];
-  // Odnośnik „czytaj więcej" pod odpowiedzią.
   moreRoute?: StaticRoute;
-  moreLabel?: string;
   moreHash?: string;
+  // Pytanie czeka na odpowiedź Magdy i DOPÓTY NIE TRAFIA NA STRONĘ. Lepiej
+  // pokazać krótsze FAQ niż zmyśloną odpowiedź o tym, czy kubek wolno wstawić
+  // do zmywarki.
+  draft?: boolean;
 };
 
 export type FaqGroup = {

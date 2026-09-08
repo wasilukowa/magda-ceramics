@@ -16,6 +16,7 @@ export const routing = defineRouting({
     "/about": { en: "/about", pl: "/o-mnie" },
     "/about/ceramics": { en: "/about/my-ceramics", pl: "/o-mnie/moja-ceramika" },
     "/reviews": { en: "/reviews", pl: "/opinie" },
+    "/faq": { en: "/faq", pl: "/pytania-i-odpowiedzi" },
     "/shipping": { en: "/shipping-and-returns", pl: "/wysylka-i-zwroty" },
     "/terms": { en: "/terms", pl: "/regulamin" },
     "/privacy": { en: "/privacy", pl: "/polityka-prywatnosci" },

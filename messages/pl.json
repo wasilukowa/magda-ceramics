@@ -28,7 +28,8 @@
     "wishlist": "Ulubione",
     "currency": "Waluta",
     "language": "Język",
-    "ceramics": "Moja ceramika"
+    "ceramics": "Moja ceramika",
+    "faq": "Pytania i odpowiedzi"
   },
   "categories": {
     "all": "Wszystkie",
@@ -245,7 +246,8 @@
     "privacyTitle": "Polityka prywatności i cookies",
     "cookies": "Polityka cookies",
     "sitemap": "Mapa strony",
-    "ceramics": "Moja ceramika"
+    "ceramics": "Moja ceramika",
+    "faq": "Pytania i odpowiedzi"
   },
   "comingSoon": {
     "title": "Wkrótce",
@@ -498,5 +500,12 @@
     "title": "Moja ceramika",
     "metaDescription": "Jak powstaje naczynie w mojej pracowni — od bryły gliny, przez koło garncarskie i rzeźbienie, po dwa wypały.",
     "draftNote": "Ta strona jest jeszcze w przygotowaniu — opisy kolejnych etapów wkrótce uzupełnię."
+  },
+  "faq": {
+    "title": "Pytania i odpowiedzi",
+    "intro": "Najczęstsze pytania o zamówienia, wysyłkę i same prace.",
+    "metaDescription": "Odpowiedzi na najczęstsze pytania: płatności, wysyłka do Polski i Unii Europejskiej, zwroty w 14 dni i ręcznie robione naczynia.",
+    "more": "Czytaj więcej →",
+    "stillStuck": "Nie ma tu Twojego pytania? <link>Napisz do mnie</link> — odpowiem osobiście."
   }
 }

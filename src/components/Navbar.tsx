@@ -126,6 +126,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                   { href: "/about" as const, label: t("nav.about") },
                   { href: "/about/ceramics" as const, label: t("nav.ceramics") },
                   { href: "/reviews" as const, label: t("nav.reviews") },
+                  { href: "/faq" as const, label: t("nav.faq") },
                   { href: "/contact" as const, label: t("nav.contact") },
                 ].map((item) => (
                   <li key={item.href}>
@@ -245,6 +246,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
               <li><Link href="/about" onClick={() => setMobileOpen(false)}>{t("nav.about")}</Link></li>
               <li className="pl-4"><Link href="/about/ceramics" onClick={() => setMobileOpen(false)}>{t("nav.ceramics")}</Link></li>
               <li className="pl-4"><Link href="/reviews" onClick={() => setMobileOpen(false)}>{t("nav.reviews")}</Link></li>
+              <li className="pl-4"><Link href="/faq" onClick={() => setMobileOpen(false)}>{t("nav.faq")}</Link></li>
               <li className="pl-4"><Link href="/contact" onClick={() => setMobileOpen(false)}>{t("nav.contact")}</Link></li>
               <li>
                 <Link href="/shop" className={SHOP_LINK_CLASS} onClick={() => setMobileOpen(false)}>

@@ -28,7 +28,8 @@
     "wishlist": "Wishlist",
     "currency": "Currency",
     "language": "Language",
-    "ceramics": "My ceramics"
+    "ceramics": "My ceramics",
+    "faq": "Questions & answers"
   },
   "categories": {
     "all": "All",
@@ -245,7 +246,8 @@
     "privacyTitle": "Privacy & Cookies Policy",
     "cookies": "Cookie Policy",
     "sitemap": "Site map",
-    "ceramics": "My ceramics"
+    "ceramics": "My ceramics",
+    "faq": "Questions & answers"
   },
   "comingSoon": {
     "title": "Coming soon",
@@ -498,5 +500,12 @@
     "title": "My ceramics",
     "metaDescription": "How a piece is made in my studio — from a lump of clay, through the wheel and the carving, to two firings.",
     "draftNote": "This page is still being written — descriptions of each stage are coming soon."
+  },
+  "faq": {
+    "title": "Questions & answers",
+    "intro": "The questions that come up most often — about orders, shipping and the pieces themselves.",
+    "metaDescription": "Answers to the most common questions: payment, shipping to Poland and the EU, 14-day returns and handmade ceramics.",
+    "more": "Read more →",
+    "stillStuck": "Your question is not here? <link>Write to me</link> — I answer personally."
   }
 }
