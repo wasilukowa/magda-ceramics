@@ -1,36 +1,30 @@
-import Stripe from "stripe";
-import { CartItem } from "@/contracts/server/cart";
-import { Currency } from "@/contracts/shared";
-import { getShippingAmount } from "@/lib/helpers/shipping";
-import { getUnitPrice } from "@/lib/helpers/currency";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { checkoutService } from "@/lib/service/checkout";
+import { paymentService } from "@/lib/service/payment";
+import {
+  checkoutErrorResponse,
+  getRequestError,
+  paymentIntentRequestSchema,
+} from "@/lib/service/checkout/helpers";
 
 export async function POST(request: Request) {
-  const { items, country, currency } = (await request.json()) as {
-    items: CartItem[];
-    country: string;
-    currency: Currency;
-  };
+  const body = await request.json().catch(() => null);
+  const parsed = paymentIntentRequestSchema.safeParse(body);
 
-  if (!items || items.length === 0) {
-    return Response.json({ error: "Cart is empty" }, { status: 400 });
+  if (!parsed.success) {
+    return checkoutErrorResponse(getRequestError(body));
   }
 
-  // All amounts in the chosen currency's smallest unit (grosze / euro cents).
-  const productsAmount = items.reduce(
-    (sum, item) =>
-      sum + Math.round(getUnitPrice(item, currency) * item.quantity * 100),
-    0
-  );
+  const { items, country, currency } = parsed.data;
 
-  const amount = productsAmount + getShippingAmount(country, currency);
+  // Kwota do zapłaty liczy się z cen wziętych z WooCommerce po numerze
+  // produktu. Ceny przysłane przez przeglądarkę są ignorowane — wcześniej to
+  // one o niej decydowały, więc żądanie z `price: "0.01"` kupowało wazon
+  // za grosz.
+  const pricing = await checkoutService.priceCart(items, country, currency);
+  if (!pricing.ok) {
+    return checkoutErrorResponse(pricing.error, pricing.unavailable);
+  }
 
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount,
-    currency,
-    automatic_payment_methods: { enabled: true },
-  });
-
-  return Response.json({ clientSecret: paymentIntent.client_secret });
+  const clientSecret = await paymentService.createIntent(pricing.cart, country);
+  return Response.json({ clientSecret });
 }

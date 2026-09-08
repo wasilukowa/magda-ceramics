@@ -27,6 +27,19 @@ export type OrderProps = {
   items: OrderLineItem[];
 };
 
+// Zamówienie właśnie złożone w WooCommerce — tyle, ile trzeba, żeby pokazać je
+// klientowi i przypiąć do płatności w Stripe.
+export type PlacedOrder = {
+  id: number;
+  key: string;
+};
+
+// Odpowiedź WooCommerce zaraz po utworzeniu zamówienia.
+export type RawPlacedOrder = {
+  id: number;
+  order_key: string;
+};
+
 export type RawOrderLineItem = {
   id: number;
   name: string;

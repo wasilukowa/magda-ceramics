@@ -12,6 +12,12 @@ export const getShippingZone = (countryCode: string): ShippingZone =>
   CHECKOUT_COUNTRIES.find((country) => country.code === countryCode)?.zone ??
   ShippingZone.RestEu;
 
+// Czy w ogóle wysyłamy do tego kraju. Kasa pokazuje wyłącznie te kraje, więc
+// kod spoza listy znaczy, że ktoś ominął formularz — a wtedy zamówienia nie
+// przyjmujemy zamiast po cichu policzyć mu najdroższą strefę.
+export const isCheckoutCountry = (countryCode: string): boolean =>
+  CHECKOUT_COUNTRIES.some((country) => country.code === countryCode);
+
 // Whether the customer can pick an InPost parcel locker for this country.
 // Drives the locker/courier toggle and which Geowidget (PL vs International)
 // is shown.

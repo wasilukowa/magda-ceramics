@@ -9,12 +9,19 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { useAuth } from "@/lib/store/providers/AuthProvider";
 import CheckoutContent from "./CheckoutContent";
 import CheckoutAuthGate from "@/components/checkout/CheckoutAuthGate";
+import CheckoutUnavailable from "@/components/checkout/CheckoutUnavailable";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { Link } from "@/i18n/navigation";
 import { Address } from "@/contracts/server/cart";
+import {
+  CheckoutError,
+  CheckoutErrorResponse,
+  UnavailableItem,
+} from "@/contracts/server/checkout";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { getShippingCost, hasInPostLocker } from "@/lib/helpers/shipping";
 import { getCartTotal } from "@/lib/helpers/currency";
+import { getCheckoutErrorKey, getOrderItems } from "@/lib/helpers/checkout";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -33,7 +40,7 @@ const EMPTY_ADDRESS: Address = {
 };
 
 function Checkout() {
-  const { items, itemCount } = useCart();
+  const { items, itemCount, removeItem } = useCart();
   const { currency } = useCurrency();
   const user = useAuth();
   const t = useTranslations("checkout");
@@ -57,6 +64,10 @@ function Checkout() {
   );
   const [locker, setLocker] = useState<InPostPoint | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Prace, które zdążyły się sprzedać — z wyceny koszyka albo ze sprawdzenia
+  // tuż przed zapłatą. Dopóki lista nie jest pusta, kasa nie pokazuje
+  // formularza płatności.
+  const [soldOut, setSoldOut] = useState<UnavailableItem[]>([]);
 
   const country = address.country;
   const hasLocker = hasInPostLocker(country);
@@ -83,18 +94,34 @@ function Checkout() {
   useEffect(() => {
     if (items.length === 0) return;
 
+    // Do serwera idą same numery produktów i sztuki — kwotę do zapłaty liczy
+    // on sam, z cen w WooCommerce.
     fetch("/api/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items, country, currency }),
+      body: JSON.stringify({ items: getOrderItems(items), country, currency }),
     })
       .then((r) => r.json())
-      .then((data: { error?: string; clientSecret?: string }) => {
-        if (data.error) setError(data.error);
-        else if (data.clientSecret) setClientSecret(data.clientSecret);
+      .then((data: CheckoutErrorResponse & { clientSecret?: string }) => {
+        if (data.error === CheckoutError.Unavailable) {
+          setSoldOut(data.unavailable ?? []);
+        } else if (data.error) {
+          setError(t(getCheckoutErrorKey(data.error)));
+        } else if (data.clientSecret) {
+          setClientSecret(data.clientSecret);
+          setSoldOut([]);
+          setError(null);
+        }
       })
       .catch(() => setError(t("connectionError")));
   }, [items, country, currency, t]);
+
+  // Wyrzucenie sprzedanych prac zmienia koszyk, więc wycena i płatność liczą
+  // się od nowa same — tu zostaje tylko sprzątnięcie komunikatu.
+  function removeSoldOut() {
+    soldOut.forEach((item) => removeItem(item.id));
+    setSoldOut([]);
+  }
 
   if (itemCount === 0) {
     return (
@@ -124,7 +151,7 @@ function Checkout() {
     <div className="max-w-5xl mx-auto px-6 py-16">
       <h1 className="text-xs tracking-widest uppercase mb-12">{t("title")}</h1>
 
-      {clientSecret && !showGate ? (
+      {clientSecret && !showGate && soldOut.length === 0 ? (
         // Elements wraps both columns so the order-summary CTA can drive Stripe.
         <Elements
           key={clientSecret}
@@ -174,13 +201,16 @@ function Checkout() {
             locker={locker}
             onLockerSelect={setLocker}
             deliveryLabel={deliveryLabel}
+            onSoldOut={setSoldOut}
           />
         </Elements>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           <div>
             {error && <p className="text-sm text-[var(--color-error)] mb-6">{error}</p>}
-            {showGate ? (
+            {soldOut.length > 0 ? (
+              <CheckoutUnavailable items={soldOut} onRemove={removeSoldOut} />
+            ) : showGate ? (
               <CheckoutAuthGate onGuestContinue={() => setGuestChosen(true)} />
             ) : (
               !error && (

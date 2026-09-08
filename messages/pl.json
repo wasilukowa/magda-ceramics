@@ -171,7 +171,13 @@
     "note": "Uwagi do zamówienia (opcjonalnie)",
     "payButton": "Zapłać i zamów",
     "processing": "Przetwarzanie...",
-    "stripeNote": "Płatność obsługiwana przez Stripe — bezpieczne połączenie SSL"
+    "stripeNote": "Płatność obsługiwana przez Stripe — bezpieczne połączenie SSL",
+    "shopUnavailable": "Sklep chwilowo nie odpowiada. Spróbuj ponownie za chwilę.",
+    "soldOutTitle": "Ktoś był szybszy",
+    "soldOutIntro": "Tych prac nie da się już zamówić:",
+    "soldOutReasonSold": "sprzedane",
+    "soldOutReasonGone": "niedostępne",
+    "soldOutRemove": "Usuń z koszyka i zamów resztę"
   },
   "shipping": {
     "pageTitle": "Wysyłka i zwroty",
@@ -217,7 +223,9 @@
     "paymentFailed": "Płatność nieudana lub anulowana.",
     "orderNotFound": "Nie znaleziono danych zamówienia.",
     "connectionError": "Błąd połączenia podczas tworzenia zamówienia.",
-    "backToCheckout": "Wróć do kasy"
+    "backToCheckout": "Wróć do kasy",
+    "paymentNotVerified": "Nie udało się potwierdzić płatności. Jeśli pieniądze zostały pobrane, napisz do nas — sprawdzimy to.",
+    "orderFailed": "Nie udało się zapisać zamówienia. Płatność mogła zostać pobrana — napisz do nas, a wszystko wyjaśnimy."
   },
   "footer": {
     "copyright": "Ceramika ręcznie robiona",

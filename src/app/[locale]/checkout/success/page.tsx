@@ -6,20 +6,22 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
 import { BillingAddress, OrderItem } from "@/contracts/server/cart";
-import { Currency } from "@/contracts/shared";
+import { CheckoutErrorResponse } from "@/contracts/server/checkout";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
+import { getOrderErrorKey } from "@/lib/helpers/checkout";
 
 type OrderState =
   | { status: "loading" }
   | { status: "success"; orderId: number }
   | { status: "error"; message: string };
 
+// Co kasa zostawia sobie na czas przekierowania do Stripe'a. Waluty ani kwoty
+// tu nie ma — jedno i drugie zamówienie czyta ze Stripe'a, bo tylko tam jest
+// zapis tego, co klient naprawdę zapłacił.
 type PendingOrder = {
   billing: BillingAddress;
   items: OrderItem[];
   note: string;
-  currency: Currency;
-  paidTotal: number;
   deliveryMethod: DeliveryMethod;
   locker: InPostPoint | null;
 };
@@ -49,7 +51,7 @@ function SuccessContent() {
         const raw = sessionStorage.getItem("pendingOrder");
         if (!raw) throw new Error(t("orderNotFound"));
 
-        const { billing, items, currency, paidTotal, deliveryMethod, locker }: PendingOrder =
+        const { billing, items, note, deliveryMethod, locker }: PendingOrder =
           JSON.parse(raw);
 
         return fetch("/api/create-order", {
@@ -58,19 +60,18 @@ function SuccessContent() {
           body: JSON.stringify({
             billing,
             items,
+            note,
             paymentIntentId: paymentIntent,
-            currency,
-            paidTotal,
             deliveryMethod,
             locker,
           }),
         });
       })
       .then((r) => r.json())
-      .then((data: { error?: string; orderId?: number }) => {
+      .then((data: CheckoutErrorResponse & { orderId?: number }) => {
         if (!active) return;
         if (data.error) {
-          setState({ status: "error", message: data.error });
+          setState({ status: "error", message: t(getOrderErrorKey(data.error)) });
         } else if (data.orderId) {
           sessionStorage.removeItem("pendingOrder");
           clearCart();
