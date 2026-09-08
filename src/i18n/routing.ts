@@ -26,6 +26,14 @@ export const routing = defineRouting({
     "/reset-password": { en: "/reset-password", pl: "/nowe-haslo" },
     "/account": { en: "/account", pl: "/konto" },
     "/account/orders": { en: "/account/orders", pl: "/konto/zamowienia" },
+    "/account/orders/pay": {
+      en: "/account/orders/pay",
+      pl: "/konto/zamowienia/zaplac",
+    },
+    "/account/orders/paid": {
+      en: "/account/orders/paid",
+      pl: "/konto/zamowienia/oplacone",
+    },
     "/account/details": { en: "/account/details", pl: "/konto/dane" },
     "/wishlist": { en: "/wishlist", pl: "/ulubione" },
   },

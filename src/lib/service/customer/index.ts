@@ -6,8 +6,7 @@ import {
   CustomerAddress,
   RawWcCustomer,
 } from "@/contracts/server/auth";
-import { OrderProps, RawOrder } from "@/contracts/server/order";
-import { prepareCustomer, prepareOrder, WISHLIST_META_KEY } from "./helpers";
+import { prepareCustomer, WISHLIST_META_KEY } from "./helpers";
 
 const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
 const WC_KEY = process.env.WC_CONSUMER_KEY;
@@ -91,13 +90,6 @@ class CustomerService {
       body: JSON.stringify(body),
     });
     return prepareCustomer(raw);
-  }
-
-  async getOrders(customerId: number): Promise<OrderProps[]> {
-    const raw = await this.wcFetch<RawOrder[]>(
-      `orders?customer=${customerId}&per_page=50&orderby=date&order=desc`,
-    );
-    return raw.map(prepareOrder);
   }
 
   async setWishlist(customerId: number, productIds: number[]): Promise<number[]> {

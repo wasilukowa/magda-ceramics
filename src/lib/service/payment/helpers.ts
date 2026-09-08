@@ -1,10 +1,12 @@
 import Stripe from "stripe";
 import { PaymentRecord, PaymentStatus } from "@/contracts/server/payment";
-import { PlacedOrder } from "@/contracts/server/order";
 import { Currency } from "@/contracts/shared";
 
-// Klucze metadanych płatności w Stripe. Trzy pierwsze zapisuje kasa przy
-// tworzeniu płatności, dwa ostatnie — zamówienie, które z niej powstało.
+// Klucze metadanych płatności w Stripe. `cart`, `country` i `shipping`
+// zapisuje kasa przy wycenie koszyka. `orderId` trafia tam dwiema drogami: od
+// zamówienia, które z płatności powstało, albo od panelu klienta, gdy płatność
+// powstaje DLA zamówienia, które już istniało. `orderKey` dokłada tylko ta
+// pierwsza droga.
 export const PAYMENT_META = {
   cart: "cart",
   country: "country",
@@ -16,10 +18,9 @@ export const PAYMENT_META = {
 const getPaidCurrency = (value: string): Currency | null =>
   value === Currency.PLN || value === Currency.EUR ? value : null;
 
-const getPlacedOrder = (metadata: Stripe.Metadata): PlacedOrder | null => {
+const getOrderId = (metadata: Stripe.Metadata): number | null => {
   const id = Number(metadata[PAYMENT_META.orderId]);
-  const key = metadata[PAYMENT_META.orderKey];
-  return Number.isInteger(id) && id > 0 && key ? { id, key } : null;
+  return Number.isInteger(id) && id > 0 ? id : null;
 };
 
 const getPaymentStatus = (intent: Stripe.PaymentIntent): PaymentStatus => {
@@ -36,7 +37,8 @@ export const preparePayment = (intent: Stripe.PaymentIntent): PaymentRecord => (
   paidTotal: (intent.amount_received || intent.amount) / 100,
   cart: intent.metadata[PAYMENT_META.cart] ?? "",
   country: intent.metadata[PAYMENT_META.country] ?? "",
-  order: getPlacedOrder(intent.metadata),
+  orderId: getOrderId(intent.metadata),
+  orderKey: intent.metadata[PAYMENT_META.orderKey] || null,
 });
 
 // Czy ta płatność jest za dokładnie ten koszyk i ten kraj. Pusty zapis koszyka
@@ -52,3 +54,12 @@ export const isPaymentFor = (
   !!payment.cart &&
   payment.cart === fingerprint &&
   payment.country === country;
+
+// Czy ta płatność jest za to konkretne zamówienie. Numer zamówienia zapisuje
+// w metadanych sam serwis przy tworzeniu płatności, więc nie da się nim
+// domknąć cudzego zamówienia.
+export const isPaymentForOrder = (
+  payment: PaymentRecord,
+  orderId: number
+): boolean =>
+  payment.status === PaymentStatus.Succeeded && payment.orderId === orderId;

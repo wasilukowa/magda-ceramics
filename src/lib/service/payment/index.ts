@@ -2,6 +2,7 @@ import "server-only";
 
 import Stripe from "stripe";
 import { PricedCart } from "@/contracts/server/checkout";
+import { OrderProps } from "@/contracts/server/order";
 import { PaymentRecord } from "@/contracts/server/payment";
 import { PlacedOrder } from "@/contracts/server/order";
 import { PAYMENT_META, preparePayment } from "./helpers";
@@ -37,6 +38,21 @@ class PaymentService {
         [PAYMENT_META.country]: country,
         [PAYMENT_META.shipping]: cart.shippingAmount.toString(),
       },
+    });
+
+    return intent.client_secret;
+  }
+
+  // Druga próba zapłaty — za zamówienie, które już leży w WooCommerce.
+  // Kwota bierze się z zamówienia (WooCommerce policzył je sam z numerów
+  // produktów), a nie z niczego, co przyszło z przeglądarki. W metadanych
+  // zostaje numer zamówienia, więc domknięcie płatności wie, co oznaczyć.
+  async createOrderIntent(order: OrderProps): Promise<string | null> {
+    const intent = await this.stripe.paymentIntents.create({
+      amount: Math.round(parseFloat(order.total) * 100),
+      currency: order.currency.toLowerCase(),
+      automatic_payment_methods: { enabled: true },
+      metadata: { [PAYMENT_META.orderId]: order.id.toString() },
     });
 
     return intent.client_secret;
