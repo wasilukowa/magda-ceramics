@@ -119,9 +119,12 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
             </Link>
 
             {aboutOpen && (
-              <ul className="absolute top-full left-1/2 -translate-x-1/2 bg-[var(--color-navbar)] border border-[var(--color-navbar-border)] min-w-[160px] shadow-sm">
+              // Szersze niż rozwijane „Sklep": „Moja ceramika" / „My ceramics"
+              // łamały się przy 160 px na dwa wiersze i lista wyglądała krzywo.
+              <ul className="absolute top-full left-1/2 -translate-x-1/2 bg-[var(--color-navbar)] border border-[var(--color-navbar-border)] min-w-[200px] shadow-sm">
                 {[
                   { href: "/about" as const, label: t("nav.about") },
+                  { href: "/about/ceramics" as const, label: t("nav.ceramics") },
                   { href: "/reviews" as const, label: t("nav.reviews") },
                   { href: "/contact" as const, label: t("nav.contact") },
                 ].map((item) => (
@@ -240,6 +243,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
             <ul className="flex flex-col gap-5 text-sm tracking-widest uppercase text-[var(--foreground)]">
               <li><Link href="/" onClick={() => setMobileOpen(false)}>{t("nav.home")}</Link></li>
               <li><Link href="/about" onClick={() => setMobileOpen(false)}>{t("nav.about")}</Link></li>
+              <li className="pl-4"><Link href="/about/ceramics" onClick={() => setMobileOpen(false)}>{t("nav.ceramics")}</Link></li>
               <li className="pl-4"><Link href="/reviews" onClick={() => setMobileOpen(false)}>{t("nav.reviews")}</Link></li>
               <li className="pl-4"><Link href="/contact" onClick={() => setMobileOpen(false)}>{t("nav.contact")}</Link></li>
               <li>

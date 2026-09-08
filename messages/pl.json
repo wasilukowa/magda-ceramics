@@ -27,7 +27,8 @@
     "login": "Zaloguj się",
     "wishlist": "Ulubione",
     "currency": "Waluta",
-    "language": "Język"
+    "language": "Język",
+    "ceramics": "Moja ceramika"
   },
   "categories": {
     "all": "Wszystkie",
@@ -243,7 +244,8 @@
     "termsTitle": "Regulamin",
     "privacyTitle": "Polityka prywatności i cookies",
     "cookies": "Polityka cookies",
-    "sitemap": "Mapa strony"
+    "sitemap": "Mapa strony",
+    "ceramics": "Moja ceramika"
   },
   "comingSoon": {
     "title": "Wkrótce",
@@ -491,5 +493,10 @@
     "text": "Nie udało się wczytać tej strony. Spróbuj ponownie za chwilę.",
     "retry": "Spróbuj ponownie",
     "home": "Strona główna"
+  },
+  "ceramics": {
+    "title": "Moja ceramika",
+    "metaDescription": "Jak powstaje naczynie w mojej pracowni — od bryły gliny, przez koło garncarskie i rzeźbienie, po dwa wypały.",
+    "draftNote": "Ta strona jest jeszcze w przygotowaniu — opisy kolejnych etapów wkrótce uzupełnię."
   }
 }

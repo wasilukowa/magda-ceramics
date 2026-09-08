@@ -129,6 +129,7 @@ export default async function SiteMapPage({
 
         <Grupa tytul={tSite("info")}>
           <Pozycja href="/about">{t("footer.about")}</Pozycja>
+          <Pozycja href="/about/ceramics">{t("footer.ceramics")}</Pozycja>
           <Pozycja href="/reviews">{t("footer.reviews")}</Pozycja>
           <Pozycja href="/contact">{t("footer.contact")}</Pozycja>
         </Grupa>

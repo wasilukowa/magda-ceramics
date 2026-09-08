@@ -64,6 +64,11 @@ export default async function Footer({
                   </Link>
                 </li>
                 <li>
+                  <Link href="/about/ceramics" className="hover:opacity-60 transition-opacity">
+                    {t("footer.ceramics")}
+                  </Link>
+                </li>
+                <li>
                   <Link href="/reviews" className="hover:opacity-60 transition-opacity">
                     {t("footer.reviews")}
                   </Link>
