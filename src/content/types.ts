@@ -90,3 +90,40 @@ export type AboutContent = {
 };
 
 export type AboutByLocale = Record<Locale, AboutContent>;
+
+// --- Strona „Moja ceramika" ---------------------------------------------------
+// Opowieść o tym, jak powstaje naczynie — od bryły gliny do drugiego wypału.
+// Kroki są prawdziwe i ustalone, tekst przy każdym pisze Magda, więc treść
+// siedzi tu jako dane, dokładnie jak przy „O mnie" i dokumentach prawnych.
+export type CeramicsStep = {
+  heading: string;
+  paragraphs: string[];
+};
+
+export type CeramicsContent = {
+  intro: string;
+  steps: CeramicsStep[];
+  closing: string;
+};
+
+export type CeramicsByLocale = Record<Locale, CeramicsContent>;
+
+// --- Strona „Pytania i odpowiedzi" -------------------------------------------
+// Pytania, które wracają najczęściej. `route` przy odpowiedzi pozwala odesłać
+// do strony, która mówi o tym więcej (wysyłka, regulamin) — bez powtarzania
+// tam całej treści.
+export type FaqEntry = {
+  question: string;
+  answer: string[];
+  // Odnośnik „czytaj więcej" pod odpowiedzią.
+  moreRoute?: StaticRoute;
+  moreLabel?: string;
+  moreHash?: string;
+};
+
+export type FaqGroup = {
+  heading: string;
+  entries: FaqEntry[];
+};
+
+export type FaqByLocale = Record<Locale, FaqGroup[]>;

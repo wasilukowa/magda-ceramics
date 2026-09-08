@@ -27,7 +27,8 @@
     "login": "Sign in",
     "wishlist": "Wishlist",
     "currency": "Currency",
-    "language": "Language"
+    "language": "Language",
+    "ceramics": "My ceramics"
   },
   "categories": {
     "all": "All",
@@ -243,7 +244,8 @@
     "termsTitle": "Terms & Conditions",
     "privacyTitle": "Privacy & Cookies Policy",
     "cookies": "Cookie Policy",
-    "sitemap": "Site map"
+    "sitemap": "Site map",
+    "ceramics": "My ceramics"
   },
   "comingSoon": {
     "title": "Coming soon",
@@ -491,5 +493,10 @@
     "text": "This page could not be loaded. Please try again in a moment.",
     "retry": "Try again",
     "home": "Home"
+  },
+  "ceramics": {
+    "title": "My ceramics",
+    "metaDescription": "How a piece is made in my studio — from a lump of clay, through the wheel and the carving, to two firings.",
+    "draftNote": "This page is still being written — descriptions of each stage are coming soon."
   }
 }

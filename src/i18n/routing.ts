@@ -14,6 +14,7 @@ export const routing = defineRouting({
     "/checkout/success": "/checkout/success",
     "/coming-soon": "/coming-soon",
     "/about": { en: "/about", pl: "/o-mnie" },
+    "/about/ceramics": { en: "/about/my-ceramics", pl: "/o-mnie/moja-ceramika" },
     "/reviews": { en: "/reviews", pl: "/opinie" },
     "/shipping": { en: "/shipping-and-returns", pl: "/wysylka-i-zwroty" },
     "/terms": { en: "/terms", pl: "/regulamin" },
