@@ -6,8 +6,8 @@ import { useStripe, useElements } from "@stripe/react-stripe-js";
 import { CartItem, Address } from "@/contracts/server/cart";
 import { Currency } from "@/contracts/shared";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
-import { CheckoutStep } from "@/contracts/server/checkout";
-import { getCartTotal } from "@/lib/helpers/currency";
+import { CheckoutStep, UnavailableItem } from "@/contracts/server/checkout";
+import { getOrderItems, getSoldOutItems } from "@/lib/helpers/checkout";
 import { cn } from "@/lib/utils";
 import CheckoutStepper from "@/components/checkout/CheckoutStepper";
 import OrderSummary from "@/components/checkout/OrderSummary";
@@ -26,6 +26,8 @@ type Props = {
   locker: InPostPoint | null;
   onLockerSelect: (point: InPostPoint) => void;
   deliveryLabel: string;
+  // Prace sprzedane w międzyczasie — kasa pokazuje je zamiast formularza.
+  onSoldOut: (items: UnavailableItem[]) => void;
 };
 
 const primaryButtonClass =
@@ -47,6 +49,7 @@ export default function CheckoutContent({
   locker,
   onLockerSelect,
   deliveryLabel,
+  onSoldOut,
 }: Props) {
   const stripe = useStripe();
   const elements = useElements();
@@ -105,7 +108,15 @@ export default function CheckoutContent({
     setLoading(true);
     setError(null);
 
-    const paidTotal = getCartTotal(items, currency) + shippingCost;
+    // Ceramika to pojedyncze sztuki, a wypełnianie adresu potrafi zająć
+    // kilkanaście minut. Ostatnie spojrzenie na magazyn tuż przed obciążeniem
+    // karty — żeby dwie osoby nie zapłaciły za tę samą pracę.
+    const soldOut = await getSoldOutItems(items);
+    if (soldOut.length) {
+      onSoldOut(soldOut);
+      setLoading(false);
+      return;
+    }
 
     // For locker delivery the address fields are blank; fall back to the
     // locker's own address so Stripe and WooCommerce have a valid destination.
@@ -137,10 +148,8 @@ export default function CheckoutContent({
           postcode: shippingAddress.postal_code,
           country: shippingAddress.country,
         },
-        items: items.map((i) => ({ id: i.id, quantity: i.quantity })),
+        items: getOrderItems(items),
         note: address.note,
-        currency,
-        paidTotal,
         deliveryMethod,
         locker: usingLocker ? locker : null,
       })

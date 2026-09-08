@@ -171,7 +171,13 @@
     "note": "Order note (optional)",
     "payButton": "Pay & order",
     "processing": "Processing...",
-    "stripeNote": "Payment powered by Stripe — secure SSL connection"
+    "stripeNote": "Payment powered by Stripe — secure SSL connection",
+    "shopUnavailable": "The shop is not responding right now. Please try again in a moment.",
+    "soldOutTitle": "Someone was faster",
+    "soldOutIntro": "These pieces can no longer be ordered:",
+    "soldOutReasonSold": "sold",
+    "soldOutReasonGone": "unavailable",
+    "soldOutRemove": "Remove from basket and order the rest"
   },
   "shipping": {
     "pageTitle": "Shipping and returns",
@@ -217,7 +223,9 @@
     "paymentFailed": "Payment failed or was cancelled.",
     "orderNotFound": "Order data not found.",
     "connectionError": "Connection error while creating the order.",
-    "backToCheckout": "Back to checkout"
+    "backToCheckout": "Back to checkout",
+    "paymentNotVerified": "We could not confirm the payment. If you have been charged, write to us and we will look into it.",
+    "orderFailed": "We could not save the order. The payment may have gone through — write to us and we will sort it out."
   },
   "footer": {
     "copyright": "Handmade ceramics",
