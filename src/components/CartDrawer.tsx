@@ -7,12 +7,21 @@ import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
 import { useCurrency } from "@/hooks/useCurrency";
 import { getCartTotal, formatPrice } from "@/lib/helpers/currency";
+import { cn } from "@/lib/utils";
 import Price from "@/components/Price";
 
 export default function CartDrawer() {
-  const { items, removeItem, isOpen, closeCart } = useCart();
+  const { items, removeItem, isOpen, closeCart, soldOutIds } = useCart();
   const { currency } = useCurrency();
   const t = useTranslations("cart");
+
+  const hasSoldOut = items.some((item) => soldOutIds.includes(item.id));
+  // `total` z providera jest w złotówkach; tutaj potrzebna jest wybrana waluta,
+  // więc liczymy z tych samych pozycji, ale przez getUnitPrice.
+  const cartTotal = getCartTotal(
+    items.filter((item) => !soldOutIds.includes(item.id)),
+    currency
+  );
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
@@ -49,8 +58,11 @@ export default function CartDrawer() {
               {t("empty")}
             </p>
           ) : (
-            items.map((item) => (
-              <div key={item.id} className="flex gap-4">
+            items.map((item) => {
+              const isSoldOut = soldOutIds.includes(item.id);
+
+              return (
+              <div key={item.id} className={cn("flex gap-4", isSoldOut && "opacity-60")}>
                 <Link href={{ pathname: "/product/[slug]", params: { slug: item.slug } }} onClick={closeCart}>
                   <div className="w-20 h-20 bg-[var(--color-ceramic)] flex-shrink-0 overflow-hidden">
                     {item.image && (
@@ -76,8 +88,20 @@ export default function CartDrawer() {
                   <Price
                     price={item.price}
                     priceEur={item.priceEur}
-                    className="block text-sm text-[var(--muted)] mt-1"
+                    className={cn(
+                      "block text-sm text-[var(--muted)] mt-1",
+                      isSoldOut && "line-through"
+                    )}
                   />
+
+                  {/* Sprzedana praca zostaje w koszyku, przekreślona i
+                      podpisana. Ciche usunięcie byłoby dokładnie tym, czego
+                      klient się boi: rzeczy znikają, a nikt nie mówi czemu. */}
+                  {isSoldOut && (
+                    <p className="mt-1 text-[10px] tracking-widest uppercase text-[var(--color-error)]">
+                      {t("soldOut")}
+                    </p>
+                  )}
 
                   <div className="flex items-center mt-3">
                     <button
@@ -90,7 +114,8 @@ export default function CartDrawer() {
                   </div>
                 </div>
               </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -99,17 +124,25 @@ export default function CartDrawer() {
             <div className="flex justify-between text-sm">
               <span className="text-xs tracking-widest uppercase text-[var(--muted)]">{t("total")}</span>
               <span className="tracking-wide">
-                {formatPrice(getCartTotal(items, currency), currency)}
+                {formatPrice(cartTotal, currency)}
               </span>
             </div>
             <p className="text-xs text-[var(--muted)]">{t("shipping")}</p>
-            <Link
-              href="/checkout"
-              onClick={closeCart}
-              className="block w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 text-center hover:opacity-80 transition-opacity"
-            >
-              {t("checkout")}
-            </Link>
+            {hasSoldOut ? (
+              // Kasa i tak odmówi koszyka ze sprzedaną pracą, więc lepiej
+              // powiedzieć to tutaj niż wpuścić klienta w formularz adresu.
+              <p className="text-xs text-[var(--color-error)]">
+                {t("soldOutHint")}
+              </p>
+            ) : (
+              <Link
+                href="/checkout"
+                onClick={closeCart}
+                className="block w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 text-center hover:opacity-80 transition-opacity"
+              >
+                {t("checkout")}
+              </Link>
+            )}
           </div>
         )}
       </div>

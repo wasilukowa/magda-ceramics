@@ -10,6 +10,18 @@ export type CartItem = {
 
 export type AddToCartInput = Omit<CartItem, "quantity">;
 
+// Jak pozycja koszyka wygląda TERAZ w WooCommerce. Koszyk w przeglądarce
+// pamięta cenę i nazwę z chwili dodania — po kilku dniach jedno i drugie może
+// być nieaktualne, a praca może być już sprzedana.
+export type CartItemState = {
+  id: number;
+  name: string;
+  price: string;
+  priceEur: number | null;
+  // Da się jeszcze kupić: jest w WooCommerce, ma cenę i jest na stanie.
+  purchasable: boolean;
+};
+
 export type OrderItem = {
   id: number;
   quantity: number;
