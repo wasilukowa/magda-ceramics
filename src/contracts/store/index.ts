@@ -16,11 +16,19 @@ export type CartStore = {
   items: CartItem[];
   isOpen: boolean;
   itemCount: number;
+  // Suma prac, które wciąż da się kupić — sprzedane w międzyczasie nie liczą
+  // się do kwoty, choć zostają widoczne w koszyku.
   total: number;
+  // Prace sprzedane albo wycofane, odkąd trafiły do koszyka.
+  soldOutIds: number[];
   addItem: (item: Omit<CartItem, "quantity">) => void;
   removeItem: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
   clearCart: () => void;
+  // Dociąga z WooCommerce aktualne ceny i dostępność. Nie ma tu
+  // `updateQuantity`: każda praca istnieje w jednym egzemplarzu, więc sztuk
+  // nie da się dołożyć, a metoda, której nikt nie wołał, mogła kiedyś
+  // wpuścić do zamówienia pięć tych samych kubków.
+  refresh: () => Promise<void>;
   openCart: () => void;
   closeCart: () => void;
 };

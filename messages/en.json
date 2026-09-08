@@ -99,7 +99,9 @@
     "total": "Total",
     "shipping": "Shipping will be calculated at checkout",
     "checkout": "Go to checkout",
-    "close": "Close cart"
+    "close": "Close cart",
+    "soldOut": "Sold",
+    "soldOutHint": "Remove the sold pieces from the basket to go to checkout."
   },
   "addToCart": {
     "add": "Add to cart",

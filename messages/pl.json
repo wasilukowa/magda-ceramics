@@ -99,7 +99,9 @@
     "total": "Razem",
     "shipping": "Koszt wysyłki zostanie obliczony przy kasie",
     "checkout": "Przejdź do kasy",
-    "close": "Zamknij koszyk"
+    "close": "Zamknij koszyk",
+    "soldOut": "Sprzedane",
+    "soldOutHint": "Usuń sprzedane prace z koszyka, żeby przejść do zamówienia."
   },
   "addToCart": {
     "add": "Dodaj do koszyka",

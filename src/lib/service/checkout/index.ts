@@ -1,7 +1,7 @@
 import "server-only";
 
 import { serverFetch } from "@/lib/api";
-import { OrderItem } from "@/contracts/server/cart";
+import { CartItemState, OrderItem } from "@/contracts/server/cart";
 import { ProductProps, RawProduct } from "@/contracts/server/product";
 import { RawPlacedOrder } from "@/contracts/server/order";
 import {
@@ -99,6 +99,42 @@ class CheckoutService {
   async getAvailability(items: OrderItem[]): Promise<AvailabilityResult> {
     const result = await this.getPurchasableProducts(items);
     return result.ok ? { ok: true } : result;
+  }
+
+  // Stan pozycji koszyka na teraz: aktualna nazwa, aktualna cena i to, czy
+  // pracę wciąż da się kupić. Koszyk w przeglądarce pamięta wartości z chwili
+  // dodania — po tygodniu potrafią się rozjechać z rzeczywistością.
+  async getCartState(ids: number[]): Promise<CartItemState[]> {
+    if (ids.length === 0) return [];
+
+    let products: ProductProps[];
+    try {
+      products = await this.getLiveProducts(ids);
+    } catch (error) {
+      console.error("Cart state lookup failed:", error);
+      return [];
+    }
+
+    const byId = new Map(products.map((product) => [product.id, product]));
+
+    return ids.flatMap((id) => {
+      const product = byId.get(id);
+      // Produkt zniknął z WooCommerce — koszyk sam się o tym dowie po tym, że
+      // nie ma go w odpowiedzi.
+      if (!product) {
+        return [{ id, name: "", price: "", priceEur: null, purchasable: false }];
+      }
+
+      return [
+        {
+          id,
+          name: product.name,
+          price: product.price,
+          priceEur: product.priceEur,
+          purchasable: product.hasPrice && product.inStock,
+        },
+      ];
+    });
   }
 
   // Ile naprawdę kosztuje ten koszyk. Ceny biorą się z WooCommerce po numerze
