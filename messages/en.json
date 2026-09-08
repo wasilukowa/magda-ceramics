@@ -340,7 +340,9 @@
     "orders": {
       "empty": "You have no orders yet.",
       "number": "Order #{number}",
-      "total": "Total"
+      "total": "Total",
+      "awaitingPayment": "This order is waiting to be paid. The piece is held for you until someone else pays for it.",
+      "payNow": "Pay now"
     },
     "orderStatus": {
       "pending": "Pending payment",
@@ -390,6 +392,30 @@
       "wrongPassword": "Current password is incorrect.",
       "validation": "Please check the highlighted fields and try again.",
       "server": "Something went wrong. Please try again later."
+    },
+    "pay": {
+      "title": "Pay for your order",
+      "button": "Pay {total} {currency}",
+      "processing": "Processing...",
+      "error": "The payment did not go through. Please try again.",
+      "unavailable": "The payment could not be started. Refresh the page or write to us.",
+      "alreadyPaid": "This order has already been paid.",
+      "paidTitle": "Paid",
+      "paid": "Thank you! The payment is confirmed and I am getting your order ready to post.",
+      "notConfirmedTitle": "Payment not confirmed",
+      "notConfirmed": "We could not confirm this payment. If you have been charged, write to us and we will look into it.",
+      "backToOrders": "← Back to orders",
+      "email": {
+        "subject": "Order #{number} is waiting to be paid",
+        "heading": "Hello {name}!",
+        "intro": "Your order #{number} ({items}) for {total} is still waiting to be paid. If the payment was interrupted, you can finish it here:",
+        "button": "Finish the payment",
+        "single": "I make every piece in a single copy, so until an order is paid someone else can still buy it.",
+        "ignore": "If you have changed your mind there is nothing to do — the order simply lapses.",
+        "signature": "Magda"
+      },
+      "confirming": "Confirming the payment...",
+      "paidNotRecorded": "Thank you, your payment went through. I will update the order by hand — there is nothing more for you to do."
     }
   },
   "wishlist": {

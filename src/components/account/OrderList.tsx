@@ -1,4 +1,5 @@
 import { getTranslations, getLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { OrderProps } from "@/contracts/server/order";
 
 const STATUS_TONE: Record<string, string> = {
@@ -75,6 +76,25 @@ export default async function OrderList({ orders }: { orders: OrderProps[] }) {
               {order.total} {order.currency}
             </span>
           </div>
+
+          {/* Zamówienie czekające na pieniądze dostaje drogę do ich wpłacenia.
+              Bez tego jedyną drogą było napisanie do Magdy. */}
+          {order.payable && (
+            <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-3">
+              <p className="text-xs text-[var(--muted)]">
+                {t("orders.awaitingPayment")}
+              </p>
+              <Link
+                href={{
+                  pathname: "/account/orders/pay",
+                  query: { order: order.id },
+                }}
+                className="bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-3 text-center hover:opacity-80 transition-opacity"
+              >
+                {t("orders.payNow")}
+              </Link>
+            </div>
+          )}
         </li>
       ))}
     </ul>

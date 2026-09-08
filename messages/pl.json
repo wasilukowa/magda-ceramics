@@ -340,7 +340,9 @@
     "orders": {
       "empty": "Nie masz jeszcze żadnych zamówień.",
       "number": "Zamówienie #{number}",
-      "total": "Razem"
+      "total": "Razem",
+      "awaitingPayment": "To zamówienie czeka na zapłatę. Praca jest zarezerwowana dla Ciebie, dopóki nie zostanie opłacona przez kogoś innego.",
+      "payNow": "Zapłać"
     },
     "orderStatus": {
       "pending": "Oczekuje na płatność",
@@ -390,6 +392,30 @@
       "wrongPassword": "Obecne hasło jest nieprawidłowe.",
       "validation": "Sprawdź zaznaczone pola i spróbuj ponownie.",
       "server": "Coś poszło nie tak. Spróbuj ponownie później."
+    },
+    "pay": {
+      "title": "Zapłać za zamówienie",
+      "button": "Zapłać {total} {currency}",
+      "processing": "Przetwarzanie...",
+      "error": "Płatność się nie udała. Spróbuj ponownie.",
+      "unavailable": "Nie udało się uruchomić płatności. Odśwież stronę albo napisz do nas.",
+      "alreadyPaid": "To zamówienie jest już opłacone.",
+      "paidTitle": "Zapłacono",
+      "paid": "Dziękujemy! Płatność została potwierdzona i szykuję zamówienie do wysyłki.",
+      "notConfirmedTitle": "Płatność niepotwierdzona",
+      "notConfirmed": "Nie udało się potwierdzić tej płatności. Jeśli pieniądze zostały pobrane, napisz do nas — sprawdzimy to.",
+      "backToOrders": "← Wróć do zamówień",
+      "email": {
+        "subject": "Zamówienie #{number} czeka na zapłatę",
+        "heading": "Cześć {name}!",
+        "intro": "Twoje zamówienie #{number} ({items}) na kwotę {total} czeka na zapłatę. Jeśli płatność się przerwała, możesz dokończyć ją tutaj:",
+        "button": "Dokończ płatność",
+        "single": "Każdą pracę robię w jednym egzemplarzu, więc dopóki zamówienie nie jest opłacone, ktoś inny może ją kupić.",
+        "ignore": "Jeśli rozmyśliłaś/eś się — nic nie musisz robić, zamówienie po prostu wygaśnie.",
+        "signature": "Magda"
+      },
+      "confirming": "Potwierdzamy płatność...",
+      "paidNotRecorded": "Dziękujemy, płatność została przyjęta. Zamówienie w panelu zaktualizuję ręcznie — nic więcej nie musisz robić."
     }
   },
   "wishlist": {

@@ -4,7 +4,6 @@ import {
   RawWcAddress,
   RawWcCustomer,
 } from "@/contracts/server/auth";
-import { OrderProps, OrderStatus, RawOrder } from "@/contracts/server/order";
 import { isCorrectNumber } from "@/utility";
 
 export const WISHLIST_META_KEY = "mc_wishlist";
@@ -44,24 +43,4 @@ export const prepareCustomer = (raw: RawWcCustomer): Customer => ({
   billing: prepareAddress(raw.billing),
   wishlist: prepareWishlist(raw),
   modifiedAt: raw.date_modified_gmt ?? "",
-});
-
-const toOrderStatus = (status: string): OrderStatus =>
-  Object.values(OrderStatus).includes(status as OrderStatus)
-    ? (status as OrderStatus)
-    : OrderStatus.Pending;
-
-export const prepareOrder = (raw: RawOrder): OrderProps => ({
-  id: raw.id,
-  number: raw.number,
-  status: toOrderStatus(raw.status),
-  dateCreated: raw.date_created,
-  total: raw.total,
-  currency: raw.currency,
-  items: (raw.line_items ?? []).map((item) => ({
-    id: item.id,
-    name: item.name,
-    quantity: item.quantity,
-    total: item.total,
-  })),
 });

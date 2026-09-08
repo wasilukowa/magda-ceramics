@@ -1,4 +1,3 @@
-import { PlacedOrder } from "@/contracts/server/order";
 import { Currency } from "@/contracts/shared";
 
 // Stan płatności w ujęciu, jakie ma znaczenie dla zamówienia. Metody odroczone
@@ -24,6 +23,10 @@ export type PaymentRecord = {
   // PricedCart.fingerprint.
   cart: string;
   country: string;
-  // Zamówienie już przypisane do tej płatności, jeśli powstało.
-  order: PlacedOrder | null;
+  // Zamówienie przypisane do tej płatności. Numer zapisuje albo kasa (gdy
+  // zamówienie powstało z płatności), albo panel klienta (gdy płatność powstała
+  // DLA zamówienia, które już było) — dlatego numer bywa bez klucza, a sam
+  // klucz nigdy bez numeru.
+  orderId: number | null;
+  orderKey: string | null;
 };

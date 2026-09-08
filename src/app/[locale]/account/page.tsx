@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getCurrentCustomer } from "@/lib/auth/dal";
-import { customerService } from "@/lib/service/customer";
+import { orderService } from "@/lib/service/order";
 
 export async function generateMetadata() {
   const t = await getTranslations("account");
@@ -12,7 +12,7 @@ export default async function AccountOverviewPage() {
   const t = await getTranslations("account");
   const customer = await getCurrentCustomer();
 
-  const orders = customer ? await customerService.getOrders(customer.id) : [];
+  const orders = customer ? await orderService.getCustomerOrders(customer.id) : [];
 
   const cards = [
     { href: "/account/orders", key: "orders", value: String(orders.length) },

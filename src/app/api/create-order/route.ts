@@ -30,10 +30,10 @@ export async function POST(request: Request) {
 
   // Jedna płatność, jedno zamówienie — odświeżenie strony potwierdzenia albo
   // powtórzone żądanie dostaje to samo zamówienie zamiast nowego.
-  if (payment.order) {
+  if (payment.orderId) {
     return Response.json({
-      orderId: payment.order.id,
-      orderKey: payment.order.key,
+      orderId: payment.orderId,
+      orderKey: payment.orderKey,
     });
   }
 

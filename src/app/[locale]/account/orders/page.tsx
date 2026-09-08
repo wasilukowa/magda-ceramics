@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { getCurrentCustomer } from "@/lib/auth/dal";
-import { customerService } from "@/lib/service/customer";
+import { orderService } from "@/lib/service/order";
 import OrderList from "@/components/account/OrderList";
 
 export async function generateMetadata() {
@@ -11,7 +11,7 @@ export async function generateMetadata() {
 export default async function OrdersPage() {
   const t = await getTranslations("account");
   const customer = await getCurrentCustomer();
-  const orders = customer ? await customerService.getOrders(customer.id) : [];
+  const orders = customer ? await orderService.getCustomerOrders(customer.id) : [];
 
   return (
     <div className="flex flex-col gap-8">
