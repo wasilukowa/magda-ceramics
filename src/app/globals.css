@@ -57,3 +57,15 @@ body {
   color: var(--foreground);
   font-family: var(--font-montserrat), sans-serif;
 }
+
+/* Pasek kategorii na telefonie przewija się w poziomie. Widoczny suwak byłby
+   tu grubą szarą kreską przez środek strony — o tym, że da się przewijać,
+   mówi ucięty ostatni kafelek. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
