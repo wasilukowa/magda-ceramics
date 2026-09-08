@@ -17,6 +17,11 @@ import { cn } from "@/lib/utils";
 // Po ilu pikselach przewinięcia nagłówek się zwija.
 const SHRINK_AT = 24;
 
+// „Sklep" to jedyna pozycja menu, która prowadzi do sprzedaży, więc jako jedyna
+// jest wytłuszczona i ma szersze odstępy między literami. Reszta paska zostaje
+// cienka — wyróżnienie działa właśnie dlatego, że jest jedno.
+const SHOP_LINK_CLASS = "font-semibold tracking-[0.2em]";
+
 export default function Navbar({ categories }: CategoryNavigationProps) {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
@@ -138,7 +143,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
             onMouseEnter={() => setShopOpen(true)}
             onMouseLeave={() => setShopOpen(false)}
           >
-            <Link href="/shop" className="flex items-center gap-1.5 hover:opacity-60 transition-opacity">
+            <Link href="/shop" className={cn(SHOP_LINK_CLASS, "flex items-center gap-1.5 hover:opacity-60 transition-opacity")}>
               {t("nav.shop")}
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M6 9l6 6 6-6" />
@@ -237,7 +242,11 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
               <li><Link href="/about" onClick={() => setMobileOpen(false)}>{t("nav.about")}</Link></li>
               <li className="pl-4"><Link href="/reviews" onClick={() => setMobileOpen(false)}>{t("nav.reviews")}</Link></li>
               <li className="pl-4"><Link href="/contact" onClick={() => setMobileOpen(false)}>{t("nav.contact")}</Link></li>
-              <li><Link href="/shop" onClick={() => setMobileOpen(false)}>{t("nav.shop")} — {t("categories.all")}</Link></li>
+              <li>
+                <Link href="/shop" className={SHOP_LINK_CLASS} onClick={() => setMobileOpen(false)}>
+                  {t("nav.shop")} — {t("categories.all")}
+                </Link>
+              </li>
               {categories.map((cat) => (
                 <li key={cat.slug} className="pl-4">
                   <Link href={{ pathname: "/shop/[category]", params: { category: cat.slug } }} onClick={() => setMobileOpen(false)}>
