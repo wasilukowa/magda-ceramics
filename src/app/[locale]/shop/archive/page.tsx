@@ -6,7 +6,6 @@ import { sortProducts } from "@/lib/helpers/product";
 import { ProductSort } from "@/contracts/server/product";
 import ProductCard, { EAGER_CARDS } from "@/components/ProductCard";
 import { ProductGridSkeleton } from "@/components/ProductsLoading";
-import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata({
   params,
@@ -33,15 +32,9 @@ async function ArchiveGrid({ locale }: { locale: string }) {
 
   if (products.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-6 py-16 text-center">
-        <p className="text-sm text-[var(--muted)]">{t("empty")}</p>
-        <Link
-          href="/shop"
-          className="border border-[var(--foreground)] px-8 py-3 text-xs uppercase tracking-widest transition-colors hover:bg-[var(--foreground)] hover:text-[var(--background)]"
-        >
-          {t("toShop")}
-        </Link>
-      </div>
+      <p className="py-16 text-center text-sm text-[var(--muted)]">
+        {t("empty")}
+      </p>
     );
   }
 
@@ -77,12 +70,9 @@ export default async function ArchivePage({
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
-      <h1 className="mb-4 text-center text-xs uppercase tracking-[0.3em] text-[var(--muted)]">
+      <h1 className="mb-12 text-center text-xs uppercase tracking-[0.3em] text-[var(--muted)]">
         {t("title")}
       </h1>
-      <p className="mx-auto mb-12 max-w-xl text-center text-sm leading-relaxed text-[var(--muted)]">
-        {t("intro")}
-      </p>
 
       {/* Siatka czeka na WooCommerce, więc idzie za granicą <Suspense> —
           nagłówek i wstęp zostają w statycznej skorupie strony. */}

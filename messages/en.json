@@ -31,7 +31,8 @@
     "ceramics": "My ceramics",
     "faq": "Questions & answers",
     "homeLink": "Magda Ceramics — home",
-    "faqShort": "FAQ"
+    "faqShort": "FAQ",
+    "archive": "Archive"
   },
   "categories": {
     "all": "All",
@@ -555,11 +556,9 @@
   },
   "archive": {
     "title": "Archive",
-    "intro": "Pieces that have already found a place in somebody’s home. Each one was the only one of its kind — I cannot repeat any of them, but you can see what came before.",
     "metaDescription": "Ceramics that have already found their owner. Magda’s archive of past work — every piece handmade, every piece one of a kind.",
     "count": "{count, plural, one {# piece} other {# pieces}}",
     "sold": "Sold",
-    "empty": "Nothing here yet — no piece has found its owner so far.",
-    "toShop": "Visit the shop"
+    "empty": "Nothing here."
   }
 }

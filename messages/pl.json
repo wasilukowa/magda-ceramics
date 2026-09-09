@@ -31,7 +31,8 @@
     "ceramics": "Moja ceramika",
     "faq": "Pytania i odpowiedzi",
     "homeLink": "Magda Ceramics — strona główna",
-    "faqShort": "FAQ"
+    "faqShort": "FAQ",
+    "archive": "Archiwum"
   },
   "categories": {
     "all": "Wszystkie",
@@ -555,11 +556,9 @@
   },
   "archive": {
     "title": "Archiwum",
-    "intro": "Prace, które znalazły już swoje miejsce u kogoś w domu. Każda była jedna — nie powtórzę żadnej z nich, ale możesz zobaczyć, co powstało wcześniej.",
     "metaDescription": "Ceramika, która znalazła już właściciela. Archiwum prac Magdy — każda robiona ręcznie, każda w jednym egzemplarzu.",
     "count": "{count, plural, one {# praca} few {# prace} many {# prac} other {# pracy}}",
     "sold": "Sprzedane",
-    "empty": "Nic tu jeszcze nie ma — żadna praca nie znalazła jeszcze właściciela.",
-    "toShop": "Zobacz sklep"
+    "empty": "Nic tu nie ma."
   }
 }

@@ -171,6 +171,13 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                     </Link>
                   </li>
                 ))}
+                {/* Archiwum na końcu i za kreską: to nie jest kolejna kategoria
+                    do kupienia, tylko to, co już się sprzedało. */}
+                <li className="border-t border-[var(--color-navbar-border)]">
+                  <Link href="/shop/archive" className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[var(--color-navbar-hover)] transition-colors">
+                    {t("nav.archive")}
+                  </Link>
+                </li>
               </ul>
             )}
           </li>
@@ -270,6 +277,11 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                   </Link>
                 </li>
               ))}
+              <li className="pl-4">
+                <Link href="/shop/archive" onClick={() => setMobileOpen(false)}>
+                  {t("nav.archive")}
+                </Link>
+              </li>
               <li>
                 <Link href="/faq" onClick={() => setMobileOpen(false)}>
                   {t("nav.faq")}
