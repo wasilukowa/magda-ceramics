@@ -10,18 +10,23 @@ import { useAuth } from "@/lib/store/providers/AuthProvider";
 // link dostaje własną granicę <Suspense> — reszta paska nie musi na nią czekać
 // i wchodzi do statycznej skorupy strony.
 //
-// Widok zapasowy to wersja dla niezalogowanego. Taki jest los większości
-// wchodzących, ikona w obu wypadkach wygląda identycznie, a etykieta i adres
-// poprawiają się, gdy tylko sesja jest znana.
+// Widok zapasowy to wersja dla niezalogowanego — taki jest los większości
+// wchodzących, a etykieta, adres i wygląd ikony poprawiają się, gdy tylko
+// sesja jest znana.
 
-const AccountIcon = () => (
+// Zalogowany widzi ludzika WYPEŁNIONEGO, gość sam kontur. Dotąd obie wersje
+// wyglądały identycznie i po pasku nie dało się poznać, czy jest się w środku.
+const AccountIcon = ({ isLoggedIn }: { isLoggedIn: boolean }) => (
   <svg
     width="22"
     height="22"
     viewBox="0 0 24 24"
-    fill="none"
+    fill={isLoggedIn ? "currentColor" : "none"}
     stroke="currentColor"
     strokeWidth="1.5"
+    // Bez tego wypełnienie zlewa głowę z ramionami w jedną plamę: obrys
+    // rysuje się wtedy w środku figury, a nie na jej brzegu.
+    strokeLinejoin="round"
   >
     <circle cx="12" cy="8" r="4" />
     <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
@@ -43,7 +48,7 @@ function IconLink({
       aria-label={isLoggedIn ? t("nav.account") : t("nav.login")}
       className={className}
     >
-      <AccountIcon />
+      <AccountIcon isLoggedIn={isLoggedIn} />
     </Link>
   );
 }
