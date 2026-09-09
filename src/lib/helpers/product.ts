@@ -1,8 +1,4 @@
-import {
-  ProductAvailability,
-  ProductProps,
-  ProductSort,
-} from "@/contracts/server/product";
+import { ProductProps, ProductSort } from "@/contracts/server/product";
 import { isString } from "@/utility";
 
 // Wartość z adresu jest niczyja — może przyjść z pomyłki w linku albo z
@@ -16,9 +12,6 @@ const parseEnum = <T extends string>(
 
 export const parseProductSort = (value: unknown): ProductSort =>
   parseEnum(value, Object.values(ProductSort), ProductSort.Newest);
-
-export const parseProductAvailability = (value: unknown): ProductAvailability =>
-  parseEnum(value, Object.values(ProductAvailability), ProductAvailability.All);
 
 // Ceny porównujemy w złotych, nawet gdy klient ogląda sklep w euro. Ceny w euro
 // Magda ustawia ręcznie (pole price_eur), więc kolejność mogłaby się między
@@ -52,11 +45,3 @@ export const sortProducts = (
       return sorted.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 };
-
-export const filterByAvailability = (
-  products: ProductProps[],
-  availability: ProductAvailability
-): ProductProps[] =>
-  availability === ProductAvailability.InStock
-    ? products.filter((product) => product.inStock)
-    : products;

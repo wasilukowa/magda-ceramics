@@ -94,19 +94,39 @@ class ProductService {
   // Categories for the site navigation (menu, footer, homepage tiles): only the
   // ones that actually hold products. A WooCommerce outage must not take the
   // whole layout down with it, so a failed call degrades to an empty menu.
+  // Kategorie do menu, stopki i kafelków na stronie głównej. Liczy się to, co
+  // jest DO KUPIENIA: licznik z WooCommerce zlicza też sprzedane, więc odkąd
+  // sklep ich nie pokazuje, kategoria wyprzedana do zera prowadziłaby z menu
+  // na pustą stronę. Obie listy idą z tego samego cache'u, więc to nie jest
+  // dodatkowy ruch do WordPressa.
   async getNavigationCategories(): Promise<CategoryProps[]> {
     try {
-      const categories = await this.getCategories();
-      return categories.filter((category) => category.count > 0);
+      const [categories, available] = await Promise.all([
+        this.getCategories(),
+        this.getAvailableProducts(),
+      ]);
+      const zajete = new Set(
+        available.flatMap((product) => product.categories.map((c) => c.id))
+      );
+      return categories.filter((category) => zajete.has(category.id));
     } catch {
       return [];
     }
   }
 
-  // Cały katalog (albo cała kategoria) — bez sufitu, patrz wcFetchAll.
+  // Cały katalog (albo cała kategoria), RAZEM ze sprzedanymi — bez sufitu,
+  // patrz wcFetchAll. Sklepowi to nie wystarcza (patrz getAvailableProducts),
+  // ale archiwum stoi właśnie na tym, co z tej listy odpadło.
   async getProducts(categoryId?: number): Promise<ProductProps[]> {
     const query = categoryId ? `?category=${categoryId}` : "";
     return preparePricedProducts(await wcFetchAll<RawProduct>(`products${query}`));
+  }
+
+  // To, co naprawdę da się kupić — i tylko to trafia do sklepu. Sprzedane
+  // prace mają swoje miejsce w archiwum i nie mieszają się już z ofertą.
+  async getAvailableProducts(categoryId?: number): Promise<ProductProps[]> {
+    const products = await this.getProducts(categoryId);
+    return products.filter((product) => product.inStock);
   }
 
   // Archiwum: prace, które znalazły już właściciela. Ta sama lista, na której
@@ -133,8 +153,8 @@ class ProductService {
       const [featured, newest] = await Promise.all([
         wcFetch<RawProduct[]>(`products?featured=true&per_page=${limit}`).then(
           preparePricedProducts
-        ),
-        this.getProducts(),
+        ).then((products) => products.filter((p) => p.inStock)),
+        this.getAvailableProducts(),
       ]);
 
       const chosen = featured.slice(0, limit);
@@ -152,9 +172,9 @@ class ProductService {
   // actually hold products, minus the one the customer is already on. Each gets
   // a thumbnail — the category picture, or the first product photo as fallback.
   async getCategoryTiles(excludeSlug?: string): Promise<CategoryTileProps[]> {
-    const categories = await this.getCategories();
+    const categories = await this.getNavigationCategories();
     const candidates = categories.filter(
-      (category) => category.count > 0 && category.slug !== excludeSlug
+      (category) => category.slug !== excludeSlug
     );
 
     return Promise.all(

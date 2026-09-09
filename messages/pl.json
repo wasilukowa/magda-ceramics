@@ -61,7 +61,6 @@
     "noCategoryProducts": "Brak produktów w tej kategorii.",
     "count": "{count, plural, =0 {brak prac} one {# praca} few {# prace} other {# prac}}",
     "sortLabel": "Sortowanie",
-    "onlyInStock": "Tylko dostępne",
     "noMatching": "Nic nie pasuje do wybranych ustawień.",
     "sort": {
       "newest": "Najnowsze",
