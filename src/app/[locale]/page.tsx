@@ -7,6 +7,7 @@ import { getCategoryLabel } from "@/lib/helpers/category";
 import { AboutSlider } from "@/components/AboutSlider";
 import { FeaturedWorks } from "@/components/FeaturedWorks";
 import { Quote } from "@/components/Quote";
+import WishlistCarousel from "@/components/WishlistCarousel";
 import ReviewsSlider from "@/components/ReviewsSlider";
 import { getFeaturedReviews } from "@/lib/helpers/reviews";
 
@@ -154,6 +155,10 @@ export default async function Home({
 
       {/* Quote */}
       <Quote text={t("home.quote")} author={t("home.quoteAuthor")} />
+
+      {/* Ulubione klienta. Sekcja rysuje się w przeglądarce i znika sama, gdy
+          lista jest pusta — czyli u większości wchodzących nie ma jej wcale. */}
+      <WishlistCarousel />
 
       {/* Opinie zamykają stronę główną. Slider pokazuje wybraną dziesiątkę,
           a komplet siedzi na osobnej stronie „Opinie". */}

@@ -1,12 +1,18 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import ProductCard from "@/components/ProductCard";
+import ProductCarousel, {
+  CAROUSEL_ITEM_CLASS,
+} from "@/components/ProductCarousel";
 import { ProductProps } from "@/contracts/server/product";
 
 // Sekcja „Wybrane prace" na stronie głównej. Wybór produktów robi serwis
 // (gwiazdka „Polecany" w WooCommerce), tutaj zostaje sam widok. Pusta lista
 // znaczy, że nie ma czego pokazać albo WooCommerce nie odpowiedziało — wtedy
 // sekcja znika, zamiast straszyć nagłówkiem nad pustką.
+//
+// Karty rysuje serwer i wchodzą do karuzeli jako `children` — dzięki temu
+// klientowi nie trzeba wysyłać ani serwisu, ani danych produktów.
 export async function FeaturedWorks({
   products,
   locale,
@@ -16,10 +22,7 @@ export async function FeaturedWorks({
 }) {
   if (products.length === 0) return null;
 
-  const [t, tProduct] = await Promise.all([
-    getTranslations({ locale, namespace: "home" }),
-    getTranslations({ locale, namespace: "product" }),
-  ]);
+  const t = await getTranslations({ locale, namespace: "home" });
 
   return (
     <section className="max-w-[1200px] mx-auto px-6 pt-10 pb-16">
@@ -27,15 +30,13 @@ export async function FeaturedWorks({
         {t("featured")}
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <ProductCarousel label={t("featured")}>
         {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            soldOutLabel={tProduct("outOfStock")}
-          />
+          <div key={product.id} className={CAROUSEL_ITEM_CLASS}>
+            <ProductCard product={product} />
+          </div>
         ))}
-      </div>
+      </ProductCarousel>
 
       <div className="flex justify-center mt-12">
         <Link

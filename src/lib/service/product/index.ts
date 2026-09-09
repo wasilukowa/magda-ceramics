@@ -45,6 +45,12 @@ async function wcFetch<T>(endpoint: string): Promise<T> {
 // pokazałby się nigdzie: ani w sklepie, ani w kategorii.
 const WC_MAX_PER_PAGE = 100;
 
+// Ilu polecanych prac szukamy. Wcześniej pytaliśmy o dokładnie tyle, ile mieści
+// sekcja — i to gubiło wybór Magdy: jeśli któraś z pobranych prac nie miała ceny
+// albo była już sprzedana, odpadała po pobraniu, a jej miejsce zajmowała
+// pierwsza lepsza nowość, choć dalej na liście czekały inne z gwiazdką.
+const FEATURED_POOL = 20;
+
 // Bezpiecznik na wypadek, gdyby WooCommerce w kółko oddawał pełne strony —
 // tysiąc pozycji to i tak wielokrotnie więcej, niż pracownia kiedykolwiek
 // wystawi naraz.
@@ -143,23 +149,27 @@ class ProductService {
   }
 
   // Prace pokazywane na stronie głównej. Wybór należy do Magdy: w WooCommerce
-  // wystarczy zaznaczyć przy produkcie gwiazdkę „Polecany". Dopóki nie zaznaczy
-  // ich tylu, ile mieści sekcja, resztę dopełniają najnowsze produkty — inaczej
-  // jedna gwiazdka dałaby na stronie głównej samotny kafelek. Zapasowe zapytanie
-  // jest tym samym, które wysyła sklep, więc Next liczy je raz. Awaria
-  // WooCommerce kończy się pustą sekcją, nie błędem całej strony głównej.
-  async getFeaturedProducts(limit = 4): Promise<ProductProps[]> {
+  // wystarczy zaznaczyć przy produkcie gwiazdkę „Polecany".
+  //
+  // Odkąd sekcja jest karuzelą, wchodzą do niej WSZYSTKIE oznaczone prace, a nie
+  // pierwsze cztery — przewijaniem dosięga się reszty. `minimum` mówi tylko, ile
+  // kafelków ma się pojawić CO NAJMNIEJ: dopóki gwiazdek jest mniej, resztę
+  // dopełniają najnowsze prace, żeby jedna gwiazdka nie dała samotnego kafelka.
+  //
+  // Zapasowe zapytanie jest tym samym, które wysyła sklep, więc Next liczy je
+  // raz. Awaria WooCommerce kończy się pustą sekcją, nie błędem strony głównej.
+  async getFeaturedProducts(minimum = 4): Promise<ProductProps[]> {
     try {
       const [featured, newest] = await Promise.all([
-        wcFetch<RawProduct[]>(`products?featured=true&per_page=${limit}`).then(
-          preparePricedProducts
-        ).then((products) => products.filter((p) => p.inStock)),
+        wcFetch<RawProduct[]>(`products?featured=true&per_page=${FEATURED_POOL}`)
+          .then(preparePricedProducts)
+          .then((products) => products.filter((p) => p.inStock)),
         this.getAvailableProducts(),
       ]);
 
-      const chosen = featured.slice(0, limit);
+      const chosen = [...featured];
       for (const product of newest) {
-        if (chosen.length >= limit) break;
+        if (chosen.length >= minimum) break;
         if (!chosen.some((c) => c.id === product.id)) chosen.push(product);
       }
       return chosen;

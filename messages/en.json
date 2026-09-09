@@ -54,7 +54,12 @@
     "quote": "The one who works with his hands, it's a worker. The one who works with his hands and his head, it's an artisan. The one who works with his hands and his head and his heart, it's an artist.",
     "quoteAuthor": "San Francesco d'Assisi",
     "about": "About the studio",
-    "aboutText": "Every piece is made by hand, with care and attention to every detail. Functional ceramics that combine simplicity of form with the warmth of the material."
+    "aboutText": "Every piece is made by hand, with care and attention to every detail. Functional ceramics that combine simplicity of form with the warmth of the material.",
+    "wishlist": "Your favourites",
+    "wishlistLink": "See all favourites →",
+    "wishlistSold": "Sold",
+    "carouselPrev": "Previous pieces",
+    "carouselNext": "Next pieces"
   },
   "shop": {
     "title": "Shop",
