@@ -59,9 +59,23 @@ export type CurrencyStore = {
   setCurrency: (currency: Currency) => void;
 };
 
+// O czym trzeba powiedzieć klientowi po kliknięciu serca. `GuestFirstLike`
+// pokazuje się RAZ na przeglądarkę — przy pierwszej pracy polubionej bez konta.
+export enum WishlistNoticeKind {
+  GuestFirstLike = "guest-first-like",
+  SaveFailed = "save-failed",
+}
+
 export type WishlistStore = {
   ids: number[];
   count: number;
   isInWishlist: (id: number) => boolean;
   toggle: (id: number) => void;
+  // Wyrzuca z listy prace, których nie ma już w WooCommerce — patrz
+  // WishlistGrid. Bez tego licznik w menu liczy prace, których nikt już nie
+  // zobaczy, i nie da się ich stamtąd usunąć, bo nie ma czego kliknąć.
+  dropMissing: (existingIds: number[]) => void;
+  // null = nie ma nic do powiedzenia.
+  notice: WishlistNoticeKind | null;
+  dismissNotice: () => void;
 };

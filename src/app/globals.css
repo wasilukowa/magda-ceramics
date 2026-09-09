@@ -17,6 +17,12 @@
   /* Accent */
   --color-accent: #8AAAA6;
 
+  /* Serce ulubionych. Bordo, nie czerwień alarmowa — ta jest zarezerwowana dla
+     błędów (--color-error) i nie chcemy, żeby polubienie pracy wyglądało jak
+     ostrzeżenie. Kontrast na tle strony 8,75:1, na kafelku ceramicznym 7,04:1,
+     czyli AA z zapasem nawet dla drobnego znaku. */
+  --color-heart: #7B2D3B;
+
   /* Gwiazdki przy opiniach. Sam akcent ma na tle strony kontrast 2,38:1 —
      za mało jak na znak, który NIESIE INFORMACJĘ (ocenę). Ta sama szałwia,
      tylko głębsza, daje 4,78:1, czyli AA nawet dla drobnego tekstu.
