@@ -80,13 +80,15 @@
       "stay": "Stay here",
       "pick": "Or browse another category",
       "items": "{count, plural, =0 {no products} one {# product} other {# products}}"
-    }
+    },
+    "archiveTeaser": "Looking for something you saw earlier? Sold pieces stay in the archive.",
+    "archiveLink": "See the archive →"
   },
   "product": {
     "backToShop": "← Shop",
     "priceUnavailable": "Price unavailable",
     "inStock": "In stock",
-    "outOfStock": "Out of stock",
+    "outOfStock": "Sold",
     "dimensionsTitle": "Dimensions",
     "dimensions": {
       "capacity": "Capacity",
@@ -112,7 +114,7 @@
     "inCart": "In cart — view",
     "added": "Added ✓",
     "unavailable": "Price unavailable",
-    "outOfStock": "Out of stock"
+    "outOfStock": "Sold"
   },
   "contact": {
     "title": "Contact",
@@ -251,7 +253,8 @@
     "cookies": "Cookie Policy",
     "sitemap": "Site map",
     "ceramics": "My ceramics",
-    "faq": "Questions & answers"
+    "faq": "Questions & answers",
+    "archive": "Archive"
   },
   "comingSoon": {
     "title": "Coming soon",
@@ -437,7 +440,11 @@
       "failedTitle": "Could not save",
       "failedBody": "This change was not saved to your account — try clicking again in a moment.",
       "close": "Close"
-    }
+    },
+    "sold": "Sold",
+    "archivedTitle": "From the archive",
+    "archivedIntro": "These pieces have been sold. They stay on your list, but they cannot be bought — every piece is one of a kind.",
+    "loadFailed": "Your favourites could not be loaded right now. Refresh in a moment — the list itself is safe."
   },
   "cookies": {
     "bannerTitle": "Cookies",
@@ -546,5 +553,14 @@
     "metaDescription": "Answers to the most common questions: payment, shipping to Poland and the EU, 14-day returns and handmade ceramics.",
     "more": "Read more →",
     "stillStuck": "Your question is not here? <link>Write to me</link> — I answer personally."
+  },
+  "archive": {
+    "title": "Archive",
+    "intro": "Pieces that have already found a place in somebody’s home. Each one was the only one of its kind — I cannot repeat any of them, but you can see what came before.",
+    "metaDescription": "Ceramics that have already found their owner. Magda’s archive of past work — every piece handmade, every piece one of a kind.",
+    "count": "{count, plural, one {# piece} other {# pieces}}",
+    "sold": "Sold",
+    "empty": "Nothing here yet — no piece has found its owner so far.",
+    "toShop": "Visit the shop"
   }
 }

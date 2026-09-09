@@ -98,6 +98,7 @@ export default async function SiteMapPage({
       <div className="space-y-12">
         <Grupa tytul={tSite("shop")}>
           <Pozycja href="/shop">{`${t("nav.shop")} — ${t("categories.all")}`}</Pozycja>
+          <Pozycja href="/shop/archive">{t("footer.archive")}</Pozycja>
           {categories.map((category) => (
             <li key={category.slug} className="pl-4">
               <Link

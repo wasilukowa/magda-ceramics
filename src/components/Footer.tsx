@@ -117,7 +117,12 @@ export default async function Footer({
                     </Link>
                   </li>
                 ))}
-              </ul>
+                              <li>
+                  <Link href="/shop/archive" className="hover:opacity-60 transition-opacity">
+                    {t("footer.archive")}
+                  </Link>
+                </li>
+</ul>
             </div>
 
             {/* Legal */}

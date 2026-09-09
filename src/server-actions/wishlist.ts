@@ -36,13 +36,16 @@ export async function saveWishlist(
 }
 
 // Pobiera dane produktów z listy życzeń (lista ID żyje po stronie klienta).
+// `null` znaczy „nie udało się zapytać", a nie „nic nie ma" — te dwie rzeczy
+// wyglądały wcześniej identycznie i strona pokazywała „Twoja lista ulubionych
+// jest pusta" wtedy, gdy WooCommerce po prostu nie odpowiedział na czas.
 export async function getWishlistProducts(
   ids: number[],
-): Promise<ProductProps[]> {
+): Promise<ProductProps[] | null> {
   try {
     return await productService.getProductsByIds(ids);
   } catch (err) {
     console.error("Get wishlist products failed:", err);
-    return [];
+    return null;
   }
 }

@@ -2,6 +2,7 @@ import { Link } from "@/i18n/navigation";
 import { LegalBlockType } from "@/contracts/shared";
 import { LegalBlock, LegalDocument, LegalTextRun } from "@/content/types";
 import { cn } from "@/lib/utils";
+import { routeHref } from "@/lib/helpers/navigation";
 
 // Zamienia dane z content/legal na treść strony. Widok nie wie nic o tym, co
 // stoi w regulaminie — zna tylko akapity, listy i trzy rodzaje wyróżnień.
@@ -10,7 +11,7 @@ function TextRun({ run }: { run: LegalTextRun }) {
   if (run.route) {
     return (
       <Link
-        href={run.hash ? { pathname: run.route, hash: run.hash } : run.route}
+        href={routeHref(run.route, run.hash)}
         className="text-[var(--foreground)] underline"
       >
         {run.text}
