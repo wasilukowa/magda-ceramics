@@ -7,6 +7,10 @@ export const routing = defineRouting({
   pathnames: {
     "/": "/",
     "/shop": { en: "/shop", pl: "/sklep" },
+    // UWAGA: musi stać PRZED „/shop/[category]" i mieć własny plik strony —
+    // inaczej „archiwum" wyglądałoby jak nazwa kategorii. Next daje
+    // pierwszeństwo trasie statycznej, ale kolejność tutaj trzyma to jasnym.
+    "/shop/archive": { en: "/shop/archive", pl: "/sklep/archiwum" },
     "/shop/[category]": { en: "/shop/[category]", pl: "/sklep/[category]" },
     "/product/[slug]": { en: "/product/[slug]", pl: "/produkt/[slug]" },
     "/contact": { en: "/contact", pl: "/kontakt" },

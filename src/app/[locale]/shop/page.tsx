@@ -5,6 +5,7 @@ import { productService } from "@/lib/service/product";
 import CategoryFilterLinks from "@/components/shop/CategoryFilterLinks";
 import ProductListing from "@/components/shop/ProductListing";
 import { ProductGridSkeleton } from "@/components/ProductsLoading";
+import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata({
   params,
@@ -47,6 +48,19 @@ export default async function ShopPage({
       <Suspense fallback={<ProductGridSkeleton />}>
         <ProductListing locale={locale} searchParams={searchParams} />
       </Suspense>
+
+      {/* Wejście do archiwum na dole listy, a nie w menu: to nie jest miejsce,
+          od którego zaczyna się zakupy — raczej to, na co się trafia, gdy
+          przewinie się wszystko i chce zobaczyć więcej. */}
+      <div className="mt-20 border-t border-[var(--border)] pt-10 text-center">
+        <p className="mb-4 text-sm text-[var(--muted)]">{t("archiveTeaser")}</p>
+        <Link
+          href="/shop/archive"
+          className="text-xs uppercase tracking-widest underline underline-offset-4 transition-colors hover:text-[var(--muted)]"
+        >
+          {t("archiveLink")}
+        </Link>
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { buildPageMetadata } from "@/lib/helpers/metadata";
 import { FAQ } from "@/content/faq";
 import { FaqEntry } from "@/content/types";
+import { routeHref } from "@/lib/helpers/navigation";
 
 export async function generateMetadata({
   params,
@@ -84,11 +85,7 @@ export default async function FaqPage({
 
                       {entry.moreRoute && (
                         <Link
-                          href={
-                            entry.moreHash
-                              ? { pathname: entry.moreRoute, hash: entry.moreHash }
-                              : entry.moreRoute
-                          }
+                          href={routeHref(entry.moreRoute, entry.moreHash)}
                           className="text-xs tracking-widest uppercase hover:text-[var(--foreground)] text-[var(--muted)] transition-colors"
                         >
                           {t("more")}

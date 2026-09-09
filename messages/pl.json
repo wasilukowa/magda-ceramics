@@ -80,13 +80,15 @@
       "stay": "Zostaję tutaj",
       "pick": "Albo zajrzyj do innej kategorii",
       "items": "{count, plural, =0 {brak produktów} one {# produkt} few {# produkty} other {# produktów}}"
-    }
+    },
+    "archiveTeaser": "Szukasz czegoś, co widziałaś wcześniej? Sprzedane prace zostają w archiwum.",
+    "archiveLink": "Zobacz archiwum →"
   },
   "product": {
     "backToShop": "← Sklep",
     "priceUnavailable": "Cena niedostępna",
     "inStock": "Dostępny",
-    "outOfStock": "Niedostępny",
+    "outOfStock": "Sprzedane",
     "dimensionsTitle": "Wymiary",
     "dimensions": {
       "capacity": "Pojemność",
@@ -112,7 +114,7 @@
     "inCart": "W koszyku — podejrzyj",
     "added": "Dodano ✓",
     "unavailable": "Cena niedostępna",
-    "outOfStock": "Brak w magazynie"
+    "outOfStock": "Sprzedane"
   },
   "contact": {
     "title": "Kontakt",
@@ -251,7 +253,8 @@
     "cookies": "Polityka cookies",
     "sitemap": "Mapa strony",
     "ceramics": "Moja ceramika",
-    "faq": "Pytania i odpowiedzi"
+    "faq": "Pytania i odpowiedzi",
+    "archive": "Archiwum"
   },
   "comingSoon": {
     "title": "Wkrótce",
@@ -437,7 +440,11 @@
       "failedTitle": "Nie udało się zapisać",
       "failedBody": "Nie zapisałam tej zmiany na Twoim koncie — spróbuj kliknąć jeszcze raz za chwilę.",
       "close": "Zamknij"
-    }
+    },
+    "sold": "Sprzedane",
+    "archivedTitle": "Z archiwum",
+    "archivedIntro": "Te prace zostały już sprzedane. Zostają na Twojej liście, ale nie da się ich kupić — każda ceramika jest jedna.",
+    "loadFailed": "Nie udało się teraz wczytać Twoich ulubionych. Odśwież stronę za chwilę — lista jest bezpieczna."
   },
   "cookies": {
     "bannerTitle": "Pliki cookies",
@@ -546,5 +553,14 @@
     "metaDescription": "Odpowiedzi na najczęstsze pytania: płatności, wysyłka do Polski i Unii Europejskiej, zwroty w 14 dni i ręcznie robione naczynia.",
     "more": "Czytaj więcej →",
     "stillStuck": "Nie ma tu Twojego pytania? <link>Napisz do mnie</link> — odpowiem osobiście."
+  },
+  "archive": {
+    "title": "Archiwum",
+    "intro": "Prace, które znalazły już swoje miejsce u kogoś w domu. Każda była jedna — nie powtórzę żadnej z nich, ale możesz zobaczyć, co powstało wcześniej.",
+    "metaDescription": "Ceramika, która znalazła już właściciela. Archiwum prac Magdy — każda robiona ręcznie, każda w jednym egzemplarzu.",
+    "count": "{count, plural, one {# praca} few {# prace} many {# prac} other {# pracy}}",
+    "sold": "Sprzedane",
+    "empty": "Nic tu jeszcze nie ma — żadna praca nie znalazła jeszcze właściciela.",
+    "toShop": "Zobacz sklep"
   }
 }

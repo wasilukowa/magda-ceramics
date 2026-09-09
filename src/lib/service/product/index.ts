@@ -109,6 +109,19 @@ class ProductService {
     return preparePricedProducts(await wcFetchAll<RawProduct>(`products${query}`));
   }
 
+  // Archiwum: prace, które znalazły już właściciela. Ta sama lista, na której
+  // stoi sklep — więc Next liczy ją raz — tylko odwrócona: zostaje to, czego
+  // nie ma już na stanie. Awaria WooCommerce kończy się pustym archiwum, a nie
+  // błędem strony; to galeria, nie sprzedaż, więc nie ma o co kruszyć kopii.
+  async getArchivedProducts(): Promise<ProductProps[]> {
+    try {
+      const products = await this.getProducts();
+      return products.filter((product) => !product.inStock);
+    } catch {
+      return [];
+    }
+  }
+
   // Prace pokazywane na stronie głównej. Wybór należy do Magdy: w WooCommerce
   // wystarczy zaznaczyć przy produkcie gwiazdkę „Polecany". Dopóki nie zaznaczy
   // ich tylu, ile mieści sekcja, resztę dopełniają najnowsze produkty — inaczej

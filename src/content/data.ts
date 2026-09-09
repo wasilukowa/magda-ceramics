@@ -102,6 +102,7 @@ export const SITE_URL = "https://www.magdaceramics.com";
 export const SITEMAP_ROUTES: StaticRoute[] = [
   "/",
   "/shop",
+  "/shop/archive",
   "/about",
   "/about/ceramics",
   "/reviews",
