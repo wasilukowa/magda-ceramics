@@ -19,7 +19,9 @@ const SHRINK_AT = 24;
 
 // „Sklep" to jedyna pozycja menu, która prowadzi do sprzedaży, więc jako jedyna
 // jest wytłuszczona i ma szersze odstępy między literami. Reszta paska zostaje
-// cienka — wyróżnienie działa właśnie dlatego, że jest jedno.
+// cienka — wyróżnienie działa właśnie dlatego, że jest jedno. „Pytania
+// i odpowiedzi" świadomie go NIE dostają, choć stoją obok: gdyby wytłuścić
+// oba, sklep przestałby się wyróżniać.
 const SHOP_LINK_CLASS = "font-semibold tracking-[0.2em]";
 
 export default function Navbar({ categories }: CategoryNavigationProps) {
@@ -65,7 +67,15 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
           scrolled ? "pt-3 pb-2" : "pt-8 pb-6"
         )}
       >
-        <Link href="/" className="block max-w-full">
+        {/* Odkąd „Strona główna" zniknęła z menu, to logo jest jedyną drogą
+            na stronę główną — więc mówi wprost, dokąd prowadzi. Sam `alt`
+            zdjęcia brzmiałby „Magda Ceramics" i nie zdradzał, że to odnośnik
+            do strony głównej. */}
+        <Link
+          href="/"
+          aria-label={t("nav.homeLink")}
+          className="block max-w-full"
+        >
           <Image
             src="/logo.svg"
             alt="Magda Ceramics"
@@ -96,13 +106,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
         <div className="flex-1 min-w-0" aria-hidden="true" />
 
         {/* Desktop nav — centered */}
-        <ul className="hidden md:flex shrink-0 items-center gap-6 lg:gap-10 text-sm tracking-widest uppercase text-[var(--foreground)]">
-          <li>
-            <Link href="/" className="hover:opacity-60 transition-opacity">
-              {t("nav.home")}
-            </Link>
-          </li>
-
+        <ul className="hidden md:flex shrink-0 items-center gap-5 lg:gap-10 text-sm tracking-widest uppercase text-[var(--foreground)]">
           {/* „O mnie" działa tak samo jak „Sklep": sam jest linkiem, a pod nim
               siedzą Opinie i Kontakt. Dzięki temu doszła nowa pozycja, a górny
               pasek nie urósł. */}
@@ -126,7 +130,6 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                   { href: "/about" as const, label: t("nav.about") },
                   { href: "/about/ceramics" as const, label: t("nav.ceramics") },
                   { href: "/reviews" as const, label: t("nav.reviews") },
-                  { href: "/faq" as const, label: t("nav.faq") },
                   { href: "/contact" as const, label: t("nav.contact") },
                 ].map((item) => (
                   <li key={item.href}>
@@ -170,6 +173,15 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                 ))}
               </ul>
             )}
+          </li>
+
+          <li>
+            {/* W pasku krótko: pełne „Pytania i odpowiedzi" mierzy 190 px i przy
+                768 px wypycha menu na przełączniki — ten sam problem, co W7
+                w audycie. Nazwa strony, stopka i menu telefonu zostają pełne. */}
+            <Link href="/faq" className="hover:opacity-60 transition-opacity">
+              {t("nav.faqShort")}
+            </Link>
           </li>
 
           <li>
@@ -242,11 +254,9 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
         <div className="md:hidden border-t border-[var(--color-navbar-border)] bg-[var(--color-navbar)]">
           <div className="max-w-[1200px] mx-auto px-6 py-5">
             <ul className="flex flex-col gap-5 text-sm tracking-widest uppercase text-[var(--foreground)]">
-              <li><Link href="/" onClick={() => setMobileOpen(false)}>{t("nav.home")}</Link></li>
               <li><Link href="/about" onClick={() => setMobileOpen(false)}>{t("nav.about")}</Link></li>
               <li className="pl-4"><Link href="/about/ceramics" onClick={() => setMobileOpen(false)}>{t("nav.ceramics")}</Link></li>
               <li className="pl-4"><Link href="/reviews" onClick={() => setMobileOpen(false)}>{t("nav.reviews")}</Link></li>
-              <li className="pl-4"><Link href="/faq" onClick={() => setMobileOpen(false)}>{t("nav.faq")}</Link></li>
               <li className="pl-4"><Link href="/contact" onClick={() => setMobileOpen(false)}>{t("nav.contact")}</Link></li>
               <li>
                 <Link href="/shop" className={SHOP_LINK_CLASS} onClick={() => setMobileOpen(false)}>
@@ -260,6 +270,11 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href="/faq" onClick={() => setMobileOpen(false)}>
+                  {t("nav.faq")}
+                </Link>
+              </li>
               <li>
                 <Link href="/wishlist" onClick={() => setMobileOpen(false)}>
                   {t("nav.wishlist")}

@@ -29,7 +29,9 @@
     "currency": "Currency",
     "language": "Language",
     "ceramics": "My ceramics",
-    "faq": "Questions & answers"
+    "faq": "Questions & answers",
+    "homeLink": "Magda Ceramics — home",
+    "faqShort": "FAQ"
   },
   "categories": {
     "all": "All",
