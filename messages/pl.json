@@ -29,7 +29,9 @@
     "currency": "Waluta",
     "language": "Język",
     "ceramics": "Moja ceramika",
-    "faq": "Pytania i odpowiedzi"
+    "faq": "Pytania i odpowiedzi",
+    "homeLink": "Magda Ceramics — strona główna",
+    "faqShort": "FAQ"
   },
   "categories": {
     "all": "Wszystkie",
