@@ -61,7 +61,6 @@
     "noCategoryProducts": "No products in this category.",
     "count": "{count, plural, =0 {no pieces} one {# piece} other {# pieces}}",
     "sortLabel": "Sort by",
-    "onlyInStock": "In stock only",
     "noMatching": "Nothing matches the current settings.",
     "sort": {
       "newest": "Newest",

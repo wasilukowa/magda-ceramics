@@ -2,18 +2,16 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  ProductAvailability,
-  ProductSort,
-} from "@/contracts/server/product";
-import { cn } from "@/lib/utils";
+import { ProductSort } from "@/contracts/server/product";
 
-// Sortowanie i filtr dostępności trzymamy w adresie, nie w stanie komponentu —
-// link do „najtańszych dostępnych kubków" ma się dać wysłać komuś dalej.
-// Wartość domyślna znika z adresu, żeby czysty /sklep zostawał czystym /sklep.
+// Sortowanie trzymamy w adresie, nie w stanie komponentu — link do
+// „najtańszych kubków" ma się dać wysłać komuś dalej. Wartość domyślna znika
+// z adresu, żeby czysty /sklep zostawał czystym /sklep.
+//
+// Filtru „tylko dostępne" już tu nie ma: sklep pokazuje wyłącznie to, co da się
+// kupić, więc przycisk nie miałby czego odsiewać. Sprzedane prace są w archiwum.
 type Props = {
   sort: ProductSort;
-  availability: ProductAvailability;
   count: number;
 };
 
@@ -24,13 +22,11 @@ const SORT_OPTIONS = [
   ProductSort.NameAsc,
 ];
 
-export default function ProductToolbar({ sort, availability, count }: Props) {
+export default function ProductToolbar({ sort, count }: Props) {
   const t = useTranslations("shop");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  const onlyInStock = availability === ProductAvailability.InStock;
 
   const withParam = (key: string, value: string, isDefault: boolean) => {
     const params = new URLSearchParams(searchParams);
@@ -47,34 +43,14 @@ export default function ProductToolbar({ sort, availability, count }: Props) {
 
   return (
     // Natywna lista rozmiarem odpowiada NAJDŁUŻSZEJ opcji („Cena malejąco",
-    // a po angielsku „Price, low to high"), więc nie wolno jej zwężać — przy
+    // a po angielsku „Price, low to high"), więc NIE WOLNO jej zwężać — przy
     // wymuszonej połówce ucinała wybraną wartość na „NAJNOWSZ…". Dlatego na
-    // telefonie pierwszy wiersz to licznik i filtr (`ml-auto` odsuwa filtr do
-    // prawej krawędzi), a lista schodzi pod nie pełną szerokością. Od 640 px
-    // `sm:w-auto` wciąga ją z powrotem i wychodzi dawny układ: licznik
-    // z lewej, oba sterowania z prawej. Wcześniej przycisk i lista zawijały
-    // się każde do własnego wiersza — trzy poziomy chromu nad pierwszym
-    // zdjęciem produktu.
+    // telefonie schodzi pod licznik pełną szerokością, a od 640 px wraca obok
+    // niego i `sm:ml-auto` odsuwa ją do prawej krawędzi.
     <div className="flex flex-wrap items-center gap-3 mb-8 text-xs tracking-widest uppercase text-[var(--muted)]">
       <span>{t("count", { count })}</span>
 
-      <button
-        type="button"
-        aria-pressed={onlyInStock}
-        onClick={() =>
-          withParam("availability", ProductAvailability.InStock, onlyInStock)
-        }
-        className={cn(
-          "ml-auto border px-3 py-2 sm:px-4 tracking-widest uppercase whitespace-nowrap transition-colors",
-          onlyInStock
-            ? "border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]"
-            : "border-[var(--color-control-border)] hover:border-[var(--foreground)]"
-        )}
-      >
-        {t("onlyInStock")}
-      </button>
-
-      <label className="flex items-center gap-2 w-full sm:w-auto">
+      <label className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
         <span className="sr-only">{t("sortLabel")}</span>
         <select
           value={sort}

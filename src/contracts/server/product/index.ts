@@ -108,10 +108,3 @@ export enum ProductSort {
   PriceDesc = "price-desc",
   NameAsc = "name-asc",
 }
-
-// Filtr dostępności. Ceramika to pojedyncze sztuki — sprzedany kubek zostaje
-// na liście (można obejrzeć), ale klient może go schować.
-export enum ProductAvailability {
-  All = "all",
-  InStock = "in-stock",
-}

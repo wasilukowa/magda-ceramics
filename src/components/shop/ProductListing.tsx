@@ -2,14 +2,9 @@ import { getTranslations } from "next-intl/server";
 import ProductCard, { EAGER_CARDS } from "@/components/ProductCard";
 import ProductToolbar from "@/components/shop/ProductToolbar";
 import { productService } from "@/lib/service/product";
-import {
-  filterByAvailability,
-  parseProductAvailability,
-  parseProductSort,
-  sortProducts,
-} from "@/lib/helpers/product";
+import { parseProductSort, sortProducts } from "@/lib/helpers/product";
 
-// Ta część strony czyta adres (?sort=, ?availability=), więc — inaczej niż
+// Ta część strony czyta adres (?sort=), więc — inaczej niż
 // nagłówek i rząd kategorii — nie da się jej policzyć z góry przy budowaniu.
 // Dlatego siedzi za własną granicą <Suspense>: skorupa strony zostaje
 // statyczna, a dosyła się tylko siatka. Same produkty i tak idą z cache'u
@@ -23,29 +18,19 @@ export default async function ProductListing({
   categoryId?: number;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { sort, availability } = await searchParams;
+  const { sort } = await searchParams;
   const chosenSort = parseProductSort(sort);
-  const chosenAvailability = parseProductAvailability(availability);
 
-  const [t, tProduct, products] = await Promise.all([
+  const [t, products] = await Promise.all([
     getTranslations({ locale, namespace: "shop" }),
-    getTranslations({ locale, namespace: "product" }),
-    productService.getProducts(categoryId),
+    productService.getAvailableProducts(categoryId),
   ]);
 
-  const visible = sortProducts(
-    filterByAvailability(products, chosenAvailability),
-    chosenSort,
-    locale
-  );
+  const visible = sortProducts(products, chosenSort, locale);
 
   return (
     <>
-      <ProductToolbar
-        sort={chosenSort}
-        availability={chosenAvailability}
-        count={visible.length}
-      />
+      <ProductToolbar sort={chosenSort} count={visible.length} />
 
       {visible.length === 0 ? (
         <p className="text-center text-[var(--muted)] py-12">{t("noMatching")}</p>
@@ -55,7 +40,6 @@ export default async function ProductListing({
             <ProductCard
               key={product.id}
               product={product}
-              soldOutLabel={tProduct("outOfStock")}
               eager={index < EAGER_CARDS}
             />
           ))}
