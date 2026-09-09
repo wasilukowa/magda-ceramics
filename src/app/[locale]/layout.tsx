@@ -16,6 +16,7 @@ import Footer from "@/components/Footer";
 import { CartProvider } from "@/lib/store/providers/CartProvider";
 import { CurrencyProvider } from "@/lib/store/providers/CurrencyProvider";
 import CartDrawer from "@/components/CartDrawer";
+import WishlistNotice from "@/components/WishlistNotice";
 import { AuthProvider } from "@/lib/store/providers/AuthProvider";
 import { WishlistProvider } from "@/lib/store/providers/WishlistProvider";
 import { getAuthUser } from "@/lib/auth/dal";
@@ -165,6 +166,7 @@ export default async function LocaleLayout({
                     </a>
                     <Navbar categories={categories} />
                     <CartDrawer />
+                    <WishlistNotice />
                     <main id="main" className="flex-1 w-full">{children}</main>
                     <Footer categories={categories} locale={locale} />
                     <CookieBanner />

@@ -39,7 +39,10 @@ export default function WishlistButton({
         className,
       )}
     >
+      {/* Bordo tylko na sercu, nie na całym przycisku: podpis obok jest akcją
+          drugoplanową i ma zostać w spokojnej szarości. */}
       <svg
+        className="text-[var(--color-heart)]"
         width="20"
         height="20"
         viewBox="0 0 24 24"

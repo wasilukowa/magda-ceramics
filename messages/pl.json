@@ -426,7 +426,16 @@
     "browse": "Przeglądaj sklep",
     "loading": "Ładowanie…",
     "addNamed": "Dodaj do ulubionych: {name}",
-    "removeNamed": "Usuń z ulubionych: {name}"
+    "removeNamed": "Usuń z ulubionych: {name}",
+    "notice": {
+      "guestTitle": "Zapisane w tej przeglądarce",
+      "guestBody": "Ulubione trzymam u Ciebie na urządzeniu, więc nie zobaczysz ich na telefonie ani po wyczyszczeniu danych przeglądarki. Z kontem zostają z Tobą na stałe, wszędzie.",
+      "signIn": "Zaloguj się",
+      "register": "Załóż konto",
+      "failedTitle": "Nie udało się zapisać",
+      "failedBody": "Nie zapisałam tej zmiany na Twoim koncie — spróbuj kliknąć jeszcze raz za chwilę.",
+      "close": "Zamknij"
+    }
   },
   "cookies": {
     "bannerTitle": "Pliki cookies",

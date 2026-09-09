@@ -426,7 +426,16 @@
     "browse": "Browse the shop",
     "loading": "Loading…",
     "addNamed": "Add to wishlist: {name}",
-    "removeNamed": "Remove from wishlist: {name}"
+    "removeNamed": "Remove from wishlist: {name}",
+    "notice": {
+      "guestTitle": "Saved in this browser",
+      "guestBody": "Your favourites are kept on this device, so you will not see them on your phone or after clearing your browser data. With an account they stay with you everywhere.",
+      "signIn": "Sign in",
+      "register": "Create an account",
+      "failedTitle": "Could not save",
+      "failedBody": "This change was not saved to your account — try clicking again in a moment.",
+      "close": "Close"
+    }
   },
   "cookies": {
     "bannerTitle": "Cookies",

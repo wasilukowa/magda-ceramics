@@ -11,7 +11,7 @@ import ProductCard, { EAGER_CARDS } from "@/components/ProductCard";
 export default function WishlistGrid() {
   const t = useTranslations("wishlist");
   const tProduct = useTranslations("product");
-  const { ids } = useWishlist();
+  const { ids, dropMissing } = useWishlist();
   // null = jeszcze nie pytaliśmy serwera. Pusta lista ulubionych nie wymaga
   // żadnego zapytania, więc stan „wczytane" wynika z danych, a nie z osobnego
   // setState wołanego przy zamontowaniu.
@@ -22,12 +22,20 @@ export default function WishlistGrid() {
 
     let active = true;
     getWishlistProducts(ids).then((items) => {
-      if (active) setProducts(items);
+      if (!active) return;
+      setProducts(items);
+
+      // Praca usunięta ze sklepu wisiałaby na liście na zawsze: licznik ją
+      // liczy, a kliknąć nie ma czego, bo kafelka nie ma. Sprzątamy — ale
+      // TYLKO gdy odpowiedź nie jest pusta. Pusta znaczy równie dobrze
+      // „WooCommerce nie odpowiedział", a wtedy skasowalibyśmy komuś całą
+      // listę przez czkawkę serwera.
+      if (items.length > 0) dropMissing(items.map((item) => item.id));
     });
     return () => {
       active = false;
     };
-  }, [ids]);
+  }, [ids, dropMissing]);
 
   const loaded = ids.length === 0 || products !== null;
 
