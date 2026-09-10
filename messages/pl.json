@@ -54,7 +54,12 @@
     "quote": "Ten, kto pracuje rękami, jest robotnikiem. Ten, kto pracuje rękami i głową, jest rzemieślnikiem. Ten, kto pracuje rękami, głową i sercem, jest artystą.",
     "quoteAuthor": "San Francesco d'Assisi",
     "about": "O pracowni",
-    "aboutText": "Każdy przedmiot wykonany jest ręcznie, z troską i dbałością o każdy detal. Ceramika użytkowa łącząca prostotę formy z ciepłem materiału."
+    "aboutText": "Każdy przedmiot wykonany jest ręcznie, z troską i dbałością o każdy detal. Ceramika użytkowa łącząca prostotę formy z ciepłem materiału.",
+    "wishlist": "Twoje ulubione",
+    "wishlistLink": "Zobacz wszystkie ulubione →",
+    "wishlistSold": "Sprzedane",
+    "carouselPrev": "Poprzednie prace",
+    "carouselNext": "Następne prace"
   },
   "shop": {
     "title": "Sklep",
