@@ -14,8 +14,12 @@ import { CategoryNavigationProps } from "@/contracts/shared";
 import { getCategoryLabel } from "@/lib/helpers/category";
 import { cn } from "@/lib/utils";
 
-// Po ilu pikselach przewinięcia nagłówek się zwija.
+// Po ilu pikselach przewinięcia nagłówek się zwija — i poniżej ilu wraca do
+// pełnego rozmiaru. Dwa progi zamiast jednego, bo jeden dawał drganie: dość
+// było, żeby pozycja przewinięcia drgnęła o piksel wokół granicy, a nagłówek
+// zaczynał się przełączać w kółko. Między 8 a 24 px zostaje to, co było.
 const SHRINK_AT = 24;
+const GROW_BELOW = 8;
 
 // „Sklep" to jedyna pozycja menu, która prowadzi do sprzedaży, więc jako jedyna
 // jest wytłuszczona i ma szersze odstępy między literami. Reszta paska zostaje
@@ -40,8 +44,11 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
 
   useEffect(() => {
     const sync = () => {
-      const next = window.scrollY > SHRINK_AT;
-      setScrolled((prev) => (prev === next ? prev : next));
+      setScrolled((prev) => {
+        if (!prev && window.scrollY > SHRINK_AT) return true;
+        if (prev && window.scrollY < GROW_BELOW) return false;
+        return prev;
+      });
     };
 
     // Strona mogła zostać otwarta już przewinięta (odświeżenie, powrót wstecz).

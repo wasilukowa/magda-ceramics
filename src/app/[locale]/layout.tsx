@@ -131,7 +131,30 @@ export default async function LocaleLayout({
   ]);
 
   return (
-    <html lang={locale} className={`${montserrat.variable} ${cormorant.variable}`}>
+    // ‼️ `overflowAnchor` NAPRAWIA SKAKANIE NAGŁÓWKA przy powrocie na górę
+    // strony — i musi stać TUTAJ, w stylu wpisanym w element.
+    //
+    // Nagłówek jest przyklejony, ale nadal zajmuje miejsce w układzie, więc gdy
+    // rośnie z 94 do 182 px, treść pod nim jedzie w dół. Przeglądarka „pomaga"
+    // i koryguje pozycję przewijania, żeby treść stała w miejscu — a ta korekta
+    // przerzuca pozycję z powrotem przez próg zwijania, więc nagłówek zaczyna
+    // się zwijać, co znów zmienia układ. I tak w kółko.
+    // ZMIERZONE na produkcji: przy każdej klatce animacji scrollY zmieniał się
+    // dokładnie o tyle, o ile zmieniała się wysokość nagłówka (500→497→493→485
+    // przy 182→179→175→167). Po wyłączeniu korekty: dwa zdarzenia, zero dryfu.
+    //
+    // W `globals.css` to NIE ZADZIAŁA: kompilator (Lightning CSS) wycina tę
+    // właściwość jako nieobsługiwaną przez część docelowych przeglądarek —
+    // sprawdzone, w zbudowanym arkuszu nie ma jej ani razu. Styl wpisany
+    // w element omija kompilację. Przewijanym elementem jest `html`, nie `body`.
+    //
+    // Bezpieczne: wszystkie zdjęcia mają podane wymiary, więc nic się tu nie
+    // doładowuje z opóźnieniem — a przed tym kotwiczenie normalnie chroni.
+    <html
+      lang={locale}
+      className={`${montserrat.variable} ${cormorant.variable}`}
+      style={{ overflowAnchor: "none" }}
+    >
       <body className="bg-[var(--background)]">
         {/* `formats` i `now` też muszą być podane, bo inaczej next-intl idzie
             po nie do konfiguracji żądania. Własnych formatów nie mamy (stąd
