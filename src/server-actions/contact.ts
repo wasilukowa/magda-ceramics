@@ -2,8 +2,10 @@
 
 import { z } from "zod";
 import { Resend } from "resend";
+import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { ContactFormState, ContactFormValues } from "@/contracts/server/contact";
+import { isRateLimited } from "@/lib/helpers/rateLimit";
 
 const parseEmails = (value: string | undefined): string[] =>
   (value ?? "")
@@ -18,6 +20,20 @@ const BCC = parseEmails(process.env.CONTACT_BCC_EMAIL);
 // Until magdaceramics.com is verified in Resend, the shared sender is used.
 const FROM = process.env.CONTACT_FROM_EMAIL ?? "Magda Ceramics <onboarding@resend.dev>";
 
+// Każda wysłana wiadomość kosztuje: ląduje w skrzynce Magdy i zjada limit
+// Resenda, więc po tysiącu śmieci nie dotarłaby już żadna prawdziwa. Liczy się
+// zatem każda próba, nie tylko udana.
+const CONTACT_WINDOW_MS = 15 * 60 * 1000;
+const CONTACT_LIMIT_PER_EMAIL = 3;
+const CONTACT_LIMIT_PER_IP = 5;
+
+// Pole-pułapka. W formularzu jest odsunięte poza ekran i schowane przed
+// czytnikami ekranu, więc żaden człowiek go nie zobaczy ani w nie nie trafi
+// tabulatorem — a automat, który wypełnia wszystko, co znajdzie, zostawi tu
+// ślad. Nazwa jest zwyczajna („subject"), żeby wyglądała wiarygodnie dla bota
+// i żeby przeglądarka nie podstawiła w nie niczego z autouzupełniania.
+const HONEYPOT_FIELD = "subject";
+
 export async function sendContactMessage(
   _prevState: ContactFormState,
   formData: FormData,
@@ -29,6 +45,13 @@ export async function sendContactMessage(
     email: String(formData.get("email") ?? "").trim(),
     message: String(formData.get("message") ?? "").trim(),
   };
+
+  // Botowi mówimy, że się udało. Gdyby dostał błąd, autor automatu zobaczyłby,
+  // że pułapka istnieje, i nauczyłby go ją omijać.
+  if (String(formData.get(HONEYPOT_FIELD) ?? "").trim() !== "") {
+    console.warn("Contact form: honeypot filled, message dropped");
+    return { status: "success", message: t("success") };
+  }
 
   const schema = z.object({
     name: z.string().min(1, t("errors.name")),
@@ -50,6 +73,25 @@ export async function sendContactMessage(
       },
       values,
     };
+  }
+
+  const headerList = await headers();
+  const ip = headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+
+  if (
+    isRateLimited(
+      `contact:email:${parsed.data.email.toLowerCase()}`,
+      CONTACT_LIMIT_PER_EMAIL,
+      CONTACT_WINDOW_MS,
+    ) ||
+    isRateLimited(`contact:ip:${ip}`, CONTACT_LIMIT_PER_IP, CONTACT_WINDOW_MS)
+  ) {
+    // Bez adresu i bez IP w logu — to dane osobowe, a do zauważenia, że ktoś
+    // wali w formularz, wystarczy sam ślad.
+    console.warn("Contact form: rate limit hit");
+    // Tu, inaczej niż przy pułapce, po drugiej stronie stoi zwykle człowiek —
+    // należy mu się prawdziwa odpowiedź, a nie udawany sukces.
+    return { status: "error", message: t("errors.tooMany"), values };
   }
 
   if (!process.env.RESEND_API_KEY || RECIPIENTS.length === 0) {

@@ -134,8 +134,10 @@
       "email": "Podaj poprawny adres email.",
       "message": "Wpisz wiadomość.",
       "validation": "Sprawdź zaznaczone pola i spróbuj ponownie.",
-      "server": "Coś poszło nie tak. Spróbuj ponownie później lub napisz do nas na Instagramie."
-    }
+      "server": "Coś poszło nie tak. Spróbuj ponownie później lub napisz do nas na Instagramie.",
+      "tooMany": "Z tego miejsca poszło już kilka wiadomości. Odczekaj kwadrans i spróbuj ponownie."
+    },
+    "honeypot": "Nie wypełniaj tego pola"
   },
   "checkout": {
     "title": "Zamówienie",
@@ -328,7 +330,8 @@
       "invalidCredentials": "Nieprawidłowy e-mail lub hasło.",
       "emailExists": "Konto z tym adresem e-mail już istnieje.",
       "validation": "Sprawdź zaznaczone pola i spróbuj ponownie.",
-      "server": "Coś poszło nie tak. Spróbuj ponownie później."
+      "server": "Coś poszło nie tak. Spróbuj ponownie później.",
+      "tooManyAttempts": "Zbyt wiele prób. Odczekaj kwadrans i spróbuj ponownie."
     }
   },
   "account": {
