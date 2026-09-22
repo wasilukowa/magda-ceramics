@@ -2,230 +2,203 @@ import { FaqByLocale } from "./types";
 
 // Pytania, które wracają najczęściej.
 //
-// ‼️ MAGDA: pozycje z `draft: true` NIE POKAZUJĄ SIĘ na stronie. To pytania,
-// na które odpowiedzieć możesz tylko Ty — dopisz odpowiedź i skasuj `draft`,
-// a pojawią się same. Reszta jest już prawdziwa: te odpowiedzi wynikają z
-// regulaminu, ze strony „Wysyłka i zwroty" i z tego, jak sklep naprawdę
-// działa, więc gdy zmienisz tamto, zmień i tutaj.
+// ‼️ MAGDA: TO JEST TWÓJ DOKUMENT FAQ, przepisany co do słowa i w Twojej
+// kolejności — te same trzy sekcje, te same pytania, te same odpowiedzi.
+// Poprawione tylko dwie literówki: „z żywności" → „z żywnością" i brakująca
+// spacja w nagłówku „Zamówienia, wysyłka, zwroty". Nic tu nie dopisywałyśmy:
+// co jest w pliku, to jest na stronie, i odwrotnie.
+//
+// Budowa jest prosta: `question` to pytanie, `answer` to odpowiedź (każdy
+// wpis w cudzysłowie = jeden akapit), `moreRoute` dokłada pod odpowiedzią
+// odnośnik „Czytaj więcej" do strony „Wysyłka i zwroty".
+//
+// Wersja angielska to tłumaczenie tych samych pytań — gdy zmienisz polskie,
+// trzeba zmienić i angielskie, inaczej obie wersje się rozjadą.
 export const FAQ: FaqByLocale = {
   pl: [
     {
-      heading: "Zamówienia i płatności",
+      heading: "Proces Tworzenia i Unikalność",
       entries: [
         {
-          question: "Jak mogę zapłacić?",
+          question: "W jaki sposób powstaje Twoja ceramika?",
           answer: [
-            "Płatności obsługuje Stripe. Zapłacisz kartą, BLIKIEM, Apple Pay, Google Pay albo Klarną — pełna lista pokazuje się w kasie, w kroku „Płatność”.",
+            "Wszystkie kubki, miski i wazony toczę własnoręcznie na kole garncarskim. Każdy przedmiot przechodzi przez moje dłonie wielokrotnie: od przygotowania gliny, przez toczenie, trymowanie (nadawanie ostatecznego kształtu i stopki), doklejanie uszek, aż po dwukrotny wypał w piecu ceramicznym w temperaturze ponad 1200°C oraz ręczne szkliwienie.",
           ],
         },
         {
-          question: "Czy mogę zapłacić w euro?",
+          question: "Czy naczynia są idealnie równe?",
           answer: [
-            "Tak. Przełącznik PLN / EUR stoi na górze każdej strony, a ceny w euro są ustalone przeze mnie, nie przeliczane po kursie z dnia. Wysyłka poza Polskę też ma własną stawkę w euro.",
+            "Praca na kole pozwala na uzyskanie pięknych, regularnych kształtów, jednak nie jest to produkcja fabryczna. Na naczyniach możesz czasami wyczuć delikatne ślady moich palców (tzw. ślady toczenia) lub zauważyć minimalne różnice w wielkości (w granicach kilku milimetrów) między dwoma z pozoru takimi samymi kubkami. To dowód na to, że kupujesz autentyczne rękodzieło, a nie odlew z formy. Takie naczynia mają duszę.",
           ],
-        },
-        {
-          question: "Czy muszę zakładać konto?",
-          answer: [
-            "Nie. W kasie wybierasz „Kontynuuj jako gość” i zamawiasz bez konta. Konto przydaje się później: widać w nim stan zamówień i zapamiętuje adres na następny raz.",
-          ],
-        },
-        {
-          question: "Płatność się nie udała. Co teraz?",
-          answer: [
-            "Nic nie przepadło — dopóki płatność nie przejdzie, praca nie jest sprzedana nikomu innemu. Spróbuj jeszcze raz z kasy, a jeśli coś dalej nie działa, napisz do mnie i sprawdzę, na czym stanęło.",
-          ],
-          moreRoute: "/contact",
         },
       ],
     },
     {
-      heading: "Wysyłka",
+      heading: "Użytkowanie i Bezpieczeństwo",
       entries: [
         {
-          question: "Kiedy wyślesz moje zamówienie?",
+          question: "Czy mogę myć ceramikę w zmywarce i używać jej w mikrofalówce?",
           answer: [
-            "Paczkę przygotowuję w 3–5 dni roboczych od zaksięgowania wpłaty. Do tego dochodzi czas przewoźnika.",
+            "Tak. Ceramika toczona na kole i wypalana w wysokich temperaturach (kamionka) jest bardzo trwała. Wszystkie naczynia możesz bezpiecznie myć w zmywarce i podgrzewać w mikrofalówce.",
           ],
-          moreRoute: "/shipping",
         },
         {
-          question: "Dokąd wysyłasz?",
+          question: "Czy naczynia są bezpieczne w kontakcie z żywnością?",
           answer: [
-            "Do Polski i do krajów Unii Europejskiej. Tam, gdzie InPost ma paczkomaty, w kasie pokazuje się mapa i możesz wybrać punkt odbioru; w pozostałych krajach paczkę wiezie kurier pod adres.",
+            "Absolutnie tak. Używam wyłącznie profesjonalnych, bezołowiowych szkliw, które posiadają atesty bezpieczeństwa i są w 100% przeznaczone do kontaktu z żywnością.",
           ],
-          moreRoute: "/shipping",
         },
         {
-          question: "Ile kosztuje wysyłka?",
+          question: "Dlaczego wnętrze mojego kubka zafarbowało od kawy/herbaty?",
           answer: [
-            "Stawka zależy od kraju i jest stała — widzisz ją w podsumowaniu zamówienia, zanim cokolwiek zapłacisz. Pełną tabelę trzymam na osobnej stronie.",
+            "Niektóre jasne lub matowe szkliwa mogą z czasem przyjmować osad z ciemnych napojów. Jest to całkowicie naturalny proces. Aby pozbyć się osadu, wystarczy przetrzeć wnętrze naczynia gąbką z odrobiną sody oczyszczonej lub soku z cytryny.",
           ],
-          moreRoute: "/shipping",
+        },
+        {
+          question: "Czy miski nadają się do gorących zup i dań z piekarnika?",
+          answer: [
+            "Moje miski świetnie sprawdzają się do gorących zup, ramenu czy owsianek. Pamiętaj jednak, że ceramika nie lubi szoku termicznego. Nie wkładaj zimnej miski (np. prosto z lodówki) do nagrzanego piekarnika i nie zalewaj rozgrzanego naczynia lodowatą wodą, bo może pęknąć.",
+          ],
+        },
+        {
+          question: "Jak dbać o wazony i ceramikę matową?",
+          answer: [
+            "Wazony po użyciu wystarczy przepłukać ciepłą wodą z płynem do naczyń. Jeśli produkt ma matowe wykończenie z zewnątrz, unikaj szorowania go ostrymi zmywakami, aby nie porysować powierzchni.",
+          ],
         },
       ],
     },
     {
-      heading: "Zwroty i reklamacje",
+      heading: "Zamówienia, wysyłka, zwroty",
       entries: [
         {
-          question: "Czy mogę zwrócić zakupioną pracę?",
+          question: "Czy mogę zamówić u Ciebie ceramikę?",
           answer: [
-            "Tak, masz na to 14 dni od odebrania przesyłki i nie musisz podawać powodu. Zwracam wtedy całą zapłatę razem z kosztem najtańszej dostawy, jaką oferowałam.",
-            "Wyjątkiem są prace robione na indywidualne zamówienie — te z natury nie nadają się do odesłania.",
+            "Niestety nie realizuję zamówień indywidualnych, możesz kupić tylko to, co widnieje na stronie.",
+          ],
+        },
+        {
+          question: "Czy pakujesz paczki w duchu Less Waste?",
+          answer: [
+            "Tak, ochrona środowiska jest dla mnie ważna. Do zabezpieczenia ceramiki używam papieru nacinanego (zamiennik folii bąbelkowej), kartonowych pudełek oraz biodegradowalnego wypełniacza (skropaka), który rozpuszcza się w wodzie lub można go wrzucić do kompostownika.",
+          ],
+        },
+        {
+          question: "Co zrobić, jeśli ceramika potłucze się w transporcie?",
+          answer: [
+            "Pakowanie toczonej ceramiki traktuję bardzo poważnie i solidnie ją zabezpieczam. Jeśli jednak paczka ucierpi podczas dostawy, zrób zdjęcie uszkodzonego przedmiotu w dniu odebrania i napisz do mnie. Wyślę nowy produkt lub zwrócę Ci pieniądze.",
           ],
           moreRoute: "/shipping",
           moreHash: "returns",
         },
         {
-          question: "Praca dojechała pęknięta. Co robić?",
+          question: "Czy wysyłasz paczki do Paczkomatów InPost?",
           answer: [
-            "Jeśli karton jest widocznie uszkodzony, poproś kuriera o protokół szkody, a potem napisz do mnie i dołącz zdjęcia. Reklamację rozpatruję w ciągu 14 dni.",
+            "Tak, podczas finalizacji zamówienia możesz wybrać dostawę do wygodnego dla Ciebie Paczkomatu InPost lub kuriera bezpośrednio pod wskazany adres.",
+          ],
+          moreRoute: "/shipping",
+        },
+        {
+          question: "Czy mogę zwrócić zakupiony produkt?",
+          answer: [
+            "Tak. Masz prawo do zwrotu gotowego produktu w ciągu 14 dni od otrzymania paczki bez podania przyczyny. Pamiętaj jednak, że produkty personalizowane i robione na specjalne zamówienie nie podlegają zwrotom.",
           ],
           moreRoute: "/shipping",
           moreHash: "returns",
-        },
-      ],
-    },
-    {
-      heading: "O pracach",
-      entries: [
-        {
-          question: "Czy dostanę dokładnie to, co widzę na zdjęciu?",
-          answer: [
-            "Tak. Każdą pracę rzeźbię i maluję ręcznie, więc nie ma dwóch takich samych — zdjęcia w sklepie to zawsze ten konkretny egzemplarz, który do Ciebie pojedzie.",
-          ],
-        },
-        {
-          question: "Czy mogę myć ceramikę w zmywarce?",
-          answer: [],
-          draft: true,
-        },
-        {
-          question: "Czy naczynia nadają się do mikrofalówki?",
-          answer: [],
-          draft: true,
-        },
-        {
-          question: "Jak dbać o ręcznie robioną ceramikę?",
-          answer: [],
-          draft: true,
-        },
-        {
-          question: "Czy przyjmujesz zamówienia indywidualne?",
-          answer: [],
-          draft: true,
         },
       ],
     },
   ],
   en: [
     {
-      heading: "Orders and payment",
+      heading: "How the pieces are made",
       entries: [
         {
-          question: "How can I pay?",
+          question: "How is your ceramic made?",
           answer: [
-            "Payments go through Stripe. You can pay by card, BLIK, Apple Pay, Google Pay or Klarna — the full list appears at the Payment step of the checkout.",
+            "Every mug, bowl and vase is thrown by my own hands on the potter's wheel. Each piece passes through those hands many times over: preparing the clay, throwing, trimming (giving it its final shape and its foot), attaching the handles, then two firings in the kiln at over 1200°C and glazing by hand.",
           ],
         },
         {
-          question: "Can I pay in euro?",
+          question: "Are the pieces perfectly even?",
           answer: [
-            "Yes. The PLN / EUR switch sits at the top of every page, and the euro prices are ones I set myself rather than a daily conversion. Shipping outside Poland has its own euro rate too.",
+            "Throwing on the wheel gives beautiful, regular shapes, but this is not factory production. Here and there you may feel the faint marks of my fingers (throwing lines) or notice a tiny difference in size — a few millimetres — between two seemingly identical mugs. That is your proof that you are buying genuine handmade work and not a cast from a mould. Pieces like these have a soul.",
           ],
-        },
-        {
-          question: "Do I need an account?",
-          answer: [
-            "No. Choose “Continue as guest” at the checkout and order without one. An account is useful later: it shows where your orders stand and remembers your address for next time.",
-          ],
-        },
-        {
-          question: "My payment failed. What now?",
-          answer: [
-            "Nothing is lost — until a payment goes through, the piece is not sold to anyone else. Try again from the checkout, and if something still will not work, write to me and I will find out where it stopped.",
-          ],
-          moreRoute: "/contact",
         },
       ],
     },
     {
-      heading: "Shipping",
+      heading: "Use and safety",
       entries: [
         {
-          question: "When will you send my order?",
+          question: "Can I put the ceramics in the dishwasher and the microwave?",
           answer: [
-            "I prepare the parcel within 3–5 working days of the payment being credited. The carrier's own transit time comes on top of that.",
+            "Yes. Thrown on the wheel and fired at high temperatures (stoneware), the ceramics are very durable. Every piece is safe in the dishwasher and can be warmed in the microwave.",
           ],
-          moreRoute: "/shipping",
         },
         {
-          question: "Where do you ship?",
+          question: "Are the pieces safe to eat and drink from?",
           answer: [
-            "To Poland and to countries in the European Union. Where InPost has parcel lockers the checkout shows a map and you can pick a collection point; everywhere else a courier brings the parcel to your address.",
+            "Absolutely. I use nothing but professional, lead-free glazes that carry safety certificates and are 100% intended for contact with food.",
           ],
-          moreRoute: "/shipping",
         },
         {
-          question: "How much is shipping?",
+          question: "Why has the inside of my mug stained from coffee or tea?",
           answer: [
-            "The rate depends on the country and is a flat one — you see it in the order summary before you pay anything. The full table lives on its own page.",
+            "Some pale or matte glazes take on a deposit from dark drinks over time. It is an entirely natural process. To get rid of it, wipe the inside of the piece with a sponge and a little baking soda or lemon juice.",
           ],
-          moreRoute: "/shipping",
+        },
+        {
+          question: "Are the bowls suitable for hot soup and for the oven?",
+          answer: [
+            "My bowls are wonderful for hot soup, ramen or porridge. Do remember, though, that ceramics dislike thermal shock. Don't put a cold bowl (straight from the fridge, say) into a hot oven, and don't pour ice-cold water into a piece that is hot — it may crack.",
+          ],
+        },
+        {
+          question: "How should I care for vases and matte ceramics?",
+          answer: [
+            "After use, a vase only needs rinsing in warm water with washing-up liquid. If a piece is matte on the outside, avoid scouring it with a rough sponge so that the surface does not get scratched.",
+          ],
         },
       ],
     },
     {
-      heading: "Returns and complaints",
+      heading: "Orders, shipping, returns",
       entries: [
         {
-          question: "Can I return a piece?",
+          question: "Can I order a piece of ceramics from you?",
           answer: [
-            "Yes — you have 14 days from receiving the parcel and you do not have to give a reason. I refund everything you paid, including the cost of the cheapest delivery I offered.",
-            "The exception is work made to a personal order; by its nature that cannot go back.",
+            "I am afraid I do not take individual orders — you can only buy what is on the site.",
+          ],
+        },
+        {
+          question: "Do you pack parcels in the spirit of Less Waste?",
+          answer: [
+            "Yes, looking after the environment matters to me. I protect the ceramics with slit paper (in place of bubble wrap), cardboard boxes and a biodegradable filler (starch chips) that dissolves in water or can go straight onto the compost heap.",
+          ],
+        },
+        {
+          question: "What should I do if a piece breaks in transit?",
+          answer: [
+            "I take the packing of thrown ceramics very seriously and protect every piece well. If the parcel does suffer on its way to you, photograph the damaged piece on the day it arrives and write to me. I will send a new piece or refund your money.",
           ],
           moreRoute: "/shipping",
           moreHash: "returns",
         },
         {
-          question: "My piece arrived cracked. What should I do?",
+          question: "Do you send parcels to InPost lockers?",
           answer: [
-            "If the box is visibly damaged, ask the courier for a damage report, then write to me with photos. I answer complaints within 14 days.",
+            "Yes — as you finish your order you can choose delivery to whichever InPost locker suits you, or a courier straight to the address you give.",
+          ],
+          moreRoute: "/shipping",
+        },
+        {
+          question: "Can I return a piece I have bought?",
+          answer: [
+            "Yes. You have the right to return a ready-made piece within 14 days of receiving the parcel, without giving a reason. Do remember, though, that personalised pieces and those made to a special order cannot be returned.",
           ],
           moreRoute: "/shipping",
           moreHash: "returns",
-        },
-      ],
-    },
-    {
-      heading: "About the pieces",
-      entries: [
-        {
-          question: "Will I get exactly what I see in the photo?",
-          answer: [
-            "Yes. Every piece is carved and painted by hand, so no two are alike — the photos in the shop are always of the very piece that will travel to you.",
-          ],
-        },
-        {
-          question: "Is your ceramic dishwasher safe?",
-          answer: [],
-          draft: true,
-        },
-        {
-          question: "Can I use these pieces in the microwave?",
-          answer: [],
-          draft: true,
-        },
-        {
-          question: "How should I care for handmade ceramics?",
-          answer: [],
-          draft: true,
-        },
-        {
-          question: "Do you take custom orders?",
-          answer: [],
-          draft: true,
         },
       ],
     },
