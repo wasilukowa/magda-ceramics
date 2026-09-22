@@ -29,7 +29,7 @@ export default function ContactForm() {
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-6" noValidate>
+    <form action={formAction} className="relative flex flex-col gap-6" noValidate>
       <div className="flex flex-col gap-2">
         <label
           htmlFor="name"
@@ -94,6 +94,22 @@ export default function ContactForm() {
             {state.errors.message}
           </p>
         )}
+      </div>
+
+      {/* Pole-pułapka na roboty. Leży poza ekranem, jest schowane przed
+          czytnikami ekranu i wypada z kolejności tabulatora, więc żaden
+          człowiek go nie zobaczy ani w nie nie trafi. Automat, który wypełnia
+          wszystkie pola formularza, zostawi tu ślad i wiadomość nie pojedzie.
+          Nazwa musi zgadzać się z HONEYPOT_FIELD w server-actions/contact.ts. */}
+      <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+        <label htmlFor="subject">{t("honeypot")}</label>
+        <input
+          id="subject"
+          name="subject"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+        />
       </div>
 
       {state.status === "error" && !state.errors && (

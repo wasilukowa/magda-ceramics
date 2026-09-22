@@ -134,8 +134,10 @@
       "email": "Please enter a valid email address.",
       "message": "Please enter a message.",
       "validation": "Please check the highlighted fields and try again.",
-      "server": "Something went wrong. Please try again later, or write to us on Instagram."
-    }
+      "server": "Something went wrong. Please try again later, or write to us on Instagram.",
+      "tooMany": "A few messages have already gone out from here. Please wait a quarter of an hour and try again."
+    },
+    "honeypot": "Please leave this field empty"
   },
   "checkout": {
     "title": "Order",
@@ -328,7 +330,8 @@
       "invalidCredentials": "Incorrect email or password.",
       "emailExists": "An account with this email already exists.",
       "validation": "Please check the highlighted fields and try again.",
-      "server": "Something went wrong. Please try again later."
+      "server": "Something went wrong. Please try again later.",
+      "tooManyAttempts": "Too many attempts. Please wait a quarter of an hour and try again."
     }
   },
   "account": {

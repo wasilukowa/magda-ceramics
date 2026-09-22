@@ -16,11 +16,40 @@ import {
   createPasswordResetToken,
   verifyPasswordResetToken,
 } from "@/lib/auth/resetToken";
-import { isRateLimited } from "@/lib/helpers/rateLimit";
+import {
+  hasExceededLimit,
+  isRateLimited,
+  recordAttempt,
+} from "@/lib/helpers/rateLimit";
 import { customerService } from "@/lib/service/customer";
 import { mailService } from "@/lib/service/mail";
 import { buildPasswordResetMail } from "@/lib/service/mail/helpers";
 import { getPathname } from "@/i18n/navigation";
+
+// Adres, z którego przyszło żądanie. Za serwerem Vercela prawdziwy adres
+// klienta stoi pierwszy w „x-forwarded-for"; gdy nagłówka nie ma (lokalnie),
+// wszyscy trafiają do jednego wspólnego kubełka i to w zupełności wystarcza.
+const clientIp = async (): Promise<string> => {
+  const headerList = await headers();
+  return headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+};
+
+// Logowanie: zapora liczy WYŁĄCZNIE nieudane próby, więc klient, który wpisuje
+// hasło poprawnie, nigdy się o nią nie obije. Limit na adres e-mail zatrzymuje
+// zgadywanie hasła do jednego konta, limit na IP — przebieganie po wielu
+// kontach z jednego miejsca. Bez tego nasz własny formularz byłby wygodniejszy
+// do zgadywania haseł niż panel WordPressa, bo omija wszystko, co pilnuje tego
+// po tamtej stronie.
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_LIMIT_PER_EMAIL = 5;
+const LOGIN_LIMIT_PER_IP = 20;
+
+// Rejestracja: tu liczy się każda próba, bo każda zakłada konto w WooCommerce.
+// Okno jest godzinne, a limity niskie — nikt nie zakłada sobie trzech kont
+// w ciągu godziny, a bot zakładałby ich tysiąc.
+const REGISTER_WINDOW_MS = 60 * 60 * 1000;
+const REGISTER_LIMIT_PER_EMAIL = 3;
+const REGISTER_LIMIT_PER_IP = 5;
 
 export async function login(
   _prevState: LoginFormState,
@@ -50,27 +79,46 @@ export async function login(
     };
   }
 
+  const address = parsed.data.email.toLowerCase();
+  const ip = await clientIp();
+  const emailKey = `login:email:${address}`;
+  const ipKey = `login:ip:${ip}`;
+
+  if (
+    hasExceededLimit(emailKey, LOGIN_LIMIT_PER_EMAIL) ||
+    hasExceededLimit(ipKey, LOGIN_LIMIT_PER_IP)
+  ) {
+    // Bez adresu i bez IP w logu — to dane osobowe, a do zauważenia, że ktoś
+    // wali w formularz, wystarczy sam ślad.
+    console.warn("Login: rate limit hit");
+    return {
+      status: "error",
+      message: t("errors.tooManyAttempts"),
+      values: { email },
+    };
+  }
+
+  // Zła próba wygląda tak samo niezależnie od tego, czy konto istnieje —
+  // inaczej formularz mówiłby obcej osobie, kto ma konto w sklepie.
+  const rejected = (): LoginFormState => {
+    recordAttempt(emailKey, LOGIN_WINDOW_MS);
+    recordAttempt(ipKey, LOGIN_WINDOW_MS);
+    return {
+      status: "error",
+      message: t("errors.invalidCredentials"),
+      values: { email },
+    };
+  };
+
   try {
     const ok = await authService.verifyPassword(
       parsed.data.email,
       parsed.data.password,
     );
-    if (!ok) {
-      return {
-        status: "error",
-        message: t("errors.invalidCredentials"),
-        values: { email },
-      };
-    }
+    if (!ok) return rejected();
 
     const customer = await authService.findCustomerByEmail(parsed.data.email);
-    if (!customer) {
-      return {
-        status: "error",
-        message: t("errors.invalidCredentials"),
-        values: { email },
-      };
-    }
+    if (!customer) return rejected();
 
     await setSessionCookie({ customerId: customer.id, email: customer.email });
     return { status: "success", message: t("login.success") };
@@ -112,6 +160,23 @@ export async function register(
         email: fieldErrors.email?.[0],
         password: fieldErrors.password?.[0],
       },
+      values,
+    };
+  }
+
+  const ip = await clientIp();
+  if (
+    isRateLimited(
+      `register:email:${parsed.data.email.toLowerCase()}`,
+      REGISTER_LIMIT_PER_EMAIL,
+      REGISTER_WINDOW_MS,
+    ) ||
+    isRateLimited(`register:ip:${ip}`, REGISTER_LIMIT_PER_IP, REGISTER_WINDOW_MS)
+  ) {
+    console.warn("Registration: rate limit hit");
+    return {
+      status: "error",
+      message: t("errors.tooManyAttempts"),
       values,
     };
   }
@@ -172,8 +237,7 @@ export async function requestPasswordReset(
     message: t("forgot.success"),
   };
 
-  const headerList = await headers();
-  const ip = headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip = await clientIp();
   const address = parsed.data.toLowerCase();
 
   if (

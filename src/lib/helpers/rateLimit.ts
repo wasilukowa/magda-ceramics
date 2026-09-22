@@ -17,21 +17,40 @@ const dropExpired = (now: number) => {
   }
 };
 
-// Zwraca true, gdy limit został PRZEKROCZONY (czyli żądanie należy odrzucić).
-export const isRateLimited = (
-  key: string,
-  limit: number,
-  windowMs: number,
-): boolean => {
+// Dolicza jedną próbę pod danym kluczem i zwraca, ile ich już jest.
+export const recordAttempt = (key: string, windowMs: number): number => {
   const now = Date.now();
   const bucket = buckets.get(key);
 
   if (!bucket || bucket.resetAt <= now) {
     if (buckets.size > 500) dropExpired(now);
     buckets.set(key, { count: 1, resetAt: now + windowMs });
-    return false;
+    return 1;
   }
 
   bucket.count += 1;
-  return bucket.count > limit;
+  return bucket.count;
 };
+
+// Czy zapisano już tyle prób, ile wolno — BEZ doliczania kolejnej. W obu
+// funkcjach `limit` znaczy to samo: tyle prób przechodzi, następna jest
+// odrzucana.
+//
+// Rozdzielenie odczytu od zapisu jest tu po coś: przy logowaniu liczymy
+// wyłącznie próby NIEUDANE. Gdyby liczyła się każda, to za jednym adresem IP
+// — biuro, sieć komórkowa, kawiarnia — klienci logujący się poprawnie
+// spychaliby się nawzajem w blokadę, choć nikt niczego nie zgaduje.
+export const hasExceededLimit = (key: string, limit: number): boolean => {
+  const bucket = buckets.get(key);
+  if (!bucket || bucket.resetAt <= Date.now()) return false;
+  return bucket.count >= limit;
+};
+
+// Zwraca true, gdy limit został PRZEKROCZONY (czyli żądanie należy odrzucić).
+// Liczy każde wywołanie, więc nadaje się tam, gdzie kosztuje samo pytanie:
+// wysyłka maila, założenie konta.
+export const isRateLimited = (
+  key: string,
+  limit: number,
+  windowMs: number,
+): boolean => recordAttempt(key, windowMs) > limit;
