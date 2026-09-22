@@ -81,11 +81,31 @@ export type Review = {
 };
 
 // --- Strona „O mnie" ---------------------------------------------------------
-// Opowieść Magdy o sobie. To zwykłe akapity, bez paragrafów i list, więc nie
-// używamy tu modelu dokumentów prawnych — wystarczy tekst i podpis.
+// Opowieść Magdy o sobie, odwzorowana z jej dokumentu: akapity, śródtytuły
+// („Jak to się zaczęło", „Jedyne w swoim rodzaju") i zdjęcia wplecione tam,
+// gdzie ona je wstawiła. Zdjęcia idą grupami, bo tak u niej stoją — jedno pod
+// akapitem o pierwszym kole, dwa pod akapitem o pierwszych pracach, sześć pod
+// akapitem o etapach pracy. Liczba zdjęć w grupie decyduje o układzie.
+export type AboutPhoto = {
+  src: string;
+  // Wymiary pliku. Next potrzebuje ich, żeby zarezerwować miejsce i nie
+  // przesuwać tekstu w trakcie ładowania — przy podmianie zdjęcia trzeba je
+  // poprawić razem ze ścieżką. Oba siedzą obok siebie w `content/about.ts`.
+  width: number;
+  height: number;
+  // Opis dla czytników ekranu i dla wyszukiwarki — w języku danej wersji.
+  alt: string;
+};
+
+export type AboutBlock =
+  | { type: "paragraph"; text: string }
+  | { type: "heading"; text: string }
+  | { type: "photos"; photos: AboutPhoto[] };
+
 export type AboutContent = {
-  paragraphs: string[];
-  // Podpis pod tekstem; w widoku jest wyróżniony, stąd osobne pole.
+  blocks: AboutBlock[];
+  // Podpis pod tekstem; w widoku jest wyróżniony, stąd osobne pole. Łamanie
+  // wiersza jest w nim znaczące („Ciepło pozdrawiam," i niżej „Magda").
   signature: string;
 };
 
