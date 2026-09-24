@@ -15,8 +15,58 @@ const lanHosts = Object.values(os.networkInterfaces())
   .filter((iface) => iface.family === "IPv4" && !iface.internal)
   .map((iface) => iface.address);
 
+// ─── Nagłówki bezpieczeństwa (Z8) ───────────────────────────────────────────
+// Nonce'y w CSP wymuszają renderowanie każdej strony na żądanie, a sklep jest
+// statyczny (cacheComponents) — więc idziemy wariantem „bez nonce'ów” z
+// dokumentacji Next: skrypty inline dozwolone, bo Next sam wstrzykuje ich
+// kilka do każdej strony. Reszta polityki i tak zamyka najczęstsze drogi:
+// osadzenie sklepu w cudzej ramce, podmianę <base>, wysyłkę formularza na obcy
+// adres, wtyczki <object>, ładowanie skryptów z niewymienionych domen.
+//
+// Zewnętrzni goście strony, i tylko oni:
+// · Stripe — skrypt, ramki z polem karty i 3-D Secure, zapytania do API.
+// · InPost — mapa paczkomatów: skrypt i arkusz z geowidget.inpost-group.com,
+//   a sama mapa w ramce z geowidget-app.inpost-group.com (bez frame-src okno
+//   „Wybierz paczkomat” jest puste — sprawdzone 2026-09-24).
+const isDev = process.env.NODE_ENV === "development";
+
+const STRIPE = ["https://js.stripe.com", "https://*.stripe.com"];
+const INPOST = ["https://geowidget.inpost-group.com", "https://*.inpost-group.com"];
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} ${[...STRIPE, ...INPOST].join(" ")}`,
+  `style-src 'self' 'unsafe-inline' ${INPOST.join(" ")}`,
+  `img-src 'self' data: blob: https://wp.magdaceramics.com ${[...STRIPE, ...INPOST].join(" ")}`,
+  `font-src 'self' data: ${INPOST.join(" ")}`,
+  `connect-src 'self' ${[...STRIPE, ...INPOST].join(" ")}`,
+  `frame-src ${[...STRIPE, ...INPOST].join(" ")}`,
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  ...(isDev ? [] : ["upgrade-insecure-requests"]),
+].join("; ");
+
+const securityHeaders = [
+  { key: "Content-Security-Policy", value: contentSecurityPolicy },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    value:
+      'camera=(), microphone=(), usb=(), geolocation=(self), payment=(self "https://js.stripe.com")',
+  },
+];
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
+
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
 
   // Ile stron Next buduje NARAZ. Domyślnie osiem na workera, a workerów bywa
   // siedem — czyli kilkadziesiąt stron jednocześnie dobija się do WordPressa.
