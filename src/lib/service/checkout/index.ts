@@ -283,11 +283,34 @@ class CheckoutService {
     }
   }
 
-  // Domknięcie płatności — jedno dla strony potwierdzenia i dla webhooka
-  // Stripe'a. Obie drogi potrafią przyjść naraz albo po kilka razy, więc
-  // wszystko tu jest powtarzalne: zamówienie już opłacone zostaje, jakie jest.
-  // Null znaczy, że płatność nie należy do żadnego zamówienia albo jeszcze nie
-  // przeszła.
+  // Co klient może już zobaczyć o swojej płatności — bez zapisywania
+  // czegokolwiek. Numer zamówienia bierzemy z płatności (przypiął go tam
+  // szkic), a stan ze Stripe'a. Strona potwierdzenia pokazuje to od razu,
+  // a samo domknięcie zostawia webhookowi — patrz niżej, dlaczego.
+  describePayment(payment: PaymentRecord): CompletedOrder | null {
+    if (!payment.orderId) return null;
+    if (payment.status === PaymentStatus.Succeeded) {
+      return { id: payment.orderId, completion: OrderCompletion.Paid };
+    }
+    if (payment.status === PaymentStatus.Processing) {
+      return {
+        id: payment.orderId,
+        completion: OrderCompletion.AwaitingConfirmation,
+      };
+    }
+    return null;
+  }
+
+  // Domknięcie płatności: zapis w WooCommerce, że zapłacono. Powtarzalne —
+  // zamówienie już opłacone zostaje, jakie jest. Null znaczy, że płatność nie
+  // należy do żadnego zamówienia albo jeszcze nie przeszła.
+  //
+  // ‼️ Woła to JEDNA droga naraz. Sprawdzone 2026-09-25 na zamówieniu #282:
+  // webhook i strona potwierdzenia przyszły w tej samej sekundzie, oba
+  // zobaczyły szkic i oba go opłaciły — dwa razy maile, dwa razy zdjęta sztuka
+  // z magazynu. WooCommerce nie ma zapisu „tylko jeśli stan się nie zmienił",
+  // więc zamiast zamka jest jeden pisarz: webhook. Strona potwierdzenia pisze
+  // wyłącznie tam, gdzie webhooka nie ma (lokalnie).
   //
   // Numer zamówienia w metadanych płatności zapisuje wyłącznie nasz serwer:
   // kasa przy szkicu (razem z kluczem zamówienia) albo panel klienta przy

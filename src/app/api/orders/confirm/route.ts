@@ -39,6 +39,10 @@ export async function POST(request: Request) {
     return reply(OrderConfirmResult.NotConfirmed, 402);
   }
 
+  // Z webhookiem to on zapisuje zapłatę — tu wystarczy, że Stripe ją
+  // potwierdził. Zapis z dwóch miejsc naraz dublował maile i magazyn (#282).
+  if (paymentService.isWebhookConfigured()) return reply(OrderConfirmResult.Paid);
+
   try {
     await orderService.markPaid(orderId, order.status, payment);
   } catch (error) {

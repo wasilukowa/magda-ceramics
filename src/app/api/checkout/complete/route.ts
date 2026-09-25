@@ -8,7 +8,7 @@ import { CheckoutError } from "@/contracts/server/checkout";
 
 // Strona potwierdzenia po powrocie ze Stripe'a. Dane zamówienia nie
 // przychodzą stąd — zamówienie istnieje od chwili kliknięcia „Zapłać", a numer
-// płatności mówi tylko, KTÓRĄ płatność sprawdzić. To samo domknięcie robi
+// płatności mówi tylko, KTÓRĄ płatność sprawdzić. Opłacenie zamówienia zapisuje
 // webhook, więc nie szkodzi, jeśli klient tu nie wróci albo wróci dwa razy.
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -20,6 +20,16 @@ export async function POST(request: Request) {
   const payment = await paymentService.getPayment(parsed.data.paymentIntentId);
   if (!payment) {
     return checkoutErrorResponse(CheckoutError.PaymentNotVerified);
+  }
+
+  // Z webhookiem to on zapisuje zamówienie — tu tylko mówimy klientowi, jak
+  // jest. Dwie drogi piszące naraz zdublowały maile i zdjęły sztukę z magazynu
+  // dwa razy (#282). Bez webhooka (lokalnie) zapisujemy stąd, jak dotąd.
+  if (paymentService.isWebhookConfigured()) {
+    const order = checkoutService.describePayment(payment);
+    return order
+      ? Response.json({ orderId: order.id, completion: order.completion })
+      : checkoutErrorResponse(CheckoutError.PaymentNotVerified);
   }
 
   let order;
