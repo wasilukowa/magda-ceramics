@@ -1,5 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { serverFetch } from "@/lib/api";
+import { serverFetchReadWithRetry } from "@/lib/api";
 import {
   RawProduct,
   RawCategory,
@@ -32,7 +32,7 @@ async function wcFetch<T>(endpoint: string): Promise<T> {
   cacheLife("minutes");
   cacheTag(CATALOG_TAG);
 
-  const res = await serverFetch(`${WP_URL}/wp-json/wc/v3/${endpoint}`, {
+  const res = await serverFetchReadWithRetry(`${WP_URL}/wp-json/wc/v3/${endpoint}`, {
     headers: { Authorization: `Basic ${authHeader}` },
   });
   if (!res.ok) throw new Error(`WooCommerce API error: ${res.status}`);
