@@ -7,6 +7,10 @@ import { Currency } from "@/contracts/shared";
 export enum PaymentStatus {
   Succeeded = "succeeded",
   Processing = "processing",
+  // Płatność czeka na klienta: karta jeszcze niepodana, niepotwierdzona albo
+  // w trakcie 3-D Secure. Tylko do takiej kasa może przypiąć zamówienie.
+  AwaitingPayment = "awaiting-payment",
+  // Anulowana — nic już z niej nie będzie.
   Unusable = "unusable",
 }
 

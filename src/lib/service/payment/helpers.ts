@@ -4,9 +4,10 @@ import { Currency } from "@/contracts/shared";
 
 // Klucze metadanych płatności w Stripe. `cart`, `country` i `shipping`
 // zapisuje kasa przy wycenie koszyka. `orderId` trafia tam dwiema drogami: od
-// zamówienia, które z płatności powstało, albo od panelu klienta, gdy płatność
-// powstaje DLA zamówienia, które już istniało. `orderKey` dokłada tylko ta
-// pierwsza droga.
+// szkicu zamówienia, który kasa zapisuje tuż przed płatnością, albo od panelu
+// klienta, gdy płatność powstaje DLA zamówienia, które już istniało.
+// `orderKey` dokłada tylko ta pierwsza droga — i po nim poznajemy płatność
+// z kasy, którą wolno domknąć bez sesji klienta (np. z webhooka).
 export const PAYMENT_META = {
   cart: "cart",
   country: "country",
@@ -24,10 +25,18 @@ const getOrderId = (metadata: Stripe.Metadata): number | null => {
 };
 
 const getPaymentStatus = (intent: Stripe.PaymentIntent): PaymentStatus => {
-  if (intent.status === "succeeded") return PaymentStatus.Succeeded;
-  return intent.status === "processing"
-    ? PaymentStatus.Processing
-    : PaymentStatus.Unusable;
+  switch (intent.status) {
+    case "succeeded":
+      return PaymentStatus.Succeeded;
+    case "processing":
+      return PaymentStatus.Processing;
+    case "canceled":
+      return PaymentStatus.Unusable;
+    default:
+      // requires_payment_method / requires_confirmation / requires_action /
+      // requires_capture — klient jeszcze nie skończył płacić.
+      return PaymentStatus.AwaitingPayment;
+  }
 };
 
 export const preparePayment = (intent: Stripe.PaymentIntent): PaymentRecord => ({
@@ -41,15 +50,18 @@ export const preparePayment = (intent: Stripe.PaymentIntent): PaymentRecord => (
   orderKey: intent.metadata[PAYMENT_META.orderKey] || null,
 });
 
-// Czy ta płatność jest za dokładnie ten koszyk i ten kraj. Pusty zapis koszyka
+// Czy do tej płatności wolno przypiąć zamówienie z kasy: musi jeszcze czekać
+// na klienta i być wyceniona przez kasę za dokładnie ten koszyk i ten kraj.
+// Kraj się liczy, bo to on decyduje o cenie wysyłki — bez tego dało się
+// zapłacić za wysyłkę krajową i podać adres zagraniczny. Pusty zapis koszyka
 // odpada z automatu: płatność bez naszych metadanych to płatność, której kasa
-// nie wyceniała.
-export const isPaymentFor = (
+// nie wyceniała (np. ta z panelu klienta).
+export const canDraftOrderFor = (
   payment: PaymentRecord,
   fingerprint: string,
   country: string
 ): boolean =>
-  payment.status !== PaymentStatus.Unusable &&
+  payment.status === PaymentStatus.AwaitingPayment &&
   payment.currency !== null &&
   !!payment.cart &&
   payment.cart === fingerprint &&

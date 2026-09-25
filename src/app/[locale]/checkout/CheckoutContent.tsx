@@ -28,6 +28,8 @@ type Props = {
   deliveryLabel: string;
   // Prace sprzedane w międzyczasie — kasa pokazuje je zamiast formularza.
   onSoldOut: (items: UnavailableItem[]) => void;
+  // Płatność w Stripe, do której kasa przypina zamówienie przed zapłatą.
+  paymentIntentId: string;
 };
 
 const primaryButtonClass =
@@ -50,6 +52,7 @@ export default function CheckoutContent({
   onLockerSelect,
   deliveryLabel,
   onSoldOut,
+  paymentIntentId,
 }: Props) {
   const stripe = useStripe();
   const elements = useElements();
@@ -135,9 +138,14 @@ export default function CheckoutContent({
             country: address.country,
           };
 
-    sessionStorage.setItem(
-      "pendingOrder",
-      JSON.stringify({
+    // Zamówienie zapisuje się na serwerze PRZED obciążeniem karty i zostaje
+    // przypięte do płatności w Stripe. Dzięki temu nie ginie, gdy klient po
+    // zapłacie nie wróci do tej karty — BLIK i przelewy na telefonie otwierają
+    // aplikację banku i potrafią wrócić gdzie indziej.
+    const draft = await fetch("/api/checkout/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         billing: {
           first_name: address.firstName,
           last_name: address.lastName,
@@ -150,10 +158,19 @@ export default function CheckoutContent({
         },
         items: getOrderItems(items),
         note: address.note,
+        paymentIntentId,
         deliveryMethod,
         locker: usingLocker ? locker : null,
-      })
-    );
+      }),
+    })
+      .then((r) => r.ok)
+      .catch(() => false);
+
+    if (!draft) {
+      setError(t("connectionError"));
+      setLoading(false);
+      return;
+    }
 
     const localePrefix = locale === "en" ? "" : `/${locale}`;
     const { error: stripeError } = await stripe.confirmPayment({

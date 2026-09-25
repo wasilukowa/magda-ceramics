@@ -1,6 +1,5 @@
 import { BillingAddress, OrderItem } from "@/contracts/server/cart";
 import { PlacedOrder } from "@/contracts/server/order";
-import { PaymentRecord } from "@/contracts/server/payment";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
 
@@ -59,6 +58,7 @@ export enum CheckoutError {
   CatalogUnavailable = "catalog-unavailable",
   PaymentNotVerified = "payment-not-verified",
   OrderFailed = "order-failed",
+  TooManyAttempts = "too-many-attempts",
 }
 
 export type CheckoutFailure = {
@@ -78,16 +78,18 @@ export type CheckoutErrorResponse = {
   unavailable?: UnavailableItem[];
 };
 
-// Wszystko, czego potrzeba, żeby zapisać zamówienie w WooCommerce. Waluty ani
-// zapłaconej kwoty nie ma tu osobno — jedno i drugie siedzi w `payment`, czyli
-// w tym, co o płatności powiedział Stripe.
-export type PlaceOrderInput = {
+// Wszystko, czego potrzeba, żeby zapisać zamówienie w WooCommerce, zanim
+// klient zapłaci. O tym, czy zapłacono, rozstrzyga dopiero domknięcie
+// płatności — patrz CheckoutService.completePayment.
+export type DraftOrderInput = {
   billing: BillingAddress;
   items: OrderItem[];
   note: string;
-  payment: PaymentRecord;
+  // Zalogowany klient — z sesji, nigdy z żądania. Dzięki temu zamówienie
+  // pojawia się potem w jego „Moich zamówieniach".
+  customerId: number | null;
   deliveryMethod?: DeliveryMethod;
   locker?: InPostPoint | null;
 };
 
-export type PlaceOrderResult = { ok: true; order: PlacedOrder } | CheckoutFailure;
+export type DraftOrderResult = { ok: true; order: PlacedOrder } | CheckoutFailure;

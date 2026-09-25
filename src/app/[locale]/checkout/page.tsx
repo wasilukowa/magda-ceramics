@@ -21,7 +21,11 @@ import {
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { getShippingCost, hasInPostLocker } from "@/lib/helpers/shipping";
 import { getCartTotal } from "@/lib/helpers/currency";
-import { getCheckoutErrorKey, getOrderItems } from "@/lib/helpers/checkout";
+import {
+  getCheckoutErrorKey,
+  getOrderItems,
+  getPaymentIntentId,
+} from "@/lib/helpers/checkout";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -202,6 +206,7 @@ function Checkout() {
             onLockerSelect={setLocker}
             deliveryLabel={deliveryLabel}
             onSoldOut={setSoldOut}
+            paymentIntentId={getPaymentIntentId(clientSecret)}
           />
         </Elements>
       ) : (

@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    await orderService.markPaid(orderId, payment);
+    await orderService.markPaid(orderId, order.status, payment);
   } catch (error) {
     // Pieniądze są u Stripe'a, więc klientowi mówimy prawdę: zapłacono.
     // Rozjazd w WooCommerce zostaje w logu dla Magdy.

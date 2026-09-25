@@ -69,23 +69,48 @@ class PaymentService {
     }
   }
 
-  // Przypisanie zamówienia do płatności. To ono sprawia, że jedna płatność daje
-  // jedno zamówienie — odświeżenie strony potwierdzenia nie zrobi drugiego.
-  // Stripe dokłada podane klucze do istniejących metadanych, więc zapis koszyka
-  // i kraju zostają na miejscu.
-  async claimOrder(paymentIntentId: string, order: PlacedOrder): Promise<void> {
-    try {
-      await this.stripe.paymentIntents.update(paymentIntentId, {
-        metadata: {
-          [PAYMENT_META.orderId]: order.id.toString(),
-          [PAYMENT_META.orderKey]: order.key,
-        },
-      });
-    } catch (error) {
-      // Zamówienie już jest — brak przypięcia grozi najwyżej duplikatem przy
-      // ponownej próbie, więc nie ma po co przerywać klientowi zakupu.
-      console.error("Stripe order claim failed:", error);
+  // Przypięcie szkicu zamówienia do płatności, zanim klient zapłaci. Od tej
+  // chwili płatność sama wie, które zamówienie domknąć — nie potrzeba do tego
+  // przeglądarki klienta. Stripe dokłada podane klucze do istniejących
+  // metadanych, więc zapis koszyka i kraju zostają na miejscu. Błąd leci dalej:
+  // płatność bez przypiętego zamówienia to dokładnie ta dziura, którą to łata.
+  async attachOrder(paymentIntentId: string, order: PlacedOrder): Promise<void> {
+    await this.stripe.paymentIntents.update(paymentIntentId, {
+      metadata: {
+        [PAYMENT_META.orderId]: order.id.toString(),
+        [PAYMENT_META.orderKey]: order.key,
+      },
+    });
+  }
+
+  isWebhookConfigured(): boolean {
+    return Boolean(process.env.STRIPE_WEBHOOK_SECRET);
+  }
+
+  // Zdarzenie z webhooka Stripe'a → płatność, o którą chodzi. Podpis jest
+  // sprawdzany na surowej treści żądania; podrobione albo przeterminowane
+  // zdarzenie kończy się wyjątkiem. Liczą się dwa zdarzenia: pieniądze doszły
+  // albo metoda odroczona zaczęła je potwierdzać. Resztę zwracamy jako null.
+  // Stan płatności czytamy od Stripe'a na nowo, bo zdarzenia potrafią przyjść
+  // w innej kolejności, niż się wydarzyły.
+  async getWebhookPayment(
+    body: string,
+    signature: string
+  ): Promise<PaymentRecord | null> {
+    const event = this.stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+
+    if (
+      event.type !== "payment_intent.succeeded" &&
+      event.type !== "payment_intent.processing"
+    ) {
+      return null;
     }
+
+    return this.getPayment(event.data.object.id);
   }
 }
 

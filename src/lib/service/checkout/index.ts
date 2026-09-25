@@ -3,22 +3,28 @@ import "server-only";
 import { serverFetch } from "@/lib/api";
 import { CartItemState, OrderItem } from "@/contracts/server/cart";
 import { ProductProps, RawProduct } from "@/contracts/server/product";
-import { RawPlacedOrder } from "@/contracts/server/order";
+import {
+  CompletedOrder,
+  OrderCompletion,
+  OrderStatus,
+  RawPlacedOrder,
+} from "@/contracts/server/order";
 import {
   AvailabilityResult,
   CartPricingResult,
   CheckoutError,
   CheckoutFailure,
-  PlaceOrderInput,
-  PlaceOrderResult,
+  DraftOrderInput,
+  DraftOrderResult,
   PricedLine,
   UnavailableItem,
 } from "@/contracts/server/checkout";
-import { PaymentStatus } from "@/contracts/server/payment";
+import { PaymentRecord, PaymentStatus } from "@/contracts/server/payment";
 import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
 import { prepareProduct } from "@/lib/service/product/helpers";
-import { EXCHANGE_RATE_PLN_PER_EUR, getUnitPrice } from "@/lib/helpers/currency";
+import { orderService } from "@/lib/service/order";
+import { getUnitPrice } from "@/lib/helpers/currency";
 import { getShippingAmount, getShippingCostInZloty } from "@/lib/helpers/shipping";
 import { getCartFingerprint, getUnavailableItems } from "./helpers";
 
@@ -187,19 +193,29 @@ class CheckoutService {
     return availability.ok ? [] : availability.unavailable;
   }
 
-  // Zamówienie powstaje dopiero wtedy, gdy Stripe potwierdził płatność — to
-  // sprawdza trasa API. Tutaj jest już tylko zapis do WooCommerce.
-  async placeOrder({
+  // Szkic zamówienia zapisany tuż PRZED płatnością. Dzięki niemu płatność od
+  // początku wie, które zamówienie opłaca, i domknie je sama — webhookiem
+  // Stripe'a — nawet gdy klient po zapłacie nie wróci do tej karty
+  // przeglądarki (BLIK i przelewy na telefonie otwierają aplikację banku
+  // i wracają gdzie indziej). Wcześniej dane zamówienia żyły wyłącznie
+  // w przeglądarce, więc taka płatność kończyła się pieniędzmi bez zamówienia.
+  //
+  // Szkic (`checkout-draft`) nie pokazuje się na liście zamówień ani w panelu
+  // klienta i nie łapie się na przypomnienie o zapłacie — porzucony przy
+  // odrzuconej karcie nikomu nie przeszkadza. Za drugim kliknięciem „Zapłać"
+  // powstaje nowy szkic zamiast poprawiania starego: poprawka przez API
+  // dopisałaby drugą linię wysyłki zamiast podmienić pierwszą.
+  async saveDraftOrder({
     billing,
     items,
     note,
-    payment,
+    customerId,
     deliveryMethod,
     locker,
-  }: PlaceOrderInput): Promise<PlaceOrderResult> {
+  }: DraftOrderInput): Promise<DraftOrderResult> {
     // Wysyłkę liczymy z kraju adresu, nie z tego, co przyszło w żądaniu — a że
     // ten sam kraj musiał być użyty przy płatności (metadane w Stripe), suma
-    // zamówienia zgadza się z tym, co klient naprawdę zapłacił.
+    // zamówienia zgadza się z tym, co klient zapłaci.
     const shippingTotal = getShippingCostInZloty(billing.country);
 
     // Parcel-locker orders (Poland + InPost International countries): ship to
@@ -219,36 +235,9 @@ class CheckoutService {
       ? `Paczkomat InPost ${locker!.code}`
       : "Shipping";
 
-    const conflicts = await this.getSoldOutConflicts(items);
-
-    // Metody odroczone (Klarna) odsyłają klienta do sklepu, zanim Stripe
-    // potwierdzi przelew. Takie zamówienie powstaje wstrzymane i nieopłacone —
-    // fałszywe „opłacone" byłoby gorsze niż czekanie, a brak zamówienia
-    // najgorszy ze wszystkiego.
-    const isPaid = payment.status === PaymentStatus.Succeeded;
-
-    // Orders are always recorded in the PLN store currency. When the customer
-    // paid in EUR, record the actual charged amount + rate so the studio can
-    // reconcile it against Stripe.
-    const paidInEur = payment.currency === Currency.EUR;
-    const metaData = [
-      { key: "_stripe_payment_intent", value: payment.id },
-      { key: "_stripe_payment_status", value: payment.status },
-      ...(isLocker
-        ? [{ key: "_inpost_locker_id", value: locker!.code }]
-        : []),
-      ...(paidInEur
-        ? [
-            { key: "_paid_currency", value: "EUR" },
-            { key: "_paid_amount", value: payment.paidTotal.toFixed(2) },
-            { key: "_exchange_rate", value: EXCHANGE_RATE_PLN_PER_EUR.toString() },
-          ]
-        : []),
-      ...(conflicts.length
-        ? [{ key: "_stock_conflict", value: conflicts.map((c) => c.id).join(",") }]
-        : []),
-    ];
-
+    // Tu trafia tylko to, co klient może przeczytać w swoim mailu: jego własna
+    // uwaga i wybrany paczkomat. Uwagi dla Magdy idą osobno, jako notatki
+    // prywatne — patrz OrderService.
     const noteParts: string[] = [];
     if (note) noteParts.push(note);
     if (isLocker) {
@@ -258,36 +247,15 @@ class CheckoutService {
         }`
       );
     }
-    if (paidInEur) {
-      noteParts.push(
-        `Zapłacono ${payment.paidTotal.toFixed(2)} € (kurs ${EXCHANGE_RATE_PLN_PER_EUR}).`
-      );
-    }
-    if (!isPaid) {
-      noteParts.push(
-        "UWAGA: Stripe jeszcze potwierdza tę płatność (metoda odroczona). " +
-          "Zamówienie czeka wstrzymane — sprawdź płatność w Stripe przed wysyłką."
-      );
-    }
-    // Płatność już przeszła, więc zamówienie musi powstać niezależnie od stanu
-    // magazynu — inaczej pieniądze zostałyby wzięte bez śladu w panelu. Jeśli
-    // ktoś zdążył kupić tę samą pracę, Magda widzi to wprost przy zamówieniu.
-    if (conflicts.length) {
-      noteParts.push(
-        `UWAGA: w chwili składania zamówienia te prace były już niedostępne: ${conflicts
-          .map((conflict) => conflict.name)
-          .join(", ")}. Płatność została pobrana — do sprawdzenia przed wysyłką.`
-      );
-    }
 
     try {
       const order = await this.wcFetch<RawPlacedOrder>("orders", {
         method: "POST",
         body: JSON.stringify({
+          status: OrderStatus.CheckoutDraft,
+          ...(customerId ? { customer_id: customerId } : {}),
           payment_method: "stripe",
           payment_method_title: "Card / Apple Pay / Google Pay",
-          set_paid: isPaid,
-          ...(isPaid ? {} : { status: "on-hold" }),
           billing,
           shipping,
           line_items: items.map((item) => ({
@@ -302,15 +270,78 @@ class CheckoutService {
             },
           ],
           customer_note: noteParts.length ? noteParts.join("\n") : undefined,
-          meta_data: metaData,
+          meta_data: isLocker
+            ? [{ key: "_inpost_locker_id", value: locker!.code }]
+            : [],
         }),
       });
 
       return { ok: true, order: { id: order.id, key: order.order_key } };
     } catch (error) {
-      console.error("WooCommerce order error:", error);
+      console.error("WooCommerce draft order error:", error);
       return { ok: false, error: CheckoutError.OrderFailed, unavailable: [] };
     }
+  }
+
+  // Domknięcie płatności — jedno dla strony potwierdzenia i dla webhooka
+  // Stripe'a. Obie drogi potrafią przyjść naraz albo po kilka razy, więc
+  // wszystko tu jest powtarzalne: zamówienie już opłacone zostaje, jakie jest.
+  // Null znaczy, że płatność nie należy do żadnego zamówienia albo jeszcze nie
+  // przeszła.
+  //
+  // Numer zamówienia w metadanych płatności zapisuje wyłącznie nasz serwer:
+  // kasa przy szkicu (razem z kluczem zamówienia) albo panel klienta przy
+  // „Zapłać" (bez klucza, ale dopiero po sprawdzeniu właściciela w sesji).
+  // Dlatego domknięcie może mu ufać także bez sesji — np. w webhooku.
+  async completePayment(payment: PaymentRecord): Promise<CompletedOrder | null> {
+    if (!payment.orderId) return null;
+    if (
+      payment.status !== PaymentStatus.Succeeded &&
+      payment.status !== PaymentStatus.Processing
+    ) {
+      return null;
+    }
+
+    const order = await orderService.getOrderForPayment(payment.orderId);
+    // Płatność z kasy niesie klucz swojego szkicu — musi się zgadzać.
+    if (!order || (payment.orderKey && order.key !== payment.orderKey)) {
+      console.error(
+        `Payment ${payment.id}: order ${payment.orderId} missing or not matching`
+      );
+      return null;
+    }
+
+    const awaiting =
+      order.status === OrderStatus.CheckoutDraft ||
+      order.status === OrderStatus.Pending ||
+      order.status === OrderStatus.Failed;
+    const onHold = order.status === OrderStatus.OnHold;
+
+    if (payment.status === PaymentStatus.Processing) {
+      if (awaiting) {
+        await orderService.markAwaitingConfirmation(order.id, order.status, payment);
+      }
+      return { id: order.id, completion: OrderCompletion.AwaitingConfirmation };
+    }
+
+    // Zapłacone. Zamówienie już w realizacji (albo dalej) nie potrzebuje
+    // niczego — to druga z dwóch dróg, które przyszły po to samo.
+    if (awaiting || onHold) {
+      // Ceramika to pojedyncze sztuki. Jeśli ktoś zapłacił za tę samą pracę
+      // wcześniej, zamówienie i tak musi zostać opłacone — pieniądze już są —
+      // ale Magda musi to zobaczyć, zanim spakuje paczkę.
+      const conflicts = await this.getSoldOutConflicts(order.items);
+      const remarks = conflicts.length
+        ? [
+            `UWAGA: w chwili zapłaty te prace były już niedostępne: ${conflicts
+              .map((conflict) => conflict.name)
+              .join(", ")}. Płatność została pobrana — do sprawdzenia przed wysyłką.`,
+          ]
+        : [];
+      await orderService.markPaid(order.id, order.status, payment, remarks);
+    }
+
+    return { id: order.id, completion: OrderCompletion.Paid };
   }
 }
 
