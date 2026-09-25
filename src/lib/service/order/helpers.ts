@@ -1,4 +1,5 @@
 import {
+  OrderForPayment,
   OrderProps,
   OrderStatus,
   PAYABLE_STATUSES,
@@ -11,13 +12,27 @@ import { routing } from "@/i18n/routing";
 // przebieg zadania nie napisze do tej samej osoby po raz drugi.
 export const REMINDER_SENT_META_KEY = "_mc_payment_reminder_sent";
 
-const toOrderStatus = (status: string): OrderStatus =>
+export const toOrderStatus = (status: string): OrderStatus =>
   Object.values(OrderStatus).includes(status as OrderStatus)
     ? (status as OrderStatus)
     : OrderStatus.Pending;
 
 export const isPayableStatus = (status: OrderStatus): boolean =>
   PAYABLE_STATUSES.includes(status as (typeof PAYABLE_STATUSES)[number]);
+
+// Szkic, który kasa zapisała tuż przed płatnością. Klient go nie widzi:
+// zamówieniem staje się dopiero wtedy, gdy płatność je domknie.
+export const isCheckoutDraft = (raw: RawOrder): boolean =>
+  raw.status === OrderStatus.CheckoutDraft;
+
+export const prepareOrderForPayment = (raw: RawOrder): OrderForPayment => ({
+  id: raw.id,
+  key: raw.order_key ?? "",
+  status: toOrderStatus(raw.status),
+  items: (raw.line_items ?? []).flatMap((item) =>
+    item.product_id ? [{ id: item.product_id, quantity: item.quantity }] : []
+  ),
+});
 
 export const prepareOrder = (raw: RawOrder): OrderProps => {
   const status = toOrderStatus(raw.status);

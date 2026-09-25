@@ -8,6 +8,10 @@ export enum OrderStatus {
   Cancelled = "cancelled",
   Refunded = "refunded",
   Failed = "failed",
+  // Szkic zapisany przez kasę tuż przed płatnością — patrz CheckoutService.
+  // WooCommerce nie pokazuje go na liście zamówień, a przypomnienia o zapłacie
+  // go nie widzą. Klient też nie, dopóki płatność go nie domknie.
+  CheckoutDraft = "checkout-draft",
 }
 
 export type OrderLineItem = {
@@ -46,6 +50,16 @@ export type PlacedOrder = {
   key: string;
 };
 
+// Zamówienie w takim ujęciu, jakiego potrzebuje domknięcie płatności: stan,
+// klucz (po nim płatność z kasy poznaje „swoje" zamówienie) i pozycje, żeby
+// sprawdzić, czy ktoś nie kupił tej samej pracy w międzyczasie.
+export type OrderForPayment = {
+  id: number;
+  key: string;
+  status: OrderStatus;
+  items: { id: number; quantity: number }[];
+};
+
 // Odpowiedź WooCommerce zaraz po utworzeniu zamówienia.
 export type RawPlacedOrder = {
   id: number;
@@ -54,6 +68,7 @@ export type RawPlacedOrder = {
 
 export type RawOrderLineItem = {
   id: number;
+  product_id?: number;
   name: string;
   quantity: number;
   total: string;
@@ -68,6 +83,8 @@ export type RawOrder = {
   total: string;
   currency: string;
   line_items: RawOrderLineItem[];
+  order_key?: string;
+  customer_id?: number;
   billing?: { first_name?: string; email?: string; country?: string };
   meta_data?: { key: string; value: string | number }[];
 };
@@ -95,3 +112,21 @@ export enum OrderConfirmResult {
   PaidNotRecorded = "paid-not-recorded",
   NotConfirmed = "not-confirmed",
 }
+
+// Czym kończy się domknięcie płatności z kasy — obojętne, czy domyka je strona
+// potwierdzenia, czy webhook Stripe'a.
+export enum OrderCompletion {
+  // Stripe potwierdził pieniądze, zamówienie jest opłacone.
+  Paid = "paid",
+  // Metoda odroczona (np. Klarna): Stripe jeszcze potwierdza. Zamówienie czeka
+  // wstrzymane, a webhook domknie je, gdy pieniądze dojdą.
+  AwaitingConfirmation = "awaiting-confirmation",
+}
+
+// Wynik domknięcia: numer zamówienia do pokazania klientowi i to, jak się
+// skończyło. Brak wyniku (null) znaczy, że płatności nie da się przypisać do
+// żadnego zamówienia z kasy.
+export type CompletedOrder = {
+  id: number;
+  completion: OrderCompletion;
+};

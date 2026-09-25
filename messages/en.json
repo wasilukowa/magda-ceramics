@@ -233,10 +233,9 @@
   "success": {
     "loading": "Finalising your order...",
     "thankYou": "Thank you for your order",
-    "orderReceived": "Order #{orderId} has been received. A confirmation has been sent to your email address.",
+    "orderReceived": "Order #{orderId} has been received. A confirmation has been sent to your email address — if you can't see it, please check your spam folder too.",
     "backToShop": "Back to shop",
     "paymentFailed": "Payment failed or was cancelled.",
-    "orderNotFound": "Order data not found.",
     "connectionError": "Connection error while creating the order.",
     "backToCheckout": "Back to checkout",
     "paymentNotVerified": "We could not confirm the payment. If you have been charged, write to us and we will look into it.",
@@ -510,10 +509,6 @@
       "cart": {
         "purpose": "Remembers the products you added to the cart.",
         "duration": "Until you clear browser data"
-      },
-      "pendingOrder": {
-        "purpose": "Carries the order details to the confirmation page after payment.",
-        "duration": "Until the tab is closed"
       },
       "stripe": {
         "purpose": "Payment handling and fraud detection by the payment provider. Loaded on the checkout page only.",

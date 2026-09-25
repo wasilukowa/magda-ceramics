@@ -5,9 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
-import { BillingAddress, OrderItem } from "@/contracts/server/cart";
 import { CheckoutErrorResponse } from "@/contracts/server/checkout";
-import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { getOrderErrorKey } from "@/lib/helpers/checkout";
 
 type OrderState =
@@ -15,16 +13,10 @@ type OrderState =
   | { status: "success"; orderId: number }
   | { status: "error"; message: string };
 
-// Co kasa zostawia sobie na czas przekierowania do Stripe'a. Waluty ani kwoty
-// tu nie ma — jedno i drugie zamówienie czyta ze Stripe'a, bo tylko tam jest
-// zapis tego, co klient naprawdę zapłacił.
-type PendingOrder = {
-  billing: BillingAddress;
-  items: OrderItem[];
-  note: string;
-  deliveryMethod: DeliveryMethod;
-  locker: InPostPoint | null;
-};
+// Stripe odsyła tu klienta z wynikiem w adresie. „processing" to metoda
+// odroczona (np. przelew albo Klarna): pieniądze jeszcze idą, ale zamówienie
+// już jest i poczeka na nie — to nie porażka.
+const ACCEPTED_REDIRECT_STATUSES = ["succeeded", "processing"];
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -33,57 +25,39 @@ function SuccessContent() {
   const [state, setState] = useState<OrderState>({ status: "loading" });
 
   // Wynik płatności widać wprost w adresie, więc nie ma po co trzymać go w
-  // stanie — wyliczamy przy renderze i nie zamawiamy niczego, gdy płatność
-  // nie doszła do skutku.
+  // stanie — wyliczamy przy renderze i nie pytamy o nic, gdy płatność nie
+  // doszła do skutku.
   const paymentIntent = searchParams.get("payment_intent");
   const paymentSucceeded =
-    searchParams.get("redirect_status") === "succeeded" && Boolean(paymentIntent);
+    ACCEPTED_REDIRECT_STATUSES.includes(searchParams.get("redirect_status") ?? "") &&
+    Boolean(paymentIntent);
 
   useEffect(() => {
     if (!paymentSucceeded) return;
 
     let active = true;
 
-    // Cały przebieg wisi na łańcuchu obietnic, żeby każdy setState działał się
-    // po odpowiedzi, a nie w tej samej fazie co efekt.
-    Promise.resolve()
-      .then(() => {
-        const raw = sessionStorage.getItem("pendingOrder");
-        if (!raw) throw new Error(t("orderNotFound"));
-
-        const { billing, items, note, deliveryMethod, locker }: PendingOrder =
-          JSON.parse(raw);
-
-        return fetch("/api/create-order", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            billing,
-            items,
-            note,
-            paymentIntentId: paymentIntent,
-            deliveryMethod,
-            locker,
-          }),
-        });
-      })
+    // Zamówienie istnieje od kliknięcia „Zapłać" — tu tylko prosimy serwer,
+    // żeby je domknął. To samo robi webhook Stripe'a, więc wynik jest ten sam,
+    // niezależnie od tego, która droga była pierwsza.
+    fetch("/api/checkout/complete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentIntentId: paymentIntent }),
+    })
       .then((r) => r.json())
       .then((data: CheckoutErrorResponse & { orderId?: number }) => {
         if (!active) return;
-        if (data.error) {
-          setState({ status: "error", message: t(getOrderErrorKey(data.error)) });
-        } else if (data.orderId) {
-          sessionStorage.removeItem("pendingOrder");
+        if (data.orderId) {
           clearCart();
           setState({ status: "success", orderId: data.orderId });
+        } else {
+          setState({ status: "error", message: t(getOrderErrorKey(data.error)) });
         }
       })
-      .catch((error: Error) => {
+      .catch(() => {
         if (!active) return;
-        setState({
-          status: "error",
-          message: error.message || t("connectionError"),
-        });
+        setState({ status: "error", message: t("connectionError") });
       });
 
     return () => {

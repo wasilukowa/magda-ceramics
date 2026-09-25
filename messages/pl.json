@@ -233,10 +233,9 @@
   "success": {
     "loading": "Finalizowanie zamówienia...",
     "thankYou": "Dziękujemy za zamówienie",
-    "orderReceived": "Zamówienie #{orderId} zostało przyjęte. Potwierdzenie zostało wysłane na Twój adres email.",
+    "orderReceived": "Zamówienie #{orderId} zostało przyjęte. Potwierdzenie wysłaliśmy na Twój adres e-mail — jeśli go nie widzisz, zajrzyj także do spamu.",
     "backToShop": "Wróć do sklepu",
     "paymentFailed": "Płatność nieudana lub anulowana.",
-    "orderNotFound": "Nie znaleziono danych zamówienia.",
     "connectionError": "Błąd połączenia podczas tworzenia zamówienia.",
     "backToCheckout": "Wróć do kasy",
     "paymentNotVerified": "Nie udało się potwierdzić płatności. Jeśli pieniądze zostały pobrane, napisz do nas — sprawdzimy to.",
@@ -510,10 +509,6 @@
       "cart": {
         "purpose": "Zapamiętanie produktów dodanych do koszyka.",
         "duration": "Do wyczyszczenia danych przeglądarki"
-      },
-      "pendingOrder": {
-        "purpose": "Przekazanie szczegółów zamówienia na stronę potwierdzenia po płatności.",
-        "duration": "Do zamknięcia karty"
       },
       "stripe": {
         "purpose": "Obsługa płatności i wykrywanie oszustw przez operatora płatności. Ładowane tylko na stronie zamówienia.",

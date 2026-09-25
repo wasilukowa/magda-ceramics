@@ -65,9 +65,15 @@ export const paymentIntentRequestSchema = z.object({
 
 export const availabilityRequestSchema = z.object({ items: cartSchema });
 
-// Waluty ani zapłaconej kwoty tu nie ma — jedno i drugie czytamy ze Stripe'a,
-// bo tylko tam jest zapis tego, co klient naprawdę zapłacił.
-export const orderRequestSchema = z.object({
+// Numer płatności z adresu, na który Stripe odsyła klienta. Mówi tylko,
+// KTÓRĄ płatność sprawdzić — co z nią, rozstrzyga Stripe.
+export const completeOrderRequestSchema = z.object({
+  paymentIntentId: z.string().trim().min(1).max(255),
+});
+
+// Dane zamówienia wysyłane tuż przed płatnością. Waluty ani kwoty tu nie ma —
+// jedno i drugie siedzi w płatności, wycenionej wcześniej na serwerze.
+export const draftOrderRequestSchema = z.object({
   billing: billingSchema,
   items: cartSchema,
   paymentIntentId: z.string().trim().min(1).max(255),
@@ -127,7 +133,8 @@ export const getUnavailableItems = (
 
 // Status odpowiedzi dobrany tak, żeby było widać, czyj to problem: 400 —
 // żądanie nie trzyma się formularza, 402 — płatności nie da się potwierdzić,
-// 409 — praca w międzyczasie zniknęła, 503 — to WooCommerce nie odpowiada.
+// 409 — praca w międzyczasie zniknęła, 429 — za dużo prób z jednego miejsca,
+// 503 — to WooCommerce nie odpowiada.
 const STATUS_BY_ERROR: Record<CheckoutError, number> = {
   [CheckoutError.EmptyCart]: 400,
   [CheckoutError.InvalidCart]: 400,
@@ -135,6 +142,7 @@ const STATUS_BY_ERROR: Record<CheckoutError, number> = {
   [CheckoutError.CatalogUnavailable]: 503,
   [CheckoutError.PaymentNotVerified]: 402,
   [CheckoutError.OrderFailed]: 500,
+  [CheckoutError.TooManyAttempts]: 429,
 };
 
 // Jedna odmowa dla wszystkich tras kasy: kod błędu (nie zdanie — tłumaczy je

@@ -11,6 +11,12 @@ import {
 export const getOrderItems = (items: CartItem[]): OrderItem[] =>
   items.map((item) => ({ id: item.id, quantity: item.quantity }));
 
+// Numer płatności siedzi na początku jej „client secret" („pi_…_secret_…").
+// Stripe opisuje ten kształt w dokumentacji, więc nie trzeba o niego pytać
+// osobno.
+export const getPaymentIntentId = (clientSecret: string): string =>
+  clientSecret.split("_secret_")[0];
+
 // Kod odmowy z API → klucz tłumaczenia w przestrzeni „checkout".
 export const getCheckoutErrorKey = (error: unknown): string =>
   error === CheckoutError.CatalogUnavailable

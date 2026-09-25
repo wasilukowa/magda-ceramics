@@ -45,12 +45,6 @@ export const COOKIE_REGISTRY: CookieRegistryEntry[] = [
     category: CookieCategory.Necessary,
   },
   {
-    key: "pendingOrder",
-    name: "pendingOrder",
-    provider: "magdaceramics.com",
-    category: CookieCategory.Necessary,
-  },
-  {
     key: "stripe",
     name: "__stripe_mid, __stripe_sid",
     provider: "Stripe",
