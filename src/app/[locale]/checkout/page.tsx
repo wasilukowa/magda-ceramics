@@ -26,6 +26,7 @@ import {
   getOrderItems,
   getPaymentIntentId,
 } from "@/lib/helpers/checkout";
+import { getStripeAppearance, STRIPE_FONTS } from "@/lib/helpers/stripeAppearance";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -162,34 +163,8 @@ function Checkout() {
           stripe={stripePromise}
           options={{
             clientSecret,
-            appearance: {
-              theme: "flat",
-              variables: {
-                fontFamily: "var(--font-montserrat), sans-serif",
-                colorBackground: "var(--background)",
-                colorText: "var(--foreground)",
-                colorTextPlaceholder: "#9ca3af",
-                borderRadius: "0px",
-                fontSizeBase: "13px",
-              },
-              rules: {
-                ".Input": {
-                  border: "1px solid var(--border)",
-                  padding: "12px",
-                },
-                ".Input:focus": {
-                  border: "1px solid var(--foreground)",
-                  boxShadow: "none",
-                  outline: "none",
-                },
-                ".Label": {
-                  fontSize: "10px",
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  marginBottom: "6px",
-                },
-              },
-            },
+            fonts: STRIPE_FONTS,
+            appearance: getStripeAppearance(),
           }}
         >
           <CheckoutContent

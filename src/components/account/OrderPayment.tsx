@@ -10,38 +10,11 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import { OrderProps } from "@/contracts/server/order";
+import { getStripeAppearance, STRIPE_FONTS } from "@/lib/helpers/stripeAppearance";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 );
-
-// Wygląd pól Stripe'a taki sam jak w kasie — klient nie powinien poznać, że to
-// inna strona sklepu.
-const APPEARANCE = {
-  theme: "flat" as const,
-  variables: {
-    fontFamily: "var(--font-montserrat), sans-serif",
-    colorBackground: "var(--background)",
-    colorText: "var(--foreground)",
-    colorTextPlaceholder: "#9ca3af",
-    borderRadius: "0px",
-    fontSizeBase: "13px",
-  },
-  rules: {
-    ".Input": { border: "1px solid var(--border)", padding: "12px" },
-    ".Input:focus": {
-      border: "1px solid var(--foreground)",
-      boxShadow: "none",
-      outline: "none",
-    },
-    ".Label": {
-      fontSize: "10px",
-      letterSpacing: "0.1em",
-      textTransform: "uppercase",
-      marginBottom: "6px",
-    },
-  },
-};
 
 function PaymentForm({ order }: { order: OrderProps }) {
   const stripe = useStripe();
@@ -141,7 +114,13 @@ export default function OrderPayment({
 
       <Elements
         stripe={stripePromise}
-        options={{ clientSecret, appearance: APPEARANCE }}
+        options={{
+          clientSecret,
+          // Ten sam wygląd co w kasie — klient nie powinien poznać, że to
+          // inna strona sklepu.
+          fonts: STRIPE_FONTS,
+          appearance: getStripeAppearance(),
+        }}
       >
         <PaymentForm order={order} />
       </Elements>
