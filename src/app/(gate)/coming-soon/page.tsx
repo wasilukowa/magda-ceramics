@@ -1,4 +1,35 @@
+import type { Metadata } from "next";
 import Image from "next/image";
+import { COMING_SOON_META, SITE_URL } from "@/content/data";
+import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/helpers/metadata";
+
+// Zaślepka stoi poza [locale], więc nie dziedziczy metadanych z layoutu sklepu
+// — bez tego karta przeglądarki pokazywała sam adres, a link wklejony w
+// komunikator nie miał ani opisu, ani zdjęcia. `metadataBase` jest potrzebne,
+// żeby obrazek podglądu zamienił się w pełny adres.
+const title = `${SITE_NAME} — ${COMING_SOON_META.title}`;
+const { description, imageAlt } = COMING_SOON_META;
+const images = [{ ...DEFAULT_OG_IMAGE, alt: imageAlt }];
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title,
+  description,
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "en_GB",
+    title,
+    description,
+    images,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: [DEFAULT_OG_IMAGE.url],
+  },
+};
 
 function InstagramIcon() {
   return (
