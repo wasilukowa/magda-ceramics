@@ -112,6 +112,16 @@ export const SITEMAP_ROUTES: StaticRoute[] = [
 export const INSTAGRAM_URL = "https://www.instagram.com/magda_ceramics";
 export const INSTAGRAM_HANDLE = "@magda_ceramics";
 
+// Tytuł i opis zaślepki „coming soon". Dopóki stoi bramka, to jedyna strona,
+// jaką widzi ktoś z zewnątrz — także w podglądzie linku na Instagramie czy
+// w komunikatorze. Po angielsku, jak sama zaślepka.
+export const COMING_SOON_META = {
+  title: "Shop coming soon",
+  description:
+    "Handmade ceramics from a home studio in Warsaw — mugs, candle holders and vessels carved and painted by hand. The shop opens soon.",
+  imageAlt: "Three handmade Magda Ceramics mugs held in someone's hands",
+};
+
 // Only countries the studio actually ships to (Poland + EU). Non-EU
 // destinations are intentionally excluded — shipping there is too costly.
 // Zones: Poland flat rate, InPost International countries, and the rest of
