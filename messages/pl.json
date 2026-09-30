@@ -32,7 +32,10 @@
     "faq": "Pytania i odpowiedzi",
     "homeLink": "Magda Ceramics — strona główna",
     "faqShort": "FAQ",
-    "archive": "Archiwum"
+    "archive": "Archiwum",
+    "cart": "Koszyk",
+    "menuOpen": "Otwórz menu",
+    "menuClose": "Zamknij menu"
   },
   "categories": {
     "all": "Wszystkie",
@@ -59,7 +62,11 @@
     "wishlistLink": "Zobacz wszystkie ulubione →",
     "wishlistSold": "Sprzedane",
     "carouselPrev": "Poprzednie prace",
-    "carouselNext": "Następne prace"
+    "carouselNext": "Następne prace",
+    "sliderPrev": "Poprzednie zdjęcie",
+    "sliderNext": "Następne zdjęcie",
+    "sliderGoTo": "Zdjęcie {number}",
+    "sliderAlt": "Ceramika Magdy, zdjęcie {number}"
   },
   "shop": {
     "title": "Sklep",
@@ -101,7 +108,9 @@
       "height": "Wysokość",
       "width": "Szerokość",
       "length": "Długość"
-    }
+    },
+    "photo": "Zdjęcie {number}",
+    "noImage": "Brak zdjęcia"
   },
   "cart": {
     "title": "Koszyk",
@@ -112,7 +121,8 @@
     "checkout": "Przejdź do kasy",
     "close": "Zamknij koszyk",
     "soldOut": "Sprzedane",
-    "soldOutHint": "Usuń sprzedane prace z koszyka, żeby przejść do zamówienia."
+    "soldOutHint": "Usuń sprzedane prace z koszyka, żeby przejść do zamówienia.",
+    "removeItem": "Usuń z koszyka: {name}"
   },
   "addToCart": {
     "add": "Dodaj do koszyka",
@@ -192,7 +202,8 @@
     "soldOutIntro": "Tych prac nie da się już zamówić:",
     "soldOutReasonSold": "sprzedane",
     "soldOutReasonGone": "niedostępne",
-    "soldOutRemove": "Usuń z koszyka i zamów resztę"
+    "soldOutRemove": "Usuń z koszyka i zamów resztę",
+    "progress": "Etapy zamówienia"
   },
   "shipping": {
     "pageTitle": "Wysyłka i zwroty",

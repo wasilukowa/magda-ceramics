@@ -107,7 +107,7 @@ export default function CartDrawer() {
                     <button
                       onClick={() => removeItem(item.id)}
                       className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors text-xs tracking-widest uppercase"
-                      aria-label="Remove item"
+                      aria-label={t("removeItem", { name: item.name })}
                     >
                       {t("remove")}
                     </button>

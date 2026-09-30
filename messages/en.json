@@ -32,7 +32,10 @@
     "faq": "Questions & answers",
     "homeLink": "Magda Ceramics — home",
     "faqShort": "FAQ",
-    "archive": "Archive"
+    "archive": "Archive",
+    "cart": "Cart",
+    "menuOpen": "Open menu",
+    "menuClose": "Close menu"
   },
   "categories": {
     "all": "All",
@@ -59,7 +62,11 @@
     "wishlistLink": "See all favourites →",
     "wishlistSold": "Sold",
     "carouselPrev": "Previous pieces",
-    "carouselNext": "Next pieces"
+    "carouselNext": "Next pieces",
+    "sliderPrev": "Previous photo",
+    "sliderNext": "Next photo",
+    "sliderGoTo": "Photo {number}",
+    "sliderAlt": "Magda's ceramics, photo {number}"
   },
   "shop": {
     "title": "Shop",
@@ -101,7 +108,9 @@
       "height": "Height",
       "width": "Width",
       "length": "Length"
-    }
+    },
+    "photo": "Photo {number}",
+    "noImage": "No image"
   },
   "cart": {
     "title": "Cart",
@@ -112,7 +121,8 @@
     "checkout": "Go to checkout",
     "close": "Close cart",
     "soldOut": "Sold",
-    "soldOutHint": "Remove the sold pieces from the basket to go to checkout."
+    "soldOutHint": "Remove the sold pieces from the basket to go to checkout.",
+    "removeItem": "Remove from cart: {name}"
   },
   "addToCart": {
     "add": "Add to cart",
@@ -192,7 +202,8 @@
     "soldOutIntro": "These pieces can no longer be ordered:",
     "soldOutReasonSold": "sold",
     "soldOutReasonGone": "unavailable",
-    "soldOutRemove": "Remove from basket and order the rest"
+    "soldOutRemove": "Remove from basket and order the rest",
+    "progress": "Checkout progress"
   },
   "shipping": {
     "pageTitle": "Shipping and returns",

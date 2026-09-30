@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -13,8 +14,10 @@ type Props = {
 };
 
 export default function CheckoutStepper({ steps, current, onSelect }: Props) {
+  const t = useTranslations("checkout");
+
   return (
-    <nav aria-label="Checkout progress" className="mb-12">
+    <nav aria-label={t("progress")} className="mb-12">
       <ol className="flex items-center">
         {steps.map((label, index) => {
           const isActive = index === current;
