@@ -88,7 +88,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
             alt="Magda Ceramics"
             width={501}
             height={97}
-            priority
+            loading="eager"
             className={cn(
               "w-auto max-w-full object-contain motion-safe:transition-all motion-safe:duration-300",
               scrolled ? "h-8 md:h-10" : "h-12 sm:h-16 md:h-20"
@@ -234,7 +234,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
             )}
           </Link>
 
-          <button onClick={openCart} aria-label="Cart" className="relative hover:opacity-60 transition-opacity">
+          <button onClick={openCart} aria-label={t("nav.cart")} className="relative hover:opacity-60 transition-opacity">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
               <path d="M3 6h18" />
@@ -250,7 +250,8 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
           <button
             className="md:hidden hover:opacity-60 transition-opacity"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Menu"
+            aria-label={t(mobileOpen ? "nav.menuClose" : "nav.menuOpen")}
+            aria-expanded={mobileOpen}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               {mobileOpen ? (

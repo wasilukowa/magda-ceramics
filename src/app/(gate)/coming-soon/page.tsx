@@ -7,6 +7,10 @@ import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/helpers/metadata";
 // — bez tego karta przeglądarki pokazywała sam adres, a link wklejony w
 // komunikator nie miał ani opisu, ani zdjęcia. `metadataBase` jest potrzebne,
 // żeby obrazek podglądu zamienił się w pełny adres.
+//
+// Zdjęcie jest w dwóch wersjach (telefon i komputer), a widać zawsze jedną —
+// dlatego `loading="eager"`, a nie `preload`: dokumentacja Next odradza
+// preload, gdy to, które zdjęcie jest największym elementem, zależy od okna.
 const title = `${SITE_NAME} — ${COMING_SOON_META.title}`;
 const { description, imageAlt } = COMING_SOON_META;
 const images = [{ ...DEFAULT_OG_IMAGE, alt: imageAlt }];
@@ -95,11 +99,11 @@ export default function ComingSoon() {
           <div className="relative w-full h-full">
             <Image
               src="/coming-soon.jpg"
-              alt="Ręcznie robiona ceramika"
+              alt={COMING_SOON_META.photoAlt}
               fill
               sizes="100vw"
               className="object-cover object-center"
-              priority
+              loading="eager"
             />
           </div>
         </div>
@@ -118,11 +122,11 @@ export default function ComingSoon() {
           <div className="relative w-full h-full">
             <Image
               src="/coming-soon.jpg"
-              alt="Ręcznie robiona ceramika"
+              alt={COMING_SOON_META.photoAlt}
               fill
               sizes="50vw"
               className="object-cover object-center"
-              priority
+              loading="eager"
             />
           </div>
         </div>

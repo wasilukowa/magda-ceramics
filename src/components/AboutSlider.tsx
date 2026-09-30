@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { ABOUT_PHOTOS as PHOTOS } from "@/content/data";
 
 export function AboutSlider() {
+  const t = useTranslations("home");
   const [current, setCurrent] = useState(0);
 
   const prev = () => setCurrent((c) => (c === 0 ? PHOTOS.length - 1 : c - 1));
@@ -20,18 +22,18 @@ export function AboutSlider() {
         >
           <Image
             src={src}
-            alt={`Magda ceramics ${i + 1}`}
+            alt={t("sliderAlt", { number: i + 1 })}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 50vw"
-            priority={i === 0}
+            preload={i === 0}
           />
         </div>
       ))}
 
       <button
         onClick={prev}
-        aria-label="Poprzednie zdjęcie"
+        aria-label={t("sliderPrev")}
         className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-white/70 hover:bg-white transition-colors"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -41,7 +43,7 @@ export function AboutSlider() {
 
       <button
         onClick={next}
-        aria-label="Następne zdjęcie"
+        aria-label={t("sliderNext")}
         className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-white/70 hover:bg-white transition-colors"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -54,7 +56,7 @@ export function AboutSlider() {
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            aria-label={`Zdjęcie ${i + 1}`}
+            aria-label={t("sliderGoTo", { number: i + 1 })}
             className="w-1.5 h-1.5 rounded-full transition-colors"
             style={{ background: i === current ? "white" : "rgba(255,255,255,0.45)" }}
           />

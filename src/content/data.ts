@@ -120,6 +120,7 @@ export const COMING_SOON_META = {
   description:
     "Handmade ceramics from a home studio in Warsaw — mugs, candle holders and vessels carved and painted by hand. The shop opens soon.",
   imageAlt: "Three handmade Magda Ceramics mugs held in someone's hands",
+  photoAlt: "Handmade ceramics",
 };
 
 // Only countries the studio actually ships to (Poland + EU). Non-EU

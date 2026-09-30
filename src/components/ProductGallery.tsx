@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { ProductGalleryProps } from "@/contracts/shared";
 
 export default function ProductGallery({ images, productName }: ProductGalleryProps) {
+  const t = useTranslations("product");
   const [active, setActive] = useState(0);
 
   if (images.length === 0) {
     return (
       <div className="aspect-square bg-[var(--color-ceramic)] flex items-center justify-center text-[var(--muted)] text-xs tracking-widest uppercase">
-        No image
+        {t("noImage")}
       </div>
     );
   }
@@ -25,7 +27,7 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
           width={800}
           height={800}
           className="w-full h-full object-cover"
-          priority
+          preload
         />
       </div>
       {images.length > 1 && (
@@ -34,7 +36,7 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
             <button
               key={i}
               onClick={() => setActive(i)}
-              aria-label={`Photo ${i + 1}`}
+              aria-label={t("photo", { number: i + 1 })}
               style={active === i ? { outline: "1px solid var(--foreground)" } : undefined}
               className={cn(
                 "aspect-square bg-[var(--color-ceramic)] overflow-hidden transition-opacity",
