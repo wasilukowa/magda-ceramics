@@ -25,6 +25,7 @@ import { Currency } from "@/contracts/shared";
 import { prepareProduct } from "@/lib/service/product/helpers";
 import { orderService } from "@/lib/service/order";
 import { customerMailService } from "@/lib/service/customerMail";
+import { studioMailService } from "@/lib/service/studioMail";
 import { LOCKER_NOTE_PREFIX, ORDER_META } from "@/lib/service/order/helpers";
 import { getUnitPrice } from "@/lib/helpers/currency";
 import { getShippingAmount, getShippingCostInZloty } from "@/lib/helpers/shipping";
@@ -351,17 +352,22 @@ class CheckoutService {
       if (awaiting) {
         await orderService.markAwaitingConfirmation(order.id, order.status, payment);
         await customerMailService.sendOnHold(order.id);
+        if (!order.studioNotified) {
+          await studioMailService.sendNewOrder(order.id, { awaitingConfirmation: true });
+        }
       }
       return { id: order.id, completion: OrderCompletion.AwaitingConfirmation };
     }
 
     // Zapłacone. Zamówienie już w realizacji (albo dalej) nie potrzebuje
     // niczego — to druga z dwóch dróg, które przyszły po to samo.
+    let conflictNames: string[] = [];
     if (awaiting || onHold) {
       // Ceramika to pojedyncze sztuki. Jeśli ktoś zapłacił za tę samą pracę
       // wcześniej, zamówienie i tak musi zostać opłacone — pieniądze już są —
       // ale Magda musi to zobaczyć, zanim spakuje paczkę.
       const conflicts = await this.getSoldOutConflicts(order.items);
+      conflictNames = conflicts.map((conflict) => conflict.name);
       const remarks = conflicts.length
         ? [
             `UWAGA: w chwili zapłaty te prace były już niedostępne: ${conflicts
@@ -377,6 +383,11 @@ class CheckoutService {
     // po zapisaniu zapłaty). Wysyła się raz: patrz OrderForPayment.
     if (!order.confirmationSent) {
       await customerMailService.sendConfirmation(order.id);
+    }
+    // Mail do pracowni — raz na zamówienie. Przy metodzie odroczonej poszedł
+    // już przy wstrzymaniu (z ostrzeżeniem „nie wysyłaj").
+    if (!order.studioNotified) {
+      await studioMailService.sendNewOrder(order.id, { conflicts: conflictNames });
     }
 
     return { id: order.id, completion: OrderCompletion.Paid };

@@ -83,6 +83,8 @@ export type OrderForPayment = {
   // Czy klient dostał już potwierdzenie — webhook Stripe'a potrafi przyjść
   // drugi raz, a potwierdzenie ma wyjść raz.
   confirmationSent: boolean;
+  // To samo dla maila „nowe zamówienie" do pracowni.
+  studioNotified: boolean;
 };
 
 // Odpowiedź WooCommerce zaraz po utworzeniu zamówienia.
@@ -247,6 +249,29 @@ export type CustomerOrderMail = {
   refunds: { id: number; amountPln: number }[];
   // Suma zamówienia w złotych, jak w WooCommerce — do przeliczania zwrotów.
   totalPln: number;
+};
+
+// Zamówienie w ujęciu maila „nowe zamówienie" do pracowni. Kwoty w złotych
+// z katalogu (tak księgujemy) plus to, co klient naprawdę zapłacił.
+export type StudioOrderMail = {
+  id: number;
+  number: string;
+  customerName: string;
+  email: string;
+  phone: string;
+  hasAccount: boolean;
+  // Język, w którym klient zamawiał (i dostaje maile).
+  customerLocale: string;
+  items: { name: string; quantity: number; totalPln: number }[];
+  shippingPln: number;
+  totalPln: number;
+  // Waluta i kwota zapłaty; dla euro także przeliczenie do ewidencji.
+  paidCurrency: Currency;
+  paidTotal: number;
+  ledger: LedgerAmount | null;
+  delivery: OrderDelivery;
+  note: string;
+  notified: boolean;
 };
 
 // Co ma się znaleźć w mailu oprócz samego zamówienia.

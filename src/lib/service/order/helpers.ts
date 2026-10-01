@@ -12,6 +12,7 @@ import {
   RawOrder,
   RawOrderRefund,
   SalesOrder,
+  StudioOrderMail,
   UnpaidOrder,
 } from "@/contracts/server/order";
 import { LedgerAmount } from "@/contracts/server/exchangeRate";
@@ -53,6 +54,8 @@ export const ORDER_META = {
   mailShipped: "_mc_mail_shipped",
   // Numery zwrotów, o których klient już wie, po przecinku.
   mailRefunds: "_mc_mail_refunds",
+  // Mail „nowe zamówienie" do pracowni.
+  mailStudioNewOrder: "_mc_mail_studio_new_order",
 } as const;
 
 // Dopisek o paczkomacie, który kasa dokłada do uwagi klienta (patrz
@@ -151,6 +154,7 @@ export const prepareOrderForPayment = (raw: RawOrder): OrderForPayment => ({
     item.product_id ? [{ id: item.product_id, quantity: item.quantity }] : []
   ),
   confirmationSent: Boolean(getMetaValue(raw, ORDER_META.mailConfirmation)),
+  studioNotified: Boolean(getMetaValue(raw, ORDER_META.mailStudioNewOrder)),
 });
 
 export const prepareOrder = (raw: RawOrder): OrderProps => {
@@ -335,6 +339,37 @@ export const prepareCustomerOrderMail = (raw: RawOrder): CustomerOrderMail | nul
       amountPln: Math.abs(toAmount(refund.total)),
     })),
     totalPln: toAmount(raw.total),
+  };
+};
+
+export const prepareStudioOrderMail = (raw: RawOrder): StudioOrderMail => {
+  const { locale, currency } = getOrderPreferences(raw);
+  const billing = raw.billing ?? {};
+  const paidAt = raw.date_paid_gmt
+    ? parseWooGmtDate(raw.date_paid_gmt).toISOString()
+    : new Date().toISOString();
+
+  return {
+    id: raw.id,
+    number: raw.number,
+    customerName: [billing.first_name, billing.last_name].filter(Boolean).join(" "),
+    email: billing.email ?? "",
+    phone: billing.phone ?? "",
+    hasAccount: (raw.customer_id ?? 0) > 0,
+    customerLocale: locale,
+    items: (raw.line_items ?? []).map((item) => ({
+      name: item.name,
+      quantity: item.quantity,
+      totalPln: toAmount(item.total),
+    })),
+    shippingPln: toAmount(raw.shipping_total),
+    totalPln: toAmount(raw.total),
+    paidCurrency: currency,
+    paidTotal: getOrderAmounts(raw, currency).total,
+    ledger: getPreparedEurPayment(raw, paidAt),
+    delivery: getOrderDelivery(raw, "pl"),
+    note: getCustomerOwnNote(raw),
+    notified: Boolean(getMetaValue(raw, ORDER_META.mailStudioNewOrder)),
   };
 };
 
