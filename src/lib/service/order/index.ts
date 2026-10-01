@@ -6,21 +6,32 @@ import {
   OrderProps,
   OrderStatus,
   RawOrder,
+  RawOrderRefund,
+  SalesOrder,
   UnpaidOrder,
 } from "@/contracts/server/order";
 import { PaymentRecord } from "@/contracts/server/payment";
+import { LedgerAmount } from "@/contracts/server/exchangeRate";
 import { Currency } from "@/contracts/shared";
 import { EXCHANGE_RATE_PLN_PER_EUR } from "@/lib/helpers/currency";
+import { getWarsawDay } from "@/lib/helpers/date";
+import { formatPlNumber, getLedgerAmountPln } from "@/lib/helpers/ledger";
+import { exchangeRateService } from "@/lib/service/exchangeRate";
 import {
+  getLedgerMeta,
+  getLedgerRemark,
   hasReminderBeenSent,
   isCheckoutDraft,
   prepareOrder,
   prepareOrderForPayment,
+  prepareSalesOrder,
   prepareUnpaidOrder,
   REMINDER_SENT_META_KEY,
 } from "./helpers";
 
 const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
+// Najwięcej, ile WooCommerce oddaje na jednej stronie listy.
+const SALES_PAGE_SIZE = 100;
 const WC_KEY = process.env.WC_CONSUMER_KEY;
 const WC_SECRET = process.env.WC_CONSUMER_SECRET;
 
@@ -39,12 +50,39 @@ const getPaymentMeta = (payment: PaymentRecord) => [
     : []),
 ];
 
-const getPaymentRemarks = (payment: PaymentRecord): string[] =>
+// Kurs 4,3 to kurs, po którym sklep wylicza ceny w euro — nie ten do
+// ewidencji. Dlatego zaraz pod nim stoi przeliczenie po kursie NBP.
+const getPaymentRemarks = (
+  payment: PaymentRecord,
+  ledger: LedgerAmount | null
+): string[] =>
   payment.currency === Currency.EUR
     ? [
-        `Zapłacono ${payment.paidTotal.toFixed(2)} € (kurs ${EXCHANGE_RATE_PLN_PER_EUR}).`,
+        `Zapłacono ${formatPlNumber(payment.paidTotal, 2)} € (ceny w euro sklep ` +
+          `wylicza po kursie ${formatPlNumber(EXCHANGE_RATE_PLN_PER_EUR, 2)}).`,
+        ...(ledger ? [getLedgerRemark(ledger)] : []),
       ]
     : [];
+
+// Płatność w euro rozpisana do ewidencji: kwota w złotych po średnim kursie
+// NBP z ostatniego dnia roboczego przed dniem zapłaty (art. 11a ustawy
+// o PIT). Dzień zapłaty to dzień tego zapisu — ten sam, który WooCommerce
+// zapisze jako datę zapłaty. Null dla płatności w złotych.
+const getLedgerAmount = async (
+  payment: PaymentRecord
+): Promise<LedgerAmount | null> => {
+  if (payment.currency !== Currency.EUR) return null;
+
+  const paidOn = getWarsawDay(new Date());
+  const rate = await exchangeRateService.getEurRateBefore(paidOn);
+  return {
+    paidOn,
+    amountEur: payment.paidTotal,
+    conversion: rate
+      ? { rate, amountPln: getLedgerAmountPln(payment.paidTotal, rate.mid) }
+      : null,
+  };
+};
 
 // Zamówienia — czytane i domykane. Wcześniej mieszkały w CustomerService, ale
 // nie wszystkie należą do jednego klienta: przypomnienia o zapłacie przeglądają
@@ -122,6 +160,35 @@ class OrderService {
       .filter((order): order is UnpaidOrder => order !== null);
   }
 
+  // Opłacone zamówienia do zestawienia sprzedaży: wszystkie zmienione od
+  // podanej chwili (UTC). Zapłata i zwrot zmieniają zamówienie, więc nic, co
+  // wydarzyło się od tej chwili, nie umknie — a o tym, do którego miesiąca
+  // wpis należy, decyduje dopiero zestawienie. Zwroty WooCommerce trzyma
+  // osobno, z własną datą. Wszystko po kolei, nie równolegle: serwer WP
+  // pracowni nie znosi tłoku, a zestawienie nigdzie się nie spieszy.
+  async getSalesOrders(modifiedAfter: string): Promise<SalesOrder[]> {
+    const raw: RawOrder[] = [];
+    for (let page = 1; ; page++) {
+      const batch = await this.wcFetch<RawOrder[]>(
+        `orders?status=any&modified_after=${modifiedAfter}&dates_are_gmt=true` +
+          `&orderby=id&order=asc&per_page=${SALES_PAGE_SIZE}&page=${page}`
+      );
+      raw.push(...batch);
+      if (batch.length < SALES_PAGE_SIZE) break;
+    }
+
+    const orders: SalesOrder[] = [];
+    for (const order of raw) {
+      if (!order.date_paid_gmt) continue;
+      const refunds = order.refunds?.length
+        ? await this.wcFetch<RawOrderRefund[]>(`orders/${order.id}/refunds`)
+        : [];
+      const prepared = prepareSalesOrder(order, refunds);
+      if (prepared) orders.push(prepared);
+    }
+    return orders;
+  }
+
   async markReminderSent(orderId: number): Promise<void> {
     await this.wcFetch(`orders/${orderId}`, {
       method: "PUT",
@@ -162,23 +229,32 @@ class OrderService {
   // na „w realizacji", zapisuje datę zapłaty i numer transakcji, zdejmuje
   // sztukę z magazynu i wysyła maile. Stanu nie ustawiamy obok ręcznie — przy
   // stanie już zmienionym `payment_complete()` uznałby, że nie ma nic do roboty.
-  // Kwotę i walutę bierze ze Stripe'a, nie z żądania.
+  // Kwotę i walutę bierze ze Stripe'a, nie z żądania. Kurs NBP do ewidencji
+  // pobiera się w tym samym czasie co wyjście ze szkicu, więc domknięcie
+  // na niego nie czeka dłużej, niż musi — a gdy NBP nie odpowie, zapłata
+  // i tak się zapisze, tylko notatka poprosi o ręczne przeliczenie.
   async markPaid(
     orderId: number,
     status: OrderStatus,
     payment: PaymentRecord,
     remarks: string[] = []
   ): Promise<void> {
-    await this.leaveDraft(orderId, status);
+    const [ledger] = await Promise.all([
+      getLedgerAmount(payment),
+      this.leaveDraft(orderId, status),
+    ]);
     await this.wcFetch(`orders/${orderId}`, {
       method: "PUT",
       body: JSON.stringify({
         set_paid: true,
         transaction_id: payment.id,
-        meta_data: getPaymentMeta(payment),
+        meta_data: [...getPaymentMeta(payment), ...getLedgerMeta(ledger)],
       }),
     });
-    await this.addPrivateNotes(orderId, [...getPaymentRemarks(payment), ...remarks]);
+    await this.addPrivateNotes(orderId, [
+      ...getPaymentRemarks(payment, ledger),
+      ...remarks,
+    ]);
   }
 
   // Metoda odroczona (np. Klarna): pieniędzy jeszcze nie ma, ale zamówienie
