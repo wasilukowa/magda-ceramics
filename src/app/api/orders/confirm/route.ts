@@ -23,11 +23,21 @@ export async function POST(request: Request) {
 
   // Cudzego zamówienia nie da się domknąć: właściciela bierzemy z sesji,
   // nigdy z żądania.
-  const customer = await getCurrentCustomer();
-  if (!customer) return reply(OrderConfirmResult.NotConfirmed, 401);
-
   const { orderId, paymentIntentId } = parsed.data;
-  const order = await orderService.getCustomerOrder(customer.id, orderId);
+  let customer;
+  let order;
+  try {
+    customer = await getCurrentCustomer();
+    order = customer
+      ? await orderService.getCustomerOrder(customer.id, orderId)
+      : null;
+  } catch (error) {
+    // WordPress nie odpowiada — nie da się sprawdzić, czyje to zamówienie.
+    // Zapłatę i tak zapisze webhook; klient dostaje „nie potwierdzono".
+    console.error(`Order ${orderId}: confirm lookup failed:`, error);
+    return reply(OrderConfirmResult.NotConfirmed, 503);
+  }
+  if (!customer) return reply(OrderConfirmResult.NotConfirmed, 401);
   if (!order) return reply(OrderConfirmResult.NotConfirmed, 404);
 
   // Zamówienie, które i tak nie czekało już na pieniądze, jest opłacone —

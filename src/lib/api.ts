@@ -5,6 +5,25 @@ export const getBaseUrl = () => {
 
 const TIMEOUT_MS = 10_000;
 
+// Odpowiedź z kodem błędu HTTP. Kod jest po to, żeby wywołujący odróżnił
+// „tego nie ma" (404) od „serwer nie odpowiada" (5xx, przerwa techniczna,
+// zawieszenie). Wcześniej oba wyglądały tak samo i chwilowa awaria
+// WordPressa udawała brak zamówienia albo klienta.
+export class HttpError extends Error {
+  constructor(
+    readonly status: number,
+    message: string
+  ) {
+    super(message);
+    this.name = "HttpError";
+  }
+}
+
+// Czy błąd znaczy „takiej rzeczy nie ma" — jedyny błąd, po którym wolno
+// odpowiedzieć „nie ma". Każdy inny to awaria i ma lecieć dalej.
+export const isNotFoundError = (error: unknown): boolean =>
+  error instanceof HttpError && error.status === 404;
+
 // Limit czasu jest tu po to, żeby zawieszony WordPress nie zawiesił naszej
 // strony — więc nie może dać się przypadkiem wyłączyć. Wcześniej `signal` stał
 // przed `...options` i własny sygnał wywołującego po cichu go kasował. Teraz

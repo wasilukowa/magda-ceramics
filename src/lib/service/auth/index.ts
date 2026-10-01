@@ -1,6 +1,6 @@
 import "server-only";
 
-import { serverFetch } from "@/lib/api";
+import { HttpError, serverFetch } from "@/lib/api";
 import { Customer, RawWcCustomer } from "@/contracts/server/auth";
 import { prepareCustomer } from "@/lib/service/customer/helpers";
 
@@ -43,18 +43,21 @@ class AuthService {
     return AuthService.instance;
   }
 
-  // Zwraca true, gdy WordPress potwierdzi parę e-mail + hasło.
+  // True, gdy WordPress potwierdzi parę e-mail + hasło; false, gdy ją
+  // odrzuci (odpowiedź 4xx). Awaria — błąd 5xx, zerwane połączenie, limit
+  // czasu — leci dalej jako wyjątek. Wcześniej też dawała false, więc przy
+  // leżącym WordPressie klient z dobrym hasłem czytał „nieprawidłowy e-mail
+  // lub hasło", a każda taka próba liczyła się do limitu i po kilku
+  // zamykała mu logowanie na kwadrans.
   async verifyPassword(email: string, password: string): Promise<boolean> {
-    try {
-      const res = await serverFetch(WP_AUTH_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      return res.ok;
-    } catch {
-      return false;
-    }
+    const res = await serverFetch(WP_AUTH_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    if (res.ok) return true;
+    if (res.status < 500) return false;
+    throw new HttpError(res.status, `WordPress auth error: ${res.status}`);
   }
 
   async findCustomerByEmail(email: string): Promise<Customer | null> {

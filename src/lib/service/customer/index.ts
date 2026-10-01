@@ -1,6 +1,6 @@
 import "server-only";
 
-import { serverFetch } from "@/lib/api";
+import { HttpError, isNotFoundError, serverFetch } from "@/lib/api";
 import {
   Customer,
   CustomerAddress,
@@ -47,16 +47,22 @@ class CustomerService {
       },
       cache: "no-store",
     } as RequestInit);
-    if (!res.ok) throw new Error(`WooCommerce API error: ${res.status}`);
+    if (!res.ok) throw new HttpError(res.status, `WooCommerce API error: ${res.status}`);
     return res.json() as Promise<T>;
   }
 
+  // Null WYŁĄCZNIE wtedy, gdy WooCommerce mówi, że takiego klienta nie ma
+  // (404 — np. konto usunięte w panelu). Awaria leci dalej: wcześniej
+  // zamieniała się w „nie ma klienta", panel konta odsyłał do logowania,
+  // logowanie przy ważnej sesji z powrotem do konta — i karta przeglądarki
+  // kręciła się w kółko, aż się zawiesiła.
   async getCustomerById(id: number): Promise<Customer | null> {
     try {
       const raw = await this.wcFetch<RawWcCustomer>(`customers/${id}`);
       return prepareCustomer(raw);
-    } catch {
-      return null;
+    } catch (error) {
+      if (isNotFoundError(error)) return null;
+      throw error;
     }
   }
 
