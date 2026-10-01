@@ -10,7 +10,7 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import { OrderProps } from "@/contracts/server/order";
-import { getStripeAppearance, STRIPE_FONTS } from "@/lib/helpers/stripeAppearance";
+import { getStripeAppearance, getStripeFonts } from "@/lib/helpers/stripeAppearance";
 import { formatPrice } from "@/lib/helpers/currency";
 
 const stripePromise = loadStripe(
@@ -119,7 +119,7 @@ export default function OrderPayment({
           clientSecret,
           // Ten sam wygląd co w kasie — klient nie powinien poznać, że to
           // inna strona sklepu.
-          fonts: STRIPE_FONTS,
+          fonts: getStripeFonts(),
           appearance: getStripeAppearance(),
         }}
       >
