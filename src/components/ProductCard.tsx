@@ -74,7 +74,6 @@ export default function ProductCard({ product, soldOutLabel, eager }: ProductCar
         <p className="text-xs tracking-widest uppercase text-[var(--foreground)]">{product.name}</p>
         <Price
           price={product.price}
-          priceEur={product.priceEur}
           className="block text-sm text-[var(--muted)] mt-1"
         />
       </Link>

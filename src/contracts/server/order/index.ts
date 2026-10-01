@@ -1,5 +1,7 @@
 // Domena: zamówienia klienta. Raw* = surowa odpowiedź WooCommerce.
 
+import { LedgerAmount } from "@/contracts/server/exchangeRate";
+
 export enum OrderStatus {
   Pending = "pending",
   Processing = "processing",
@@ -87,6 +89,34 @@ export type RawOrder = {
   customer_id?: number;
   billing?: { first_name?: string; email?: string; country?: string };
   meta_data?: { key: string; value: string | number }[];
+  // Data zapłaty (UTC, bez strefy na końcu). Null, dopóki nie zapłacono.
+  date_paid_gmt?: string | null;
+  // Skrót zwrotów — pełne dane (z datą) są pod orders/{id}/refunds.
+  refunds?: { id: number; total: string }[];
+};
+
+// Zwrot z orders/{id}/refunds. `amount` jest dodatnie, w złotych.
+export type RawOrderRefund = {
+  id: number;
+  date_created_gmt: string;
+  amount: string;
+};
+
+// Opłacone zamówienie w ujęciu zestawienia sprzedaży: kiedy zapłacono, ile
+// w złotych, czy w euro — i zwroty z datami.
+export type SalesOrder = {
+  id: number;
+  number: string;
+  // Chwila zapłaty, ISO w UTC.
+  paidAt: string;
+  totalPln: number;
+  // Zapłacono w euro: kwota i przeliczenie NBP zapisane przy zapłacie
+  // (puste, gdy NBP wtedy nie odpowiedział).
+  eur: LedgerAmount | null;
+  refunds: { createdAt: string; amountPln: number }[];
+  // Opłacone, a potem anulowane. Pieniądze pewnie wróciły, ale zwrot liczy
+  // się dopiero wtedy, gdy jest zapisany w WooCommerce.
+  cancelled: boolean;
 };
 
 // Zamówienie czekające na zapłatę dłużej, niż wypada — tyle, ile trzeba, żeby

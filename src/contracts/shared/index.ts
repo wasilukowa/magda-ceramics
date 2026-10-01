@@ -76,7 +76,6 @@ export type AddToCartButtonProps = {
   slug: string;
   name: string;
   price: string;
-  priceEur: number | null;
   image: string;
   inStock: boolean;
   hasPrice: boolean;

@@ -7,22 +7,17 @@ import { CartItem } from "@/contracts/server/cart";
 export const EXCHANGE_RATE_PLN_PER_EUR = 4.3;
 
 // Auto-convert a PLN amount to EUR, rounded UP to a whole euro — always in
-// the studio's favour. Used only as a fallback when a product has no hand-set
-// EUR price.
+// the studio's favour. Every EUR product price comes from here: hand-set EUR
+// prices (the `price_eur` field in WooCommerce) were dropped on 2026-10-01, so
+// one rule covers the whole catalogue and a PLN price change moves the EUR
+// price with it.
 export const convertPlnToEur = (pln: number): number =>
   Math.ceil(pln / EXCHANGE_RATE_PLN_PER_EUR);
 
-// Unit price of a priced item in the chosen currency. EUR prefers the
-// hand-set price (price_eur in WooCommerce) and falls back to conversion.
-export const getUnitPrice = (
-  item: { price: string; priceEur: number | null },
-  currency: Currency
-): number => {
+// Unit price of a priced item in the chosen currency.
+export const getUnitPrice = (item: { price: string }, currency: Currency): number => {
   const pln = parseFloat(item.price);
-  if (currency === Currency.EUR) {
-    return item.priceEur ?? convertPlnToEur(pln);
-  }
-  return pln;
+  return currency === Currency.EUR ? convertPlnToEur(pln) : pln;
 };
 
 export const getCartTotal = (items: CartItem[], currency: Currency): number =>

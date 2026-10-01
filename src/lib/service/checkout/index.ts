@@ -128,7 +128,7 @@ class CheckoutService {
       // Produkt zniknął z WooCommerce — koszyk sam się o tym dowie po tym, że
       // nie ma go w odpowiedzi.
       if (!product) {
-        return [{ id, name: "", price: "", priceEur: null, purchasable: false }];
+        return [{ id, name: "", price: "", purchasable: false }];
       }
 
       return [
@@ -136,7 +136,6 @@ class CheckoutService {
           id,
           name: product.name,
           price: product.price,
-          priceEur: product.priceEur,
           purchasable: product.hasPrice && product.inStock,
         },
       ];

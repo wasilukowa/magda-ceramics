@@ -13,10 +13,10 @@ const parseEnum = <T extends string>(
 export const parseProductSort = (value: unknown): ProductSort =>
   parseEnum(value, Object.values(ProductSort), ProductSort.Newest);
 
-// Ceny porównujemy w złotych, nawet gdy klient ogląda sklep w euro. Ceny w euro
-// Magda ustawia ręcznie (pole price_eur), więc kolejność mogłaby się między
-// walutami minimalnie różnić — a adres z ?sort= ma prowadzić każdego do tej
-// samej listy.
+// Ceny porównujemy w złotych, nawet gdy klient ogląda sklep w euro. Euro to
+// złotówki zaokrąglone w górę, więc dwie prace o różnych cenach mogą mieć tę
+// samą cenę w euro — porządek wyznaczają złotówki, żeby adres z ?sort=
+// prowadził każdego do tej samej listy.
 const priceInZloty = (product: ProductProps): number => parseFloat(product.price);
 
 // Nazwy porównujemy zgodnie z alfabetem języka, w którym klient ogląda sklep —

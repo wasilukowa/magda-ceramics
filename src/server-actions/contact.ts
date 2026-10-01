@@ -5,13 +5,8 @@ import { Resend } from "resend";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { ContactFormState, ContactFormValues } from "@/contracts/server/contact";
+import { parseEmails } from "@/lib/helpers/email";
 import { isRateLimited } from "@/lib/helpers/rateLimit";
-
-const parseEmails = (value: string | undefined): string[] =>
-  (value ?? "")
-    .split(",")
-    .map((email) => email.trim())
-    .filter(Boolean);
 
 // Jawni odbiorcy (widoczni w mailu). Można podać kilku, oddzielonych przecinkiem.
 const RECIPIENTS = parseEmails(process.env.CONTACT_RECIPIENT_EMAIL);

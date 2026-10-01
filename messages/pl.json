@@ -574,5 +574,33 @@
     "count": "{count, plural, one {# praca} few {# prace} many {# prac} other {# pracy}}",
     "sold": "Sprzedane",
     "empty": "Nic tu nie ma."
+  },
+  "salesReport": {
+    "email": {
+      "subject": "Sprzedaż — {month}",
+      "heading": "Sprzedaż — {month}",
+      "summary": "{sales, plural, one {# sprzedaż} few {# sprzedaże} many {# sprzedaży} other {# sprzedaży}}{refunds, plural, =0 {} one {, # zwrot} few {, # zwroty} many {, # zwrotów} other {, # zwrotu}}. Razem: {total}.",
+      "empty": "W tym miesiącu nie było sprzedaży ani zwrotów.",
+      "explanation": "Kwoty są w złotych, razem z wysyłką. Płatności w euro są przeliczone po średnim kursie NBP z ostatniego dnia roboczego przed dniem zapłaty. Zwroty są z minusem, w miesiącu, w którym je zrobiono.",
+      "unconverted": "{count, plural, one {Przy jednym wierszu} other {Przy # wierszach}} nie udało się pobrać kursu NBP — kwotę trzeba przeliczyć ręcznie (szczegóły w kolumnie „Uwagi”). Suma jej nie obejmuje.",
+      "attachment": "Ta sama tabela jest w załączniku jako plik CSV — otworzysz go w Excelu albo Numbers.",
+      "columns": {
+        "number": "Lp.",
+        "date": "Data",
+        "order": "Zamówienie",
+        "amount": "Kwota (zł)",
+        "running": "Narastająco (zł)",
+        "remarks": "Uwagi"
+      },
+      "total": "Razem",
+      "remarks": {
+        "eur": "{amount} € × {rate} (NBP z {date}, tab. {table})",
+        "eurMissing": "{amount} € — brak kursu NBP; przelicz po średnim kursie NBP z ostatniego dnia roboczego przed {date}",
+        "refund": "zwrot",
+        "refundEur": "zwrot zamówienia w euro — przeliczony jak sprzedaż",
+        "cancelled": "zamówienie anulowane, ale bez zwrotu w WooCommerce — sprawdź, czy pieniądze wróciły do klienta"
+      },
+      "signature": "Wiadomość wysłana automatycznie przez sklep magdaceramics.com."
+    }
   }
 }

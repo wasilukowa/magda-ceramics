@@ -87,7 +87,6 @@ export default function CartDrawer() {
                   </Link>
                   <Price
                     price={item.price}
-                    priceEur={item.priceEur}
                     className={cn(
                       "block text-sm text-[var(--muted)] mt-1",
                       isSoldOut && "line-through"

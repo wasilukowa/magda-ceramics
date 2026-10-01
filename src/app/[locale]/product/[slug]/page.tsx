@@ -99,7 +99,6 @@ export default async function ProductPage({
           {product.hasPrice ? (
             <Price
               price={product.price}
-              priceEur={product.priceEur}
               className="block text-xl tracking-wide"
             />
           ) : (
@@ -124,7 +123,6 @@ export default async function ProductPage({
               slug={product.slug}
               name={product.name}
               price={product.price}
-              priceEur={product.priceEur}
               image={product.images[0]?.src ?? ""}
               inStock={product.inStock}
               hasPrice={product.hasPrice}

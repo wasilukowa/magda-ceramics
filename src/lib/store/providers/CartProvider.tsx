@@ -83,7 +83,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         ...item,
         name: fresh.name,
         price: fresh.price,
-        priceEur: fresh.priceEur,
       };
     });
 
