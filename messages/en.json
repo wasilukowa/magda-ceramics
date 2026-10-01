@@ -618,7 +618,7 @@
     "shippingLocker": "Shipping — InPost parcel locker",
     "shippingCourier": "Shipping — courier",
     "total": "Total",
-    "deliveryLocker": "InPost parcel locker {code}",
+    "deliveryLocker": "InPost parcel locker",
     "deliveryCourier": "Delivery address",
     "yourNote": "Your note",
     "account": "You can also see the order in your account:",
@@ -626,6 +626,7 @@
     "terms": "Shop terms, including your right to withdraw within 14 days:",
     "termsLink": "Terms",
     "help": "Questions? Just reply to this email.",
-    "signature": "Magda"
+    "signature": "Magda",
+    "lockerCode": "Locker number: {code}"
   }
 }

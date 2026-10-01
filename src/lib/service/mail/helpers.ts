@@ -291,6 +291,11 @@ const RULE = "border-top:1px solid #e5e2dc;";
 const multiline = (text: string): string =>
   escapeHtml(text).replace(/\n/g, "<br />");
 
+// Numer paczkomatu jako osobny, wyraźny wiersz — to po nim nadaje się paczkę
+// i po nim klient ją odbiera, więc nie może ginąć w drobnym nagłówku.
+const lockerCodeHtml = (label: string): string =>
+  `<p style="margin:0 0 8px;font-size:18px;font-weight:bold;letter-spacing:0.04em;">${escapeHtml(label)}</p>`;
+
 const absoluteUrl = (locale: string, href: "/terms" | "/account/orders"): string =>
   `${SITE_URL}${getPathname({ locale, href })}`;
 
@@ -329,9 +334,11 @@ export const buildCustomerOrderMail = async ({
   const shippingLabel =
     delivery.kind === DeliveryKind.Locker ? t("shippingLocker") : t("shippingCourier");
   const deliveryTitle =
-    delivery.kind === DeliveryKind.Locker
-      ? t("deliveryLocker", { code: delivery.lockerCode ?? "" })
-      : t("deliveryCourier");
+    delivery.kind === DeliveryKind.Locker ? t("deliveryLocker") : t("deliveryCourier");
+  const lockerLine =
+    delivery.kind === DeliveryKind.Locker && delivery.lockerCode
+      ? t("lockerCode", { code: delivery.lockerCode })
+      : "";
   const termsUrl = absoluteUrl(locale, "/terms");
   const accountUrl = absoluteUrl(locale, "/account/orders");
 
@@ -354,7 +361,9 @@ export const buildCustomerOrderMail = async ({
           `${t("total")}: ${money(amounts.total)}`,
         ]
       : []),
-    ...(showDelivery ? ["", deliveryTitle, ...delivery.lines] : []),
+    ...(showDelivery
+      ? ["", deliveryTitle, ...(lockerLine ? [lockerLine] : []), ...delivery.lines]
+      : []),
     ...(showSummary && order.note ? ["", `${t("yourNote")}: ${order.note}`] : []),
     ...(showAccount ? ["", `${t("account")} ${accountUrl}`] : []),
     ...(showSummary ? ["", `${t("terms")} ${termsUrl}`] : []),
@@ -392,6 +401,7 @@ export const buildCustomerOrderMail = async ({
   const deliveryHtml = showDelivery
     ? `
     <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;${MUTED}">${escapeHtml(deliveryTitle)}</p>
+    ${lockerLine ? lockerCodeHtml(lockerLine) : ""}
     <p style="margin:0 0 28px;font-size:14px;line-height:1.6;">${delivery.lines.map(escapeHtml).join("<br />")}</p>`
     : "";
 
@@ -484,9 +494,11 @@ export const buildStudioNewOrderMail = async ({
     t("language", { language: LANGUAGE_NAMES[order.customerLocale] ?? order.customerLocale }),
   ].filter(Boolean);
   const deliveryTitle =
-    order.delivery.kind === DeliveryKind.Locker
-      ? t("deliveryLocker", { code: order.delivery.lockerCode ?? "" })
-      : t("deliveryCourier");
+    order.delivery.kind === DeliveryKind.Locker ? t("deliveryLocker") : t("deliveryCourier");
+  const lockerLine =
+    order.delivery.kind === DeliveryKind.Locker && order.delivery.lockerCode
+      ? t("lockerCode", { code: order.delivery.lockerCode })
+      : "";
   const itemLabel = (item: StudioOrderMail["items"][number]) =>
     `${item.name}${item.quantity > 1 ? ` × ${item.quantity}` : ""}`;
 
@@ -507,6 +519,7 @@ export const buildStudioNewOrderMail = async ({
     `${t("total")}: ${pln(order.totalPln)}`,
     "",
     deliveryTitle,
+    ...(lockerLine ? [lockerLine] : []),
     ...order.delivery.lines,
     ...(order.note ? ["", `${t("noteTitle")}: ${order.note}`] : []),
     "",
@@ -549,7 +562,7 @@ export const buildStudioNewOrderMail = async ({
       ${row(t("total"), pln(order.totalPln), true)}
     </table>`
     )}
-    ${section(deliveryTitle, lines(order.delivery.lines))}
+    ${section(deliveryTitle, `${lockerLine ? lockerCodeHtml(lockerLine) : ""}${lines(order.delivery.lines)}`)}
     ${order.note ? section(t("noteTitle"), `<p style="margin:0 0 24px;font-size:14px;line-height:1.6;">${multiline(order.note)}</p>`) : ""}
     <p style="margin:0 0 28px;">
       <a href="${adminUrl}" style="display:inline-block;padding:14px 32px;border:1px solid #1a1a1a;color:#1a1a1a;text-decoration:none;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">${t("open")}</a>

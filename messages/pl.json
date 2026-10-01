@@ -646,7 +646,7 @@
     "shippingLocker": "Wysyłka — Paczkomat InPost",
     "shippingCourier": "Wysyłka — kurier",
     "total": "Razem",
-    "deliveryLocker": "Paczkomat InPost {code}",
+    "deliveryLocker": "Paczkomat InPost",
     "deliveryCourier": "Adres dostawy",
     "yourNote": "Twoja uwaga",
     "account": "Zamówienie zobaczysz też na swoim koncie:",
@@ -654,7 +654,8 @@
     "terms": "Regulamin sklepu, w tym prawo odstąpienia od umowy w ciągu 14 dni:",
     "termsLink": "Regulamin",
     "help": "Masz pytania? Po prostu odpowiedz na tego maila.",
-    "signature": "Magda"
+    "signature": "Magda",
+    "lockerCode": "Numer paczkomatu: {code}"
   },
   "studioOrderEmail": {
     "subject": "Nowe zamówienie #{number} — {total}{customer, select, none {} other { ({customer})}}",
@@ -671,11 +672,12 @@
     "itemsTitle": "Zamówienie (ceny z katalogu, w złotych)",
     "shipping": "Wysyłka",
     "total": "Razem",
-    "deliveryLocker": "Paczkomat InPost {code}",
+    "deliveryLocker": "Dostawa do paczkomatu InPost",
     "deliveryCourier": "Kurier — adres dostawy",
     "noteTitle": "Uwaga klienta",
     "open": "Otwórz zamówienie w panelu",
     "reply": "Odpowiedź na tego maila trafi prosto do klienta.",
-    "footer": "Wiadomość wysłana automatycznie przez sklep magdaceramics.com."
+    "footer": "Wiadomość wysłana automatycznie przez sklep magdaceramics.com.",
+    "lockerCode": "Numer paczkomatu: {code}"
   }
 }
