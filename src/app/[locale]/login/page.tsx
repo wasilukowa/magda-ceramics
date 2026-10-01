@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
+import { unstable_rethrow } from "next/navigation";
 import { redirect } from "@/i18n/navigation";
-import { getSession } from "@/lib/auth/dal";
+import { getCurrentCustomer, getSession } from "@/lib/auth/dal";
 import LoginForm from "@/components/auth/LoginForm";
 
 export async function generateMetadata() {
@@ -27,12 +28,24 @@ async function LoginContent({
       ? redirectParam
       : "/account";
 
-  const session = await getSession();
-  if (session)
-    redirect({
-      href: redirectTo as Parameters<typeof redirect>[0]["href"],
-      locale,
-    });
+  // Dalej idzie tylko ten, czyje konto naprawdę istnieje — sama sesja nie
+  // wystarcza. Konto usunięte w WordPressie zostawia ważne ciasteczko, panel
+  // konta odsyła takiego gościa tutaj, a odesłanie go z powrotem kręciło
+  // przeglądarką w kółko. Gdy WordPress nie odpowiada, też zostaje formularz.
+  if (await getSession()) {
+    let customer = null;
+    try {
+      customer = await getCurrentCustomer();
+    } catch (error) {
+      unstable_rethrow(error);
+      console.error("Login page: customer lookup failed:", error);
+    }
+    if (customer)
+      redirect({
+        href: redirectTo as Parameters<typeof redirect>[0]["href"],
+        locale,
+      });
+  }
 
   return <LoginForm redirectTo={redirectTo} />;
 }

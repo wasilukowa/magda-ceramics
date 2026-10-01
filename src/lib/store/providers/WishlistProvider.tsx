@@ -9,7 +9,11 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { WishlistStore, WishlistNoticeKind } from "@/contracts/store";
+import {
+  ServerWishlistStatus,
+  WishlistNoticeKind,
+  WishlistStore,
+} from "@/contracts/store";
 import { AuthUser } from "@/lib/store/providers/AuthProvider";
 import { saveWishlist, getServerWishlist } from "@/server-actions/wishlist";
 import { createLocalStorageStore } from "@/lib/store/localStorageStore";
@@ -95,29 +99,47 @@ export function WishlistProvider({
     };
   }, [userPromise]);
 
-  // Po zalogowaniu: lista z konta scalona z tym, co gość zdążył polubić.
-  // Konto jest źródłem prawdy, więc kopia w przeglądarce jest nadpisywana tym,
-  // co przyszło z serwera — bez tego usunięcie ulubionego na innym urządzeniu
-  // wracałoby tu jak bumerang.
-  useEffect(() => {
-    if (!isAuthenticated) return;
+  // Czy kopia listy z konta pochodzi z udanego odczytu w tej wizycie. Dopóki
+  // nie, na konto nic nie zapisujemy: zapis zastępuje CAŁĄ listę na koncie,
+  // a kopia może być pusta (nowe urządzenie) albo stara.
+  const synced = useRef(false);
 
-    let active = true;
-    getServerWishlist().then((server) => {
-      if (!active) return;
+  // Lista z konta scalona z tym, co gość zdążył polubić. Konto jest źródłem
+  // prawdy, więc kopia w przeglądarce jest nadpisywana tym, co przyszło
+  // z serwera — bez tego usunięcie ulubionego na innym urządzeniu wracałoby
+  // tu jak bumerang. Gdy WordPress nie odpowiada, kopia zostaje, jaka była.
+  const syncFromServer = useCallback(
+    async (isCurrent: () => boolean = () => true): Promise<boolean> => {
+      const result = await getServerWishlist();
+      if (!isCurrent() || result.status !== ServerWishlistStatus.Loaded) {
+        return false;
+      }
 
       const guest = guestStore.read();
-      const merged = Array.from(new Set([...(server ?? []), ...guest]));
+      const merged = Array.from(new Set([...result.ids, ...guest]));
       accountStore.write(merged);
+      synced.current = true;
 
-      if ((server ?? []).length !== merged.length) saveWishlist(merged);
+      if (result.ids.length !== merged.length) saveWishlist(merged);
       if (guest.length > 0) guestStore.clear();
-    });
+      return true;
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      synced.current = false;
+      return;
+    }
+
+    let active = true;
+    void syncFromServer(() => active);
 
     return () => {
       active = false;
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, syncFromServer]);
 
   const ids = isAuthenticated ? accountIds : guestIds;
 
@@ -127,7 +149,15 @@ export function WishlistProvider({
   const saveToken = useRef(0);
 
   const toggle = useCallback(
-    (id: number) => {
+    async (id: number) => {
+      // Lista z konta nie wczytała się przy wejściu (np. WordPress nie
+      // odpowiadał) — najpierw druga próba. Bez niej serce zapisałoby na koncie
+      // kopię, która mogła być pusta, i skasowało resztę ulubionych.
+      if (isAuthenticated && !synced.current && !(await syncFromServer())) {
+        setNotice(WishlistNoticeKind.SaveFailed);
+        return;
+      }
+
       const store = isAuthenticated ? accountStore : guestStore;
       // Czytamy z pamięci, nie ze stanu Reacta: druga karta mogła coś dopisać
       // sekundę temu i jej zmiana nie może zniknąć pod naszą.
@@ -158,11 +188,13 @@ export function WishlistProvider({
         setNotice(WishlistNoticeKind.GuestFirstLike);
       }
     },
-    [isAuthenticated]
+    [isAuthenticated, syncFromServer]
   );
 
   const dropMissing = useCallback(
     (existingIds: number[]) => {
+      // Bez udanego odczytu z konta nie porządkujemy — patrz `synced`.
+      if (isAuthenticated && !synced.current) return;
       const store = isAuthenticated ? accountStore : guestStore;
       const current = store.read();
       const kept = current.filter((id) => existingIds.includes(id));

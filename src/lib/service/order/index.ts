@@ -1,6 +1,6 @@
 import "server-only";
 
-import { serverFetch } from "@/lib/api";
+import { HttpError, isNotFoundError, serverFetch } from "@/lib/api";
 import {
   OrderForPayment,
   OrderProps,
@@ -112,7 +112,7 @@ class OrderService {
       },
       cache: "no-store",
     });
-    if (!res.ok) throw new Error(`WooCommerce API error: ${res.status}`);
+    if (!res.ok) throw new HttpError(res.status, `WooCommerce API error: ${res.status}`);
     return res.json() as Promise<T>;
   }
 
@@ -125,7 +125,9 @@ class OrderService {
 
   // Jedno zamówienie, ale WYŁĄCZNIE gdy należy do tego klienta. Numer
   // zamówienia w adresie nie może wystarczyć do obejrzenia cudzych zakupów,
-  // więc właściciela sprawdzamy tutaj, a nie w widoku.
+  // więc właściciela sprawdzamy tutaj, a nie w widoku. Null, gdy zamówienia
+  // nie ma albo jest cudze; awaria WordPressa leci dalej, żeby klient zobaczył
+  // „coś poszło nie tak", a nie „takiego zamówienia nie ma".
   async getCustomerOrder(
     customerId: number,
     orderId: number
@@ -134,8 +136,9 @@ class OrderService {
       const raw = await this.wcFetch<RawOrder>(`orders/${orderId}`);
       if (raw.customer_id !== customerId || isCheckoutDraft(raw)) return null;
       return prepareOrder(raw);
-    } catch {
-      return null;
+    } catch (error) {
+      if (isNotFoundError(error)) return null;
+      throw error;
     }
   }
 
@@ -200,16 +203,21 @@ class OrderService {
     });
   }
 
-  // Zamówienie, do którego należy płatność. Null, gdy go nie ma — np. Magda
-  // skasowała szkic albo WooCommerce go wysprzątał.
+  // Zamówienie, do którego należy płatność. Null WYŁĄCZNIE wtedy, gdy
+  // WooCommerce mówi, że go nie ma (404) — np. Magda skasowała szkic.
+  // Każdy inny błąd leci dalej. To ważne: webhook Stripe'a odpowiada na
+  // błąd kodem 500 i Stripe ponawia zdarzenie przez kilka dni, a na null —
+  // kodem 200 i Stripe uznaje sprawę za załatwioną. Wcześniej chwilowa
+  // awaria WordPressa w tej jednej sekundzie zostawiała opłacone zamówienie
+  // jako niewidoczny szkic, bez maila do klienta i bez śladu u Magdy.
   async getOrderForPayment(orderId: number): Promise<OrderForPayment | null> {
     try {
       return prepareOrderForPayment(
         await this.wcFetch<RawOrder>(`orders/${orderId}`)
       );
     } catch (error) {
-      console.error(`Order ${orderId}: lookup for payment failed:`, error);
-      return null;
+      if (isNotFoundError(error)) return null;
+      throw error;
     }
   }
 
