@@ -44,6 +44,8 @@ export default function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$|.*\\.webp$|.*\\.ico$|api).*)",
+    // `fonts/` — krój dla formularza Stripe'a: ramka Stripe'a nie ma naszego
+    // ciasteczka bramki, a przekierowanie zamiast pliku zostawiłoby ją bez kroju.
+    "/((?!_next/static|_next/image|fonts/|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$|.*\\.webp$|.*\\.ico$|api).*)",
   ],
 };

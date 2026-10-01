@@ -86,7 +86,20 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // Krój dla formularza Stripe'a (patrz lib/helpers/stripeAppearance.ts).
+      // Pobiera go ramka z js.stripe.com, czyli z innej domeny — bez zgody CORS
+      // przeglądarka by go odrzuciła. Nazwa pliku niesie wagę i zakres znaków,
+      // więc plik może leżeć w cache'u długo.
+      {
+        source: "/fonts/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+    ];
   },
 
   // Ile stron Next buduje NARAZ. Domyślnie osiem na workera, a workerów bywa
