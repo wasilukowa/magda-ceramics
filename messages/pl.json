@@ -418,7 +418,7 @@
     },
     "pay": {
       "title": "Zapłać za zamówienie",
-      "button": "Zapłać {total} {currency}",
+      "button": "Zapłać {total}",
       "processing": "Przetwarzanie...",
       "error": "Płatność się nie udała. Spróbuj ponownie.",
       "unavailable": "Nie udało się uruchomić płatności. Odśwież stronę albo napisz do nas.",
@@ -610,5 +610,50 @@
       },
       "signature": "Wiadomość wysłana automatycznie przez sklep magdaceramics.com."
     }
+  },
+  "orderEmail": {
+    "greeting": "Cześć {name}!",
+    "greetingNoName": "Cześć!",
+    "confirmed": {
+      "subject": "Dziękuję za zamówienie #{number}",
+      "heading": "Dziękuję za zamówienie!",
+      "intro": "Płatność doszła, a Twoje zamówienie #{number} jest już u mnie. Teraz starannie je zapakuję — dam Ci znać mailem, gdy paczka wyruszy."
+    },
+    "on-hold": {
+      "subject": "Zamówienie #{number} czeka na potwierdzenie płatności",
+      "heading": "Mam Twoje zamówienie",
+      "intro": "Twoje zamówienie #{number} jest już u mnie, a bank jeszcze potwierdza płatność. Gdy pieniądze dojdą, dostaniesz potwierdzenie i zabiorę się za pakowanie."
+    },
+    "shipped": {
+      "subject": "Zamówienie #{number} jest w drodze",
+      "heading": "Paczka jest w drodze",
+      "intro": "Twoje zamówienie #{number} właśnie wyruszyło do Ciebie."
+    },
+    "note": {
+      "subject": "Wiadomość do zamówienia #{number}",
+      "heading": "Wiadomość do Twojego zamówienia",
+      "intro": "Dopisałam informację do Twojego zamówienia #{number}:"
+    },
+    "refunded": {
+      "subject": "Zwrot pieniędzy za zamówienie #{number}",
+      "heading": "Zwrot pieniędzy",
+      "full": "Zwróciłam całą kwotę za zamówienie #{number}: {amount}.",
+      "partial": "Zwróciłam część kwoty za zamówienie #{number}: {amount}.",
+      "partialNoAmount": "Zwróciłam część kwoty za zamówienie #{number}.",
+      "timing": "Pieniądze wrócą tą samą drogą, którą płaciłaś/eś — zwykle trwa to kilka dni roboczych."
+    },
+    "summary": "Twoje zamówienie",
+    "shippingLocker": "Wysyłka — Paczkomat InPost",
+    "shippingCourier": "Wysyłka — kurier",
+    "total": "Razem",
+    "deliveryLocker": "Paczkomat InPost {code}",
+    "deliveryCourier": "Adres dostawy",
+    "yourNote": "Twoja uwaga",
+    "account": "Zamówienie zobaczysz też na swoim koncie:",
+    "accountLink": "Moje zamówienia",
+    "terms": "Regulamin sklepu, w tym prawo odstąpienia od umowy w ciągu 14 dni:",
+    "termsLink": "Regulamin",
+    "help": "Masz pytania? Po prostu odpowiedz na tego maila.",
+    "signature": "Magda"
   }
 }

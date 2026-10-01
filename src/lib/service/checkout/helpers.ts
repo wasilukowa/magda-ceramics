@@ -9,6 +9,7 @@ import {
 import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
 import { isCheckoutCountry } from "@/lib/helpers/shipping";
+import { routing } from "@/i18n/routing";
 
 // Sufity na to, co przyjmujemy z przeglądarki. Pracownia sprzedaje pojedyncze
 // prace, więc nikt uczciwy się o nie nie obije, a żądanie z tysiącem pozycji
@@ -80,6 +81,10 @@ export const draftOrderRequestSchema = z.object({
   note: z.string().trim().max(MAX_NOTE_LENGTH).optional().default(""),
   deliveryMethod: z.enum(DeliveryMethod).optional(),
   locker: lockerSchema.nullish(),
+  // Język strony, na której klient zamawia — w nim dostanie maile. Opcjonalny,
+  // bo karta otwarta przed wdrożeniem go nie wysyła; wtedy język idzie
+  // z kraju adresu.
+  locale: z.enum(routing.locales).optional(),
 });
 
 // Pusty koszyk zasługuje na własny komunikat („Twój koszyk jest pusty"), a nie

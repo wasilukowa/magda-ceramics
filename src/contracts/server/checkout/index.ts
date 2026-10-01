@@ -90,6 +90,9 @@ export type DraftOrderInput = {
   customerId: number | null;
   deliveryMethod?: DeliveryMethod;
   locker?: InPostPoint | null;
+  // Język i waluta z kasy — patrz OrderPreferences.
+  locale?: string;
+  currency: Currency;
 };
 
 export type DraftOrderResult = { ok: true; order: PlacedOrder } | CheckoutFailure;

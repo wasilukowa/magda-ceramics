@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     return checkoutErrorResponse(getRequestError(body));
   }
 
-  const { billing, items, paymentIntentId, note, deliveryMethod, locker } =
+  const { billing, items, paymentIntentId, note, deliveryMethod, locker, locale } =
     parsed.data;
 
   // Szkic wolno przypiąć wyłącznie do płatności, która czeka na klienta i którą
@@ -43,6 +43,7 @@ export async function POST(request: Request) {
   const payment = await paymentService.getPayment(paymentIntentId);
   if (
     !payment ||
+    !payment.currency ||
     !canDraftOrderFor(payment, getCartFingerprint(items), billing.country)
   ) {
     return checkoutErrorResponse(CheckoutError.PaymentNotVerified);
@@ -58,6 +59,9 @@ export async function POST(request: Request) {
     customerId: session?.customerId ?? null,
     deliveryMethod,
     locker,
+    locale,
+    // Waluta płatności, którą kasa wyceniła — nie to, co przyszło w żądaniu.
+    currency: payment.currency,
   });
   if (!result.ok) {
     return checkoutErrorResponse(result.error);

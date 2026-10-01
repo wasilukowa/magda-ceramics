@@ -2,6 +2,7 @@ import "server-only";
 
 import { HttpError, isNotFoundError, serverFetch } from "@/lib/api";
 import {
+  CustomerOrderMail,
   OrderForPayment,
   OrderProps,
   OrderStatus,
@@ -22,7 +23,9 @@ import {
   getLedgerRemark,
   hasReminderBeenSent,
   isCheckoutDraft,
+  ORDER_META,
   prepareOrder,
+  prepareCustomerOrderMail,
   prepareOrderForPayment,
   prepareSalesOrder,
   prepareUnpaidOrder,
@@ -43,8 +46,8 @@ const getPaymentMeta = (payment: PaymentRecord) => [
   { key: "_stripe_payment_status", value: payment.status },
   ...(payment.currency === Currency.EUR
     ? [
-        { key: "_paid_currency", value: "EUR" },
-        { key: "_paid_amount", value: payment.paidTotal.toFixed(2) },
+        { key: ORDER_META.paidCurrency, value: "EUR" },
+        { key: ORDER_META.paidAmount, value: payment.paidTotal.toFixed(2) },
         { key: "_exchange_rate", value: EXCHANGE_RATE_PLN_PER_EUR.toString() },
       ]
     : []),
@@ -286,6 +289,32 @@ class OrderService {
         "czeka wstrzymane i samo zmieni się na opłacone, gdy pieniądze dojdą. " +
         "Nie wysyłać wcześniej.",
     ]);
+  }
+
+  // Zamówienie w ujęciu maila do klienta. Null, gdy go nie ma (404) albo nie ma
+  // adresu e-mail; awaria WordPressa leci dalej.
+  async getCustomerOrderMail(orderId: number): Promise<CustomerOrderMail | null> {
+    try {
+      return prepareCustomerOrderMail(await this.wcFetch<RawOrder>(`orders/${orderId}`));
+    } catch (error) {
+      if (isNotFoundError(error)) return null;
+      throw error;
+    }
+  }
+
+  // Zapis danych przy zamówieniu (np. znacznika wysłanego maila).
+  async updateMeta(
+    orderId: number,
+    meta: { key: string; value: string }[]
+  ): Promise<void> {
+    await this.wcFetch(`orders/${orderId}`, {
+      method: "PUT",
+      body: JSON.stringify({ meta_data: meta }),
+    });
+  }
+
+  async addPrivateNote(orderId: number, note: string): Promise<void> {
+    await this.addPrivateNotes(orderId, [note]);
   }
 
   // Notatki widoczne wyłącznie dla Magdy w panelu. Uwagi w rodzaju „ta praca

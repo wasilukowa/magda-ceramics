@@ -2,7 +2,16 @@ import "server-only";
 
 import { getTranslations } from "next-intl/server";
 import { MailMessage } from "@/contracts/server/mail";
-import { UnpaidOrder } from "@/contracts/server/order";
+import {
+  CustomerMailInput,
+  CustomerMailKind,
+  DeliveryKind,
+  UnpaidOrder,
+} from "@/contracts/server/order";
+import { CONTACT_EMAIL, SITE_URL } from "@/content/data";
+import { getPathname } from "@/i18n/navigation";
+import { formatPrice } from "@/lib/helpers/currency";
+import { escapeHtml } from "@/lib/helpers/html";
 import {
   SalesEntry,
   SalesEntryKind,
@@ -85,7 +94,7 @@ export const buildUnpaidOrderMail = async ({
     )
     .join(", ");
 
-  const total = `${order.total} ${order.currency}`;
+  const total = formatPrice(order.total, order.currency);
 
   const text = [
     t("heading", { name: order.firstName }),
@@ -262,6 +271,164 @@ export const buildSalesReportMail = async ({
           },
         ]
       : undefined,
+  };
+};
+
+
+// --- Maile do klienta o zamówieniu ---------------------------------------------
+// Wysyła je sklep, nie WooCommerce: w języku, w którym klient zamawiał,
+// i z kwotami w walucie, w której płacił (patrz OrderPreferences). Treść stoi
+// w tłumaczeniach (namespace `orderEmail`) — zmiana zdania to edycja
+// messages/*.json, nie kodu.
+
+const MAIL_FONT = "font-family:Georgia,'Times New Roman',serif;color:#1a1a1a;";
+const MUTED = "color:#6b6b6b;";
+const RULE = "border-top:1px solid #e5e2dc;";
+
+// Akapit z tekstu, który może mieć kilka linii (notatka Magdy, uwaga klienta).
+const multiline = (text: string): string =>
+  escapeHtml(text).replace(/\n/g, "<br />");
+
+const absoluteUrl = (locale: string, href: "/terms" | "/account/orders"): string =>
+  `${SITE_URL}${getPathname({ locale, href })}`;
+
+export const buildCustomerOrderMail = async ({
+  kind,
+  order,
+  note,
+  refund,
+}: CustomerMailInput): Promise<MailMessage> => {
+  const { locale } = order.preferences;
+  const t = await getTranslations({ locale, namespace: "orderEmail" });
+  const { amounts, delivery } = order;
+  const money = (value: number) => formatPrice(value, amounts.currency);
+  const number = order.number;
+
+  const greeting = order.firstName
+    ? t("greeting", { name: order.firstName })
+    : t("greetingNoName");
+
+  const refundSentence = (() => {
+    if (kind !== CustomerMailKind.Refunded || !refund) return "";
+    if (refund.amount === null) return t("refunded.partialNoAmount", { number });
+    return t(refund.full ? "refunded.full" : "refunded.partial", {
+      number,
+      amount: money(refund.amount),
+    });
+  })();
+  const intro =
+    kind === CustomerMailKind.Refunded ? refundSentence : t(`${kind}.intro`, { number });
+
+  const showSummary =
+    kind === CustomerMailKind.Confirmed || kind === CustomerMailKind.OnHold;
+  const showDelivery = showSummary || kind === CustomerMailKind.Shipped;
+  const showAccount = order.hasAccount && (showSummary || kind === CustomerMailKind.Shipped);
+
+  const shippingLabel =
+    delivery.kind === DeliveryKind.Locker ? t("shippingLocker") : t("shippingCourier");
+  const deliveryTitle =
+    delivery.kind === DeliveryKind.Locker
+      ? t("deliveryLocker", { code: delivery.lockerCode ?? "" })
+      : t("deliveryCourier");
+  const termsUrl = absoluteUrl(locale, "/terms");
+  const accountUrl = absoluteUrl(locale, "/account/orders");
+
+  // --- wersja tekstowa ---
+  const text = [
+    greeting,
+    "",
+    intro,
+    ...(kind === CustomerMailKind.Refunded ? ["", t("refunded.timing")] : []),
+    ...(kind === CustomerMailKind.Note && note ? ["", note] : []),
+    ...(showSummary
+      ? [
+          "",
+          t("summary"),
+          ...amounts.items.map(
+            (item) =>
+              `${item.name}${item.quantity > 1 ? ` × ${item.quantity}` : ""} — ${money(item.total)}`
+          ),
+          `${shippingLabel} — ${money(amounts.shipping)}`,
+          `${t("total")}: ${money(amounts.total)}`,
+        ]
+      : []),
+    ...(showDelivery ? ["", deliveryTitle, ...delivery.lines] : []),
+    ...(showSummary && order.note ? ["", `${t("yourNote")}: ${order.note}`] : []),
+    ...(showAccount ? ["", `${t("account")} ${accountUrl}`] : []),
+    ...(showSummary ? ["", `${t("terms")} ${termsUrl}`] : []),
+    "",
+    t("help"),
+    "",
+    t("signature"),
+  ].join("\n");
+
+  // --- wersja HTML ---
+  const row = (label: string, value: string, strong = false) => `
+      <tr>
+        <td style="padding:8px 0;${strong ? "font-weight:bold;" : ""}">${label}</td>
+        <td style="padding:8px 0;text-align:right;white-space:nowrap;${strong ? "font-weight:bold;" : ""}">${value}</td>
+      </tr>`;
+
+  const summaryHtml = showSummary
+    ? `
+    <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;${MUTED}">${t("summary")}</p>
+    <table style="width:100%;border-collapse:collapse;margin:0 0 28px;font-size:14px;${RULE}">
+      ${amounts.items
+        .map((item) =>
+          row(
+            `${escapeHtml(item.name)}${item.quantity > 1 ? ` × ${item.quantity}` : ""}`,
+            money(item.total)
+          )
+        )
+        .join("")}
+      ${row(shippingLabel, money(amounts.shipping))}
+      <tr><td colspan="2" style="${RULE}"></td></tr>
+      ${row(t("total"), money(amounts.total), true)}
+    </table>`
+    : "";
+
+  const deliveryHtml = showDelivery
+    ? `
+    <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;${MUTED}">${escapeHtml(deliveryTitle)}</p>
+    <p style="margin:0 0 28px;font-size:14px;line-height:1.6;">${delivery.lines.map(escapeHtml).join("<br />")}</p>`
+    : "";
+
+  const noteHtml =
+    kind === CustomerMailKind.Note && note
+      ? `<p style="margin:0 0 28px;padding:16px 20px;background:#f1efeb;font-size:15px;line-height:1.7;">${multiline(note)}</p>`
+      : "";
+  const customerNoteHtml =
+    showSummary && order.note
+      ? `<p style="margin:0 0 28px;font-size:13px;line-height:1.6;${MUTED}">${t("yourNote")}: ${multiline(order.note)}</p>`
+      : "";
+  const link = (url: string, label: string) =>
+    `<a href="${url}" style="color:#57756F;">${label}</a>`;
+
+  const html = `
+<div style="margin:0;padding:32px 16px;background:#faf9f7;${MAIL_FONT}">
+  <div style="max-width:560px;margin:0 auto;">
+    <p style="margin:0 0 32px;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;${MUTED}">Magda Ceramics</p>
+    <h1 style="margin:0 0 24px;font-size:22px;font-weight:400;letter-spacing:0.02em;">${t(`${kind}.heading`)}</h1>
+    <p style="margin:0 0 12px;font-size:15px;line-height:1.7;">${escapeHtml(greeting)}</p>
+    <p style="margin:0 0 28px;font-size:15px;line-height:1.7;">${escapeHtml(intro)}</p>
+    ${kind === CustomerMailKind.Refunded ? `<p style="margin:0 0 28px;font-size:13px;line-height:1.7;${MUTED}">${t("refunded.timing")}</p>` : ""}
+    ${noteHtml}
+    ${summaryHtml}
+    ${deliveryHtml}
+    ${customerNoteHtml}
+    ${showAccount ? `<p style="margin:0 0 12px;font-size:13px;line-height:1.6;${MUTED}">${t("account")} ${link(accountUrl, t("accountLink"))}</p>` : ""}
+    ${showSummary ? `<p style="margin:0 0 28px;font-size:13px;line-height:1.6;${MUTED}">${t("terms")} ${link(termsUrl, t("termsLink"))}</p>` : ""}
+    <p style="margin:0 0 32px;font-size:13px;line-height:1.7;${MUTED}">${t("help")}</p>
+    <p style="margin:0;padding-top:24px;${RULE}font-size:13px;${MUTED}">${t("signature")}</p>
+  </div>
+</div>`.trim();
+
+  return {
+    to: order.email,
+    replyTo: CONTACT_EMAIL,
+    subject: t(`${kind}.subject`, { number }),
+    text,
+    html,
   };
 };
 

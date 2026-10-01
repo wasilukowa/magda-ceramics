@@ -418,7 +418,7 @@
     },
     "pay": {
       "title": "Pay for your order",
-      "button": "Pay {total} {currency}",
+      "button": "Pay {total}",
       "processing": "Processing...",
       "error": "The payment did not go through. Please try again.",
       "unavailable": "The payment could not be started. Refresh the page or write to us.",
@@ -582,5 +582,50 @@
     "count": "{count, plural, one {# piece} other {# pieces}}",
     "sold": "Sold",
     "empty": "Nothing here."
+  },
+  "orderEmail": {
+    "greeting": "Hello {name}!",
+    "greetingNoName": "Hello!",
+    "confirmed": {
+      "subject": "Thank you for your order #{number}",
+      "heading": "Thank you for your order!",
+      "intro": "Your payment has arrived and order #{number} is with me. I'll pack it carefully now and email you when the parcel is on its way."
+    },
+    "on-hold": {
+      "subject": "Order #{number} is waiting for payment confirmation",
+      "heading": "I have your order",
+      "intro": "Order #{number} is with me and your bank is still confirming the payment. Once the money arrives, you'll get a confirmation and I'll start packing."
+    },
+    "shipped": {
+      "subject": "Order #{number} is on its way",
+      "heading": "Your parcel is on its way",
+      "intro": "Order #{number} has just been sent to you."
+    },
+    "note": {
+      "subject": "A message about order #{number}",
+      "heading": "A message about your order",
+      "intro": "I've added a note to your order #{number}:"
+    },
+    "refunded": {
+      "subject": "Refund for order #{number}",
+      "heading": "Refund",
+      "full": "I've refunded the full amount for order #{number}: {amount}.",
+      "partial": "I've refunded part of the amount for order #{number}: {amount}.",
+      "partialNoAmount": "I've refunded part of the amount for order #{number}.",
+      "timing": "The money goes back the same way you paid — this usually takes a few business days."
+    },
+    "summary": "Your order",
+    "shippingLocker": "Shipping — InPost parcel locker",
+    "shippingCourier": "Shipping — courier",
+    "total": "Total",
+    "deliveryLocker": "InPost parcel locker {code}",
+    "deliveryCourier": "Delivery address",
+    "yourNote": "Your note",
+    "account": "You can also see the order in your account:",
+    "accountLink": "My orders",
+    "terms": "Shop terms, including your right to withdraw within 14 days:",
+    "termsLink": "Terms",
+    "help": "Questions? Just reply to this email.",
+    "signature": "Magda"
   }
 }
