@@ -69,7 +69,6 @@ export type ProductProps = {
   name: string;
   slug: string;
   price: string;
-  priceEur: number | null;
   hasPrice: boolean;
   description: string;
   shortDescription: string;

@@ -3,7 +3,6 @@ export type CartItem = {
   slug: string;
   name: string;
   price: string;
-  priceEur: number | null;
   image: string;
   quantity: number;
 };
@@ -17,7 +16,6 @@ export type CartItemState = {
   id: number;
   name: string;
   price: string;
-  priceEur: number | null;
   // Da się jeszcze kupić: jest w WooCommerce, ma cenę i jest na stanie.
   purchasable: boolean;
 };

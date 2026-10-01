@@ -17,7 +17,6 @@ const isCartItem = (value: unknown): value is CartItem => {
     isString(item.name) &&
     isString(item.price) &&
     Number.isFinite(parseFloat(item.price)) &&
-    (item.priceEur === null || isCorrectNumber(item.priceEur)) &&
     isString(item.image) &&
     isCorrectNumber(item.quantity) &&
     item.quantity > 0
