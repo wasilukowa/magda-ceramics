@@ -1,6 +1,7 @@
 import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { OrderProps } from "@/contracts/server/order";
+import { formatPrice } from "@/lib/helpers/currency";
 
 const STATUS_TONE: Record<string, string> = {
   completed: "var(--color-success)",
@@ -62,7 +63,7 @@ export default async function OrderList({ orders }: { orders: OrderProps[] }) {
                   {item.quantity > 1 ? ` × ${item.quantity}` : ""}
                 </span>
                 <span className="whitespace-nowrap">
-                  {item.total} {order.currency}
+                  {formatPrice(item.total, order.currency)}
                 </span>
               </li>
             ))}
@@ -73,7 +74,7 @@ export default async function OrderList({ orders }: { orders: OrderProps[] }) {
               {t("orders.total")}
             </span>
             <span className="font-medium">
-              {order.total} {order.currency}
+              {formatPrice(order.total, order.currency)}
             </span>
           </div>
 

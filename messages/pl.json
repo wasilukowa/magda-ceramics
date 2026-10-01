@@ -418,7 +418,7 @@
     },
     "pay": {
       "title": "Zapłać za zamówienie",
-      "button": "Zapłać {total} {currency}",
+      "button": "Zapłać {total}",
       "processing": "Przetwarzanie...",
       "error": "Płatność się nie udała. Spróbuj ponownie.",
       "unavailable": "Nie udało się uruchomić płatności. Odśwież stronę albo napisz do nas.",
@@ -466,7 +466,7 @@
   },
   "cookies": {
     "bannerTitle": "Pliki cookies",
-    "bannerText": "Zapisujemy na Twoim urządzeniu tylko to, co niezbędne do działania sklepu — koszyk, logowanie i płatność. Nie używamy narzędzi analitycznych ani marketingowych. Możesz zdecydować, czy zgadzasz się na dodatkowe kategorie.",
+    "bannerText": "Zapisujemy na Twoim urządzeniu tylko to, co niezbędne do działania sklepu — koszyk, logowanie, płatność i Twoje ustawienia (język, waluta, ulubione). Nie używamy narzędzi analitycznych ani marketingowych; gdyby to się zmieniło, najpierw zapytamy Cię o zgodę.",
     "policyLink": "Polityka cookies",
     "settings": "Ustawienia cookies",
     "settingsTitle": "Ustawienia plików cookies",
@@ -507,7 +507,7 @@
     "entries": {
       "session": {
         "purpose": "Utrzymanie zalogowanej sesji klienta.",
-        "duration": "7 dni"
+        "duration": "30 dni"
       },
       "previewAccess": {
         "purpose": "Dostęp do sklepu w okresie przedpremierowym.",
@@ -531,14 +531,22 @@
       },
       "locale": {
         "purpose": "Zapamiętanie języka wybranego przez Ciebie (polski / angielski).",
-        "duration": "12 miesięcy"
+        "duration": "Do zamknięcia przeglądarki"
       },
       "currency": {
         "purpose": "Zapamiętanie waluty wybranej przez Ciebie (PLN / EUR).",
         "duration": "Do wyczyszczenia danych przeglądarki"
       },
       "wishlist": {
-        "purpose": "Lista ulubionych produktów dla niezalogowanych klientów.",
+        "purpose": "Lista ulubionych produktów klienta, który nie jest zalogowany.",
+        "duration": "Do wyczyszczenia danych przeglądarki"
+      },
+      "wishlistAccount": {
+        "purpose": "Kopia listy ulubionych zalogowanego klienta — dzięki niej wszystkie otwarte karty sklepu widzą tę samą listę. Usuwana przy wylogowaniu.",
+        "duration": "Do wylogowania"
+      },
+      "wishlistHint": {
+        "purpose": "Zapamiętanie, że podpowiedź o zapisywaniu ulubionych na koncie została już pokazana — żeby nie wracała przy każdym polubieniu.",
         "duration": "Do wyczyszczenia danych przeglądarki"
       }
     }
@@ -602,5 +610,50 @@
       },
       "signature": "Wiadomość wysłana automatycznie przez sklep magdaceramics.com."
     }
+  },
+  "orderEmail": {
+    "greeting": "Cześć {name}!",
+    "greetingNoName": "Cześć!",
+    "confirmed": {
+      "subject": "Dziękuję za zamówienie #{number}",
+      "heading": "Dziękuję za zamówienie!",
+      "intro": "Płatność doszła, a Twoje zamówienie #{number} jest już u mnie. Teraz starannie je zapakuję — dam Ci znać mailem, gdy paczka wyruszy."
+    },
+    "on-hold": {
+      "subject": "Zamówienie #{number} czeka na potwierdzenie płatności",
+      "heading": "Mam Twoje zamówienie",
+      "intro": "Twoje zamówienie #{number} jest już u mnie, a bank jeszcze potwierdza płatność. Gdy pieniądze dojdą, dostaniesz potwierdzenie i zabiorę się za pakowanie."
+    },
+    "shipped": {
+      "subject": "Zamówienie #{number} jest w drodze",
+      "heading": "Paczka jest w drodze",
+      "intro": "Twoje zamówienie #{number} właśnie wyruszyło do Ciebie."
+    },
+    "note": {
+      "subject": "Wiadomość do zamówienia #{number}",
+      "heading": "Wiadomość do Twojego zamówienia",
+      "intro": "Dopisałam informację do Twojego zamówienia #{number}:"
+    },
+    "refunded": {
+      "subject": "Zwrot pieniędzy za zamówienie #{number}",
+      "heading": "Zwrot pieniędzy",
+      "full": "Zwróciłam całą kwotę za zamówienie #{number}: {amount}.",
+      "partial": "Zwróciłam część kwoty za zamówienie #{number}: {amount}.",
+      "partialNoAmount": "Zwróciłam część kwoty za zamówienie #{number}.",
+      "timing": "Pieniądze wrócą tą samą drogą, którą płaciłaś/eś — zwykle trwa to kilka dni roboczych."
+    },
+    "summary": "Twoje zamówienie",
+    "shippingLocker": "Wysyłka — Paczkomat InPost",
+    "shippingCourier": "Wysyłka — kurier",
+    "total": "Razem",
+    "deliveryLocker": "Paczkomat InPost {code}",
+    "deliveryCourier": "Adres dostawy",
+    "yourNote": "Twoja uwaga",
+    "account": "Zamówienie zobaczysz też na swoim koncie:",
+    "accountLink": "Moje zamówienia",
+    "terms": "Regulamin sklepu, w tym prawo odstąpienia od umowy w ciągu 14 dni:",
+    "termsLink": "Regulamin",
+    "help": "Masz pytania? Po prostu odpowiedz na tego maila.",
+    "signature": "Magda"
   }
 }

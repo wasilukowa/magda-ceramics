@@ -11,6 +11,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { OrderProps } from "@/contracts/server/order";
 import { getStripeAppearance, STRIPE_FONTS } from "@/lib/helpers/stripeAppearance";
+import { formatPrice } from "@/lib/helpers/currency";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -60,7 +61,7 @@ function PaymentForm({ order }: { order: OrderProps }) {
       >
         {loading
           ? t("pay.processing")
-          : t("pay.button", { total: order.total, currency: order.currency })}
+          : t("pay.button", { total: formatPrice(order.total, order.currency) })}
       </button>
     </form>
   );
@@ -97,7 +98,7 @@ export default function OrderPayment({
                 {item.quantity > 1 ? ` × ${item.quantity}` : ""}
               </span>
               <span className="whitespace-nowrap">
-                {item.total} {order.currency}
+                {formatPrice(item.total, order.currency)}
               </span>
             </li>
           ))}
@@ -107,7 +108,7 @@ export default function OrderPayment({
             {t("orders.total")}
           </span>
           <span className="font-medium">
-            {order.total} {order.currency}
+            {formatPrice(order.total, order.currency)}
           </span>
         </div>
       </div>

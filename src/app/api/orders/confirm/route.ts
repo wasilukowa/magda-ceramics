@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { getCurrentCustomer } from "@/lib/auth/dal";
 import { orderService } from "@/lib/service/order";
+import { customerMailService } from "@/lib/service/customerMail";
 import { paymentService } from "@/lib/service/payment";
 import { isPaymentForOrder } from "@/lib/service/payment/helpers";
 import { OrderConfirmResult } from "@/contracts/server/order";
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
 
   try {
     await orderService.markPaid(orderId, order.status, payment);
+    await customerMailService.sendConfirmation(orderId);
   } catch (error) {
     // Pieniądze są u Stripe'a, więc klientowi mówimy prawdę: zapłacono.
     // Rozjazd w WooCommerce zostaje w logu dla Magdy.

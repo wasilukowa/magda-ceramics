@@ -45,12 +45,14 @@ class PaymentService {
 
   // Druga próba zapłaty — za zamówienie, które już leży w WooCommerce.
   // Kwota bierze się z zamówienia (WooCommerce policzył je sam z numerów
-  // produktów), a nie z niczego, co przyszło z przeglądarki. W metadanych
-  // zostaje numer zamówienia, więc domknięcie płatności wie, co oznaczyć.
+  // produktów), a nie z niczego, co przyszło z przeglądarki — w walucie, którą
+  // klient wybrał w kasie (patrz getOrderAmounts). Wcześniej zawsze w złotych,
+  // także dla kogoś, kto zamawiał w euro. W metadanych zostaje numer
+  // zamówienia, więc domknięcie płatności wie, co oznaczyć.
   async createOrderIntent(order: OrderProps): Promise<string | null> {
     const intent = await this.stripe.paymentIntents.create({
-      amount: Math.round(parseFloat(order.total) * 100),
-      currency: order.currency.toLowerCase(),
+      amount: Math.round(order.total * 100),
+      currency: order.currency,
       automatic_payment_methods: { enabled: true },
       metadata: { [PAYMENT_META.orderId]: order.id.toString() },
     });

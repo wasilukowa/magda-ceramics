@@ -21,7 +21,7 @@ export const ABOUT_PHOTOS: string[] = [
 export const COOKIE_REGISTRY: CookieRegistryEntry[] = [
   {
     key: "session",
-    name: "session",
+    name: "mc_session",
     provider: "magdaceramics.com",
     category: CookieCategory.Necessary,
   },
@@ -72,6 +72,19 @@ export const COOKIE_REGISTRY: CookieRegistryEntry[] = [
   {
     key: "wishlist",
     name: "wishlist",
+    provider: "magdaceramics.com",
+    category: CookieCategory.Necessary,
+  },
+  {
+    // Kopia listy z konta — patrz WishlistProvider (wspólna pamięć kart).
+    key: "wishlistAccount",
+    name: "wishlist:account",
+    provider: "magdaceramics.com",
+    category: CookieCategory.Necessary,
+  },
+  {
+    key: "wishlistHint",
+    name: "wishlist:hinted",
     provider: "magdaceramics.com",
     category: CookieCategory.Necessary,
   },

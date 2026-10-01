@@ -24,6 +24,8 @@ import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
 import { prepareProduct } from "@/lib/service/product/helpers";
 import { orderService } from "@/lib/service/order";
+import { customerMailService } from "@/lib/service/customerMail";
+import { LOCKER_NOTE_PREFIX, ORDER_META } from "@/lib/service/order/helpers";
 import { getUnitPrice } from "@/lib/helpers/currency";
 import { getShippingAmount, getShippingCostInZloty } from "@/lib/helpers/shipping";
 import { getCartFingerprint, getUnavailableItems } from "./helpers";
@@ -211,6 +213,8 @@ class CheckoutService {
     customerId,
     deliveryMethod,
     locker,
+    locale,
+    currency,
   }: DraftOrderInput): Promise<DraftOrderResult> {
     // Wysyłkę liczymy z kraju adresu, nie z tego, co przyszło w żądaniu — a że
     // ten sam kraj musiał być użyty przy płatności (metadane w Stripe), suma
@@ -241,7 +245,7 @@ class CheckoutService {
     if (note) noteParts.push(note);
     if (isLocker) {
       noteParts.push(
-        `Paczkomat InPost: ${locker!.code}${
+        `${LOCKER_NOTE_PREFIX}${locker!.code}${
           locker!.description ? ` (${locker!.description})` : ""
         }`
       );
@@ -269,9 +273,13 @@ class CheckoutService {
             },
           ],
           customer_note: noteParts.length ? noteParts.join("\n") : undefined,
-          meta_data: isLocker
-            ? [{ key: "_inpost_locker_id", value: locker!.code }]
-            : [],
+          meta_data: [
+            ...(isLocker ? [{ key: "_inpost_locker_id", value: locker!.code }] : []),
+            // W tym języku i tej walucie klient dostanie maile i zobaczy
+            // zamówienie na koncie — patrz getOrderPreferences.
+            ...(locale ? [{ key: ORDER_META.locale, value: locale }] : []),
+            { key: ORDER_META.currency, value: currency },
+          ],
         }),
       });
 
@@ -342,6 +350,7 @@ class CheckoutService {
     if (payment.status === PaymentStatus.Processing) {
       if (awaiting) {
         await orderService.markAwaitingConfirmation(order.id, order.status, payment);
+        await customerMailService.sendOnHold(order.id);
       }
       return { id: order.id, completion: OrderCompletion.AwaitingConfirmation };
     }
@@ -361,6 +370,13 @@ class CheckoutService {
           ]
         : [];
       await orderService.markPaid(order.id, order.status, payment, remarks);
+    }
+
+    // Potwierdzenie dla klienta — także wtedy, gdy zamówienie było już
+    // opłacone, a mail jeszcze nie wyszedł (np. poprzednia próba przerwała się
+    // po zapisaniu zapłaty). Wysyła się raz: patrz OrderForPayment.
+    if (!order.confirmationSent) {
+      await customerMailService.sendConfirmation(order.id);
     }
 
     return { id: order.id, completion: OrderCompletion.Paid };

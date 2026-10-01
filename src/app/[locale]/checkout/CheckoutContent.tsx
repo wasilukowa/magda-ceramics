@@ -161,6 +161,7 @@ export default function CheckoutContent({
         paymentIntentId,
         deliveryMethod,
         locker: usingLocker ? locker : null,
+        locale,
       }),
     })
       .then((r) => r.ok)

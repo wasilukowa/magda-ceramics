@@ -13,5 +13,7 @@ export type MailMessage = {
   subject: string;
   text: string;
   html?: string;
+  // Adres, na który trafi odpowiedź klienta — skrzynka pracowni, nie nadawca.
+  replyTo?: string;
   attachments?: MailAttachment[];
 };

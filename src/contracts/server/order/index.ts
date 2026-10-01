@@ -1,6 +1,7 @@
 // Domena: zamówienia klienta. Raw* = surowa odpowiedź WooCommerce.
 
 import { LedgerAmount } from "@/contracts/server/exchangeRate";
+import { Currency } from "@/contracts/shared";
 
 export enum OrderStatus {
   Pending = "pending",
@@ -16,11 +17,30 @@ export enum OrderStatus {
   CheckoutDraft = "checkout-draft",
 }
 
+// Pozycja zamówienia z kwotą w walucie klienta (patrz OrderAmounts).
 export type OrderLineItem = {
   id: number;
   name: string;
   quantity: number;
-  total: string;
+  total: number;
+};
+
+// Język i waluta, w których klient robił zakupy. W nich dostaje maile i widzi
+// kwoty — także te zapisane później przez Magdę w panelu WordPressa.
+export type OrderPreferences = {
+  locale: string;
+  currency: Currency;
+};
+
+// Kwoty zamówienia w walucie klienta. WooCommerce trzyma wszystko w złotych
+// (tak księgujemy), więc dla zamówień w euro kwoty są przeliczane tą samą
+// regułą co w kasie, a suma opłaconego zamówienia to dokładnie to, co pobrał
+// Stripe.
+export type OrderAmounts = {
+  currency: Currency;
+  items: OrderLineItem[];
+  shipping: number;
+  total: number;
 };
 
 export type OrderProps = {
@@ -28,8 +48,8 @@ export type OrderProps = {
   number: string;
   status: OrderStatus;
   dateCreated: string; // ISO
-  total: string;
-  currency: string;
+  total: number;
+  currency: Currency;
   items: OrderLineItem[];
   // Czeka na pieniądze — patrz PAYABLE_STATUSES. Liczone raz, w adapterze,
   // żeby widok nie musiał znać reguł WooCommerce.
@@ -60,6 +80,9 @@ export type OrderForPayment = {
   key: string;
   status: OrderStatus;
   items: { id: number; quantity: number }[];
+  // Czy klient dostał już potwierdzenie — webhook Stripe'a potrafi przyjść
+  // drugi raz, a potwierdzenie ma wyjść raz.
+  confirmationSent: boolean;
 };
 
 // Odpowiedź WooCommerce zaraz po utworzeniu zamówienia.
@@ -87,12 +110,24 @@ export type RawOrder = {
   line_items: RawOrderLineItem[];
   order_key?: string;
   customer_id?: number;
-  billing?: { first_name?: string; email?: string; country?: string };
+  billing?: RawOrderAddress & { email?: string; phone?: string };
+  shipping?: RawOrderAddress & { company?: string };
+  shipping_total?: string;
+  customer_note?: string;
   meta_data?: { key: string; value: string | number }[];
   // Data zapłaty (UTC, bez strefy na końcu). Null, dopóki nie zapłacono.
   date_paid_gmt?: string | null;
   // Skrót zwrotów — pełne dane (z datą) są pod orders/{id}/refunds.
   refunds?: { id: number; total: string }[];
+};
+
+export type RawOrderAddress = {
+  first_name?: string;
+  last_name?: string;
+  address_1?: string;
+  city?: string;
+  postcode?: string;
+  country?: string;
 };
 
 // Zwrot z orders/{id}/refunds. `amount` jest dodatnie, w złotych.
@@ -124,11 +159,10 @@ export type SalesOrder = {
 export type UnpaidOrder = {
   id: number;
   number: string;
-  total: string;
-  currency: string;
+  total: number;
+  currency: Currency;
   email: string;
   firstName: string;
-  // Język maila: klient nie podaje go wprost, więc idzie z kraju adresu.
   locale: string;
   items: OrderLineItem[];
 };
@@ -160,3 +194,76 @@ export type CompletedOrder = {
   id: number;
   completion: OrderCompletion;
 };
+
+// --- Maile do klienta --------------------------------------------------------
+// Wysyła je sklep, nie WooCommerce: w języku i walucie klienta (WooCommerce
+// pisał po angielsku i w złotych do wszystkich).
+
+export enum CustomerMailKind {
+  // Zapłacone.
+  Confirmed = "confirmed",
+  // Metoda odroczona — bank jeszcze potwierdza.
+  OnHold = "on-hold",
+  // Magda oznaczyła zamówienie jako zrealizowane.
+  Shipped = "shipped",
+  // Magda dodała notatkę „dla klienta".
+  Note = "note",
+  Refunded = "refunded",
+}
+
+export enum DeliveryKind {
+  Locker = "locker",
+  Courier = "courier",
+}
+
+export type OrderDelivery = {
+  kind: DeliveryKind;
+  // Kod paczkomatu (tylko dla paczkomatu).
+  lockerCode: string | null;
+  // Adres jak na kopercie: odbiorca, ulica, kod i miasto.
+  lines: string[];
+};
+
+// Zamówienie w ujęciu maila do klienta.
+export type CustomerOrderMail = {
+  id: number;
+  number: string;
+  email: string;
+  firstName: string;
+  preferences: OrderPreferences;
+  amounts: OrderAmounts;
+  delivery: OrderDelivery;
+  // Uwaga, którą klient sam wpisał w kasie (bez dopisku o paczkomacie).
+  note: string;
+  hasAccount: boolean;
+  // Które maile już wyszły — patrz ORDER_META w serwisie zamówień.
+  sent: {
+    confirmation: boolean;
+    onHold: boolean;
+    shipped: boolean;
+    refundIds: number[];
+  };
+  // Zwroty zapisane w WooCommerce: numer i kwota w złotych.
+  refunds: { id: number; amountPln: number }[];
+  // Suma zamówienia w złotych, jak w WooCommerce — do przeliczania zwrotów.
+  totalPln: number;
+};
+
+// Co ma się znaleźć w mailu oprócz samego zamówienia.
+export type CustomerMailInput = {
+  kind: CustomerMailKind;
+  order: CustomerOrderMail;
+  // Treść notatki Magdy (CustomerMailKind.Note).
+  note?: string;
+  // Zwrot (CustomerMailKind.Refunded). Kwota w walucie klienta albo null,
+  // gdy nie da się jej podać dokładnie (część zwrotu zamówienia w euro).
+  refund?: { amount: number | null; full: boolean };
+};
+
+// Webhook WooCommerce „action.woocommerce_new_customer_note": pierwszy
+// argument akcji, czyli numer zamówienia i treść notatki.
+export type RawCustomerNoteAction = {
+  action: string;
+  arg: { order_id: number; customer_note: string };
+};
+

@@ -418,7 +418,7 @@
     },
     "pay": {
       "title": "Pay for your order",
-      "button": "Pay {total} {currency}",
+      "button": "Pay {total}",
       "processing": "Processing...",
       "error": "The payment did not go through. Please try again.",
       "unavailable": "The payment could not be started. Refresh the page or write to us.",
@@ -466,7 +466,7 @@
   },
   "cookies": {
     "bannerTitle": "Cookies",
-    "bannerText": "We only store what the store needs to work — your cart, login and payment. We use no analytics or marketing trackers. You can decide whether to allow the optional categories.",
+    "bannerText": "We only store what the store needs to work — your cart, login, payment and your settings (language, currency, wishlist). We use no analytics or marketing trackers; if that ever changes, we will ask for your consent first.",
     "policyLink": "Cookie Policy",
     "settings": "Cookie settings",
     "settingsTitle": "Cookie settings",
@@ -507,7 +507,7 @@
     "entries": {
       "session": {
         "purpose": "Keeps you signed in to your account.",
-        "duration": "7 days"
+        "duration": "30 days"
       },
       "previewAccess": {
         "purpose": "Access to the store during the pre-launch period.",
@@ -531,14 +531,22 @@
       },
       "locale": {
         "purpose": "Remembers the language you selected (Polish / English).",
-        "duration": "12 months"
+        "duration": "Until you close the browser"
       },
       "currency": {
         "purpose": "Remembers the currency you selected (PLN / EUR).",
         "duration": "Until you clear browser data"
       },
       "wishlist": {
-        "purpose": "Wishlist for customers who are not signed in.",
+        "purpose": "Wishlist of a customer who is not signed in.",
+        "duration": "Until you clear browser data"
+      },
+      "wishlistAccount": {
+        "purpose": "A copy of a signed-in customer's wishlist, so every open tab of the store shows the same list. Removed when you sign out.",
+        "duration": "Until you sign out"
+      },
+      "wishlistHint": {
+        "purpose": "Remembers that the tip about saving your wishlist to an account has already been shown, so it does not come back with every like.",
         "duration": "Until you clear browser data"
       }
     }
@@ -574,5 +582,50 @@
     "count": "{count, plural, one {# piece} other {# pieces}}",
     "sold": "Sold",
     "empty": "Nothing here."
+  },
+  "orderEmail": {
+    "greeting": "Hello {name}!",
+    "greetingNoName": "Hello!",
+    "confirmed": {
+      "subject": "Thank you for your order #{number}",
+      "heading": "Thank you for your order!",
+      "intro": "Your payment has arrived and order #{number} is with me. I'll pack it carefully now and email you when the parcel is on its way."
+    },
+    "on-hold": {
+      "subject": "Order #{number} is waiting for payment confirmation",
+      "heading": "I have your order",
+      "intro": "Order #{number} is with me and your bank is still confirming the payment. Once the money arrives, you'll get a confirmation and I'll start packing."
+    },
+    "shipped": {
+      "subject": "Order #{number} is on its way",
+      "heading": "Your parcel is on its way",
+      "intro": "Order #{number} has just been sent to you."
+    },
+    "note": {
+      "subject": "A message about order #{number}",
+      "heading": "A message about your order",
+      "intro": "I've added a note to your order #{number}:"
+    },
+    "refunded": {
+      "subject": "Refund for order #{number}",
+      "heading": "Refund",
+      "full": "I've refunded the full amount for order #{number}: {amount}.",
+      "partial": "I've refunded part of the amount for order #{number}: {amount}.",
+      "partialNoAmount": "I've refunded part of the amount for order #{number}.",
+      "timing": "The money goes back the same way you paid — this usually takes a few business days."
+    },
+    "summary": "Your order",
+    "shippingLocker": "Shipping — InPost parcel locker",
+    "shippingCourier": "Shipping — courier",
+    "total": "Total",
+    "deliveryLocker": "InPost parcel locker {code}",
+    "deliveryCourier": "Delivery address",
+    "yourNote": "Your note",
+    "account": "You can also see the order in your account:",
+    "accountLink": "My orders",
+    "terms": "Shop terms, including your right to withdraw within 14 days:",
+    "termsLink": "Terms",
+    "help": "Questions? Just reply to this email.",
+    "signature": "Magda"
   }
 }
