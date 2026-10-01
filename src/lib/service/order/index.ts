@@ -9,6 +9,7 @@ import {
   RawOrder,
   RawOrderRefund,
   SalesOrder,
+  StudioOrderMail,
   UnpaidOrder,
 } from "@/contracts/server/order";
 import { PaymentRecord } from "@/contracts/server/payment";
@@ -28,6 +29,7 @@ import {
   prepareCustomerOrderMail,
   prepareOrderForPayment,
   prepareSalesOrder,
+  prepareStudioOrderMail,
   prepareUnpaidOrder,
   REMINDER_SENT_META_KEY,
 } from "./helpers";
@@ -296,6 +298,17 @@ class OrderService {
   async getCustomerOrderMail(orderId: number): Promise<CustomerOrderMail | null> {
     try {
       return prepareCustomerOrderMail(await this.wcFetch<RawOrder>(`orders/${orderId}`));
+    } catch (error) {
+      if (isNotFoundError(error)) return null;
+      throw error;
+    }
+  }
+
+  // Zamówienie w ujęciu maila „nowe zamówienie" do pracowni. Null, gdy go nie
+  // ma (404); awaria WordPressa leci dalej.
+  async getStudioOrderMail(orderId: number): Promise<StudioOrderMail | null> {
+    try {
+      return prepareStudioOrderMail(await this.wcFetch<RawOrder>(`orders/${orderId}`));
     } catch (error) {
       if (isNotFoundError(error)) return null;
       throw error;

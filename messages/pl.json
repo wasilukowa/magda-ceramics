@@ -655,5 +655,27 @@
     "termsLink": "Regulamin",
     "help": "Masz pytania? Po prostu odpowiedz na tego maila.",
     "signature": "Magda"
+  },
+  "studioOrderEmail": {
+    "subject": "Nowe zamówienie #{number} — {total}{customer, select, none {} other { ({customer})}}",
+    "heading": "Nowe zamówienie #{number}",
+    "awaiting": "Bank jeszcze potwierdza tę płatność. Nie wysyłaj paczki, dopóki zamówienie nie zmieni się w panelu na „W realizacji” (Processing).",
+    "conflicts": "UWAGA: w chwili zapłaty te prace były już niedostępne: {items}. Płatność została pobrana — sprawdź przed wysyłką.",
+    "customerTitle": "Klient",
+    "account": "Konto w sklepie: {hasAccount, select, yes {tak} other {nie (gość)}}",
+    "language": "Język klienta: {language}",
+    "paymentTitle": "Płatność",
+    "paid": "Zapłacono: {amount}",
+    "ledger": "Do ewidencji: {amount} (kurs NBP {rate} z {date}, tabela {table})",
+    "ledgerMissing": "Do ewidencji: kursu NBP nie udało się pobrać — przelicz ręcznie.",
+    "itemsTitle": "Zamówienie (ceny z katalogu, w złotych)",
+    "shipping": "Wysyłka",
+    "total": "Razem",
+    "deliveryLocker": "Paczkomat InPost {code}",
+    "deliveryCourier": "Kurier — adres dostawy",
+    "noteTitle": "Uwaga klienta",
+    "open": "Otwórz zamówienie w panelu",
+    "reply": "Odpowiedź na tego maila trafi prosto do klienta.",
+    "footer": "Wiadomość wysłana automatycznie przez sklep magdaceramics.com."
   }
 }

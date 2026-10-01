@@ -6,11 +6,13 @@ import {
   CustomerMailInput,
   CustomerMailKind,
   DeliveryKind,
+  StudioOrderMail,
   UnpaidOrder,
 } from "@/contracts/server/order";
 import { CONTACT_EMAIL, SITE_URL } from "@/content/data";
 import { getPathname } from "@/i18n/navigation";
 import { formatPrice } from "@/lib/helpers/currency";
+import { Currency } from "@/contracts/shared";
 import { escapeHtml } from "@/lib/helpers/html";
 import {
   SalesEntry,
@@ -427,6 +429,140 @@ export const buildCustomerOrderMail = async ({
     to: order.email,
     replyTo: CONTACT_EMAIL,
     subject: t(`${kind}.subject`, { number }),
+    text,
+    html,
+  };
+};
+
+
+// --- Mail „nowe zamówienie" do pracowni -----------------------------------------
+// Zastępuje angielski mail WooCommerce w złotych. Po polsku (tylko
+// messages/pl.json, `studioOrderEmail`), z tym, co klient naprawdę zapłacił,
+// i z kwotą do ewidencji przy euro. Odpowiedź idzie prosto do klienta.
+
+const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
+const LANGUAGE_NAMES: Record<string, string> = { pl: "polski", en: "angielski" };
+
+export const buildStudioNewOrderMail = async ({
+  order,
+  to,
+  conflicts,
+  awaitingConfirmation,
+}: {
+  order: StudioOrderMail;
+  to: string[];
+  conflicts: string[];
+  awaitingConfirmation: boolean;
+}): Promise<MailMessage> => {
+  const t = await getTranslations({ locale: "pl", namespace: "studioOrderEmail" });
+  const number = order.number;
+  const pln = (value: number) => formatPrice(value, Currency.PLN);
+  const paid = formatPrice(order.paidTotal, order.paidCurrency);
+  // Panel WooCommerce na nowych tabelach zamówień (HPOS).
+  const adminUrl = `${WP_URL}/wp-admin/admin.php?page=wc-orders&action=edit&id=${order.id}`;
+
+  const ledgerLine =
+    order.paidCurrency === Currency.EUR
+      ? order.ledger?.conversion
+        ? t("ledger", {
+            amount: `${formatPlNumber(order.ledger.conversion.amountPln, 2)} zł`,
+            rate: formatPlNumber(order.ledger.conversion.rate.mid, 4),
+            date: formatDayPl(order.ledger.conversion.rate.effectiveDate),
+            table: order.ledger.conversion.rate.table,
+          })
+        : t("ledgerMissing")
+      : "";
+  const warnings = [
+    ...(awaitingConfirmation ? [t("awaiting")] : []),
+    ...(conflicts.length ? [t("conflicts", { items: conflicts.join(", ") })] : []),
+  ];
+  const customerLines = [
+    order.customerName,
+    order.email,
+    order.phone,
+    t("account", { hasAccount: order.hasAccount ? "yes" : "no" }),
+    t("language", { language: LANGUAGE_NAMES[order.customerLocale] ?? order.customerLocale }),
+  ].filter(Boolean);
+  const deliveryTitle =
+    order.delivery.kind === DeliveryKind.Locker
+      ? t("deliveryLocker", { code: order.delivery.lockerCode ?? "" })
+      : t("deliveryCourier");
+  const itemLabel = (item: StudioOrderMail["items"][number]) =>
+    `${item.name}${item.quantity > 1 ? ` × ${item.quantity}` : ""}`;
+
+  const text = [
+    t("heading", { number }),
+    "",
+    ...warnings.flatMap((warning) => [warning, ""]),
+    t("customerTitle"),
+    ...customerLines,
+    "",
+    t("paymentTitle"),
+    t("paid", { amount: paid }),
+    ...(ledgerLine ? [ledgerLine] : []),
+    "",
+    t("itemsTitle"),
+    ...order.items.map((item) => `${itemLabel(item)} — ${pln(item.totalPln)}`),
+    `${t("shipping")} — ${pln(order.shippingPln)}`,
+    `${t("total")}: ${pln(order.totalPln)}`,
+    "",
+    deliveryTitle,
+    ...order.delivery.lines,
+    ...(order.note ? ["", `${t("noteTitle")}: ${order.note}`] : []),
+    "",
+    `${t("open")}: ${adminUrl}`,
+    "",
+    t("reply"),
+    t("footer"),
+  ].join("\n");
+
+  const section = (title: string, body: string) => `
+    <p style="margin:0 0 8px;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;${MUTED}">${escapeHtml(title)}</p>
+    ${body}`;
+  const lines = (values: string[]) =>
+    `<p style="margin:0 0 24px;font-size:14px;line-height:1.6;">${values.map(escapeHtml).join("<br />")}</p>`;
+  const row = (label: string, value: string, strong = false) => `
+      <tr>
+        <td style="padding:6px 0;${strong ? "font-weight:bold;" : ""}">${escapeHtml(label)}</td>
+        <td style="padding:6px 0;text-align:right;white-space:nowrap;${strong ? "font-weight:bold;" : ""}">${value}</td>
+      </tr>`;
+
+  const html = `
+<div style="margin:0;padding:32px 16px;background:#faf9f7;${MAIL_FONT}">
+  <div style="max-width:560px;margin:0 auto;">
+    <p style="margin:0 0 32px;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;${MUTED}">Magda Ceramics</p>
+    <h1 style="margin:0 0 24px;font-size:22px;font-weight:400;">${escapeHtml(t("heading", { number }))}</h1>
+    ${warnings
+      .map(
+        (warning) =>
+          `<p style="margin:0 0 20px;padding:14px 18px;background:#f6e3dc;color:#a8442a;font-size:14px;line-height:1.6;">${escapeHtml(warning)}</p>`
+      )
+      .join("")}
+    ${section(t("customerTitle"), lines(customerLines))}
+    ${section(t("paymentTitle"), lines([t("paid", { amount: paid }), ...(ledgerLine ? [ledgerLine] : [])]))}
+    ${section(
+      t("itemsTitle"),
+      `<table style="width:100%;border-collapse:collapse;margin:0 0 24px;font-size:14px;${RULE}">
+      ${order.items.map((item) => row(itemLabel(item), pln(item.totalPln))).join("")}
+      ${row(t("shipping"), pln(order.shippingPln))}
+      <tr><td colspan="2" style="${RULE}"></td></tr>
+      ${row(t("total"), pln(order.totalPln), true)}
+    </table>`
+    )}
+    ${section(deliveryTitle, lines(order.delivery.lines))}
+    ${order.note ? section(t("noteTitle"), `<p style="margin:0 0 24px;font-size:14px;line-height:1.6;">${multiline(order.note)}</p>`) : ""}
+    <p style="margin:0 0 28px;">
+      <a href="${adminUrl}" style="display:inline-block;padding:14px 32px;border:1px solid #1a1a1a;color:#1a1a1a;text-decoration:none;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">${t("open")}</a>
+    </p>
+    <p style="margin:0 0 8px;font-size:13px;line-height:1.6;${MUTED}">${t("reply")}</p>
+    <p style="margin:0;padding-top:24px;${RULE}font-size:13px;${MUTED}">${t("footer")}</p>
+  </div>
+</div>`.trim();
+
+  return {
+    to,
+    ...(order.email ? { replyTo: order.email } : {}),
+    subject: t("subject", { number, total: paid, customer: order.customerName || "none" }),
     text,
     html,
   };
