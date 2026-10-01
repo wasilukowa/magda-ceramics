@@ -4,18 +4,23 @@ import { getSession } from "@/lib/auth/dal";
 import { customerService } from "@/lib/service/customer";
 import { productService } from "@/lib/service/product";
 import { ProductProps } from "@/contracts/server/product";
+import {
+  ServerWishlistResult,
+  ServerWishlistStatus,
+} from "@/contracts/store";
 
-// Zwraca zapisaną listę życzeń zalogowanego klienta (lub null dla gościa).
-export async function getServerWishlist(): Promise<number[] | null> {
+// Zapisana lista życzeń zalogowanego klienta. Awaria WordPressa to osobny
+// wynik, nie pusta lista — patrz ServerWishlistResult.
+export async function getServerWishlist(): Promise<ServerWishlistResult> {
   const session = await getSession();
-  if (!session) return null;
+  if (!session) return { status: ServerWishlistStatus.Guest };
 
   try {
     const customer = await customerService.getCustomerById(session.customerId);
-    return customer?.wishlist ?? [];
+    return { status: ServerWishlistStatus.Loaded, ids: customer?.wishlist ?? [] };
   } catch (err) {
     console.error("Get server wishlist failed:", err);
-    return [];
+    return { status: ServerWishlistStatus.Failed };
   }
 }
 

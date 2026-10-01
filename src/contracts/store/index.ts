@@ -61,6 +61,21 @@ export type CurrencyStore = {
 
 // O czym trzeba powiedzieć klientowi po kliknięciu serca. `GuestFirstLike`
 // pokazuje się RAZ na przeglądarkę — przy pierwszej pracy polubionej bez konta.
+// Wynik odczytu listy ulubionych z konta. „Nie udało się" to nie to samo co
+// pusta lista: przy awarii WordPressa wracała wcześniej pusta lista, kopia
+// w przeglądarce była nią nadpisywana, a następne serce zapisywało na koncie
+// samo siebie — reszta ulubionych przepadała.
+export enum ServerWishlistStatus {
+  Guest = "guest",
+  Loaded = "loaded",
+  Failed = "failed",
+}
+
+export type ServerWishlistResult =
+  | { status: ServerWishlistStatus.Guest }
+  | { status: ServerWishlistStatus.Loaded; ids: number[] }
+  | { status: ServerWishlistStatus.Failed };
+
 export enum WishlistNoticeKind {
   GuestFirstLike = "guest-first-like",
   SaveFailed = "save-failed",
