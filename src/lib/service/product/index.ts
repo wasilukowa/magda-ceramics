@@ -23,13 +23,14 @@ const authHeader = Buffer.from(`${WC_KEY}:${WC_SECRET}`).toString("base64");
 // Jedyne miejsce, które rozmawia z WooCommerce — i jedyne, które trzeba było
 // oznaczyć „use cache". Odpowiedź (czysty JSON) trafia do cache'u Next.js, więc
 // katalog wchodzi do statycznej skorupy strony zamiast być liczony przy każdym
-// żądaniu. `minutes` to dokładnie dawne `revalidate: 60`.
+// żądaniu. Profil `catalog` (next.config.ts) to dawne `revalidate: 60`, ale
+// bez wygasania po godzinie — patrz komentarz przy profilu.
 // UWAGA: to musi zostać zwykłą funkcją modułu, nie metodą klasy — „use cache"
 // wciąga zmienne z domknięcia do klucza cache'u, a `this` (instancja klasy)
 // nie jest serializowalne.
 async function wcFetch<T>(endpoint: string): Promise<T> {
   "use cache";
-  cacheLife("minutes");
+  cacheLife("catalog");
   cacheTag(CATALOG_TAG);
 
   const res = await serverFetchReadWithRetry(`${WP_URL}/wp-json/wc/v3/${endpoint}`, {

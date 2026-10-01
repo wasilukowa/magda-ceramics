@@ -61,8 +61,29 @@ const securityHeaders = [
   },
 ];
 
+const ONE_YEAR = 60 * 60 * 24 * 365;
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
+
+  // Własne profile cache'u — bo wbudowane wygasają za szybko na awarie
+  // WordPressa. `expire` to czas, po którym strona bez odwiedzin NIE pokaże
+  // już ostatniej dobrej wersji, tylko poczeka na świeże dane. Jeśli
+  // WordPress akurat leży, to czekanie kończy się gołym, angielskim „Internal
+  // Server Error" — i własnego ekranu błędu Next w tym miejscu nie pozwala
+  // pokazać (sprawdzone 2026-10-01 testem z udawaną awarią). Wbudowane
+  // „minutes" wygasało po godzinie, „days" po tygodniu, więc przy małym
+  // ruchu dłuższa awaria kładła zwykłe strony sklepu.
+  // Rok to praktycznie „nigdy": strona zawsze ma co pokazać, a odświeża się
+  // w tle tak samo często jak wcześniej. Pierwszy gość po długiej przerwie
+  // może zobaczyć starszą wersję — koszyk i kasa i tak sprawdzają ceny
+  // i dostępność na żywo.
+  cacheLife: {
+    // Katalog z WooCommerce: odświeżany co minutę, jak dawne `revalidate: 60`.
+    catalog: { stale: 300, revalidate: 60, expire: ONE_YEAR },
+    // Rzeczy zmieniające się raz na dobę (rok w stopce).
+    daily: { stale: 300, revalidate: 60 * 60 * 24, expire: ONE_YEAR },
+  },
 
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

@@ -9,11 +9,13 @@ import { CookieSettingsButton } from "@/components/cookies/CookieSettingsButton"
 
 // Rok w stopce. Odczyt zegara w prerenderze musi być jawnie zacache'owany —
 // inaczej Next nie wie, na jak długo statyczna strona zachowuje ważność.
-// Z profilem „days" strona odświeża się raz na dobę, czyli najpóźniej
-// pierwszego stycznia nad ranem stopka pokaże nowy rok.
+// Z profilem „daily" strona odświeża się raz na dobę, czyli najpóźniej
+// pierwszego stycznia nad ranem stopka pokaże nowy rok. Nie „days": ten
+// wygasa po tygodniu, a stopka jest na każdej stronie, więc jej termin
+// stawałby się terminem całego sklepu (patrz next.config.ts).
 async function getCurrentYear(): Promise<number> {
   "use cache";
-  cacheLife("days");
+  cacheLife("daily");
   return new Date().getFullYear();
 }
 
