@@ -2,16 +2,30 @@ import { Country, CookieRegistryEntry, StaticRoute } from "./types";
 import { ShippingZone, ShippingRates } from "@/contracts/server/shipping";
 import { CookieCategory } from "@/contracts/shared";
 
-// Zdjęcia w sliderze na stronie głównej i na stronie „O mnie", w kolejności
-// pokazywania. Pliki leżą w public/o-mnie/. Żeby usunąć zdjęcie: skasuj wiersz
-// tutaj (i sam plik, jeśli ma zniknąć z repozytorium). Żeby dodać: wrzuć plik
-// do public/o-mnie/ i dopisz wiersz.
-export const ABOUT_PHOTOS: string[] = [
-  "/o-mnie/magda-o-mnie-1.jpg",
-  "/o-mnie/magda-o-mnie-2.jpg",
-  "/o-mnie/magda-o-mnie-5.jpg",
-  "/o-mnie/magda-o-mnie-6.jpg",
-  "/o-mnie/magda-o-mnie-7.jpg",
+// Zdjęcia w sliderze na stronie głównej, w kolejności pokazywania. Pliki leżą
+// w public/slider/ (pomniejszone do 2000 px w dłuższym boku). Żeby usunąć
+// zdjęcie: skasuj wiersz tutaj (i sam plik, jeśli ma zniknąć z repozytorium).
+// Żeby dodać: wrzuć plik do public/slider/ i dopisz wiersz. Slider przycina
+// zdjęcie do swojej ramki (na komputerze prawie pionowej, na telefonie prawie
+// kwadratowej), więc najważniejsze powinno być blisko środka kadru.
+export const HERO_SLIDER_PHOTOS: string[] = [
+  "/slider/dsc-0261.jpg",
+  "/slider/dsc-0263.jpg",
+  "/slider/dsc-0269.jpg",
+  "/slider/dsc-0305.jpg",
+  "/slider/dsc-0315.jpg",
+  "/slider/dsc-0321.jpg",
+  "/slider/dsc-0379.jpg",
+  "/slider/dsc-0396.jpg",
+  "/slider/dsc-0407.jpg",
+  "/slider/dsc-1195.jpg",
+  "/slider/dsc-1196.jpg",
+  "/slider/dsc-6045-2.jpg",
+  "/slider/dsc-6108.jpg",
+  "/slider/dsc-6110.jpg",
+  "/slider/dsc-6281.jpg",
+  "/slider/dsc-7519.jpg",
+  "/slider/dsc-7722.jpg",
 ];
 
 // Everything the store writes to the customer's device, listed for the cookie
