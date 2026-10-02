@@ -22,6 +22,7 @@ import { exchangeRateService } from "@/lib/service/exchangeRate";
 import {
   getLedgerMeta,
   getLedgerRemark,
+  hasCustomerAccount,
   hasReminderBeenSent,
   isCheckoutDraft,
   ORDER_META,
@@ -149,7 +150,9 @@ class OrderService {
 
   // Zamówienia, za które nie zapłacono, starsze niż `olderThan` i nie starsze
   // niż `notOlderThan` — czyli takie, którym warto przypomnieć, a nie takie
-  // sprzed pół roku. Te z zapisanym przypomnieniem odpadają.
+  // sprzed pół roku. Te z zapisanym przypomnieniem odpadają, podobnie jak
+  // zamówienia gości: przycisk w przypomnieniu prowadzi do „Zapłać” w koncie
+  // klienta, a gość bez logowania dostałby tam „nie znaleziono”.
   async getOrdersAwaitingReminder({
     olderThan,
     notOlderThan,
@@ -163,7 +166,7 @@ class OrderService {
     );
 
     return raw
-      .filter((order) => !hasReminderBeenSent(order))
+      .filter((order) => hasCustomerAccount(order) && !hasReminderBeenSent(order))
       .map(prepareUnpaidOrder)
       .filter((order): order is UnpaidOrder => order !== null);
   }

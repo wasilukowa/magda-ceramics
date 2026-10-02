@@ -35,6 +35,10 @@ export const toOrderStatus = (status: string): OrderStatus =>
 export const isPayableStatus = (status: OrderStatus): boolean =>
   PAYABLE_STATUSES.includes(status as (typeof PAYABLE_STATUSES)[number]);
 
+// Zamówienie złożone z konta klienta. Gość ma w WooCommerce customer_id 0.
+export const hasCustomerAccount = (raw: RawOrder): boolean =>
+  (raw.customer_id ?? 0) > 0;
+
 // Szkic, który kasa zapisała tuż przed płatnością. Klient go nie widzi:
 // zamówieniem staje się dopiero wtedy, gdy płatność je domknie.
 export const isCheckoutDraft = (raw: RawOrder): boolean =>
@@ -327,7 +331,7 @@ export const prepareCustomerOrderMail = (raw: RawOrder): CustomerOrderMail | nul
     amounts: getOrderAmounts(raw, preferences.currency),
     delivery: getOrderDelivery(raw, preferences.locale),
     note: getCustomerOwnNote(raw),
-    hasAccount: (raw.customer_id ?? 0) > 0,
+    hasAccount: hasCustomerAccount(raw),
     sent: {
       confirmation: Boolean(getMetaValue(raw, ORDER_META.mailConfirmation)),
       onHold: Boolean(getMetaValue(raw, ORDER_META.mailOnHold)),
@@ -355,7 +359,7 @@ export const prepareStudioOrderMail = (raw: RawOrder): StudioOrderMail => {
     customerName: [billing.first_name, billing.last_name].filter(Boolean).join(" "),
     email: billing.email ?? "",
     phone: billing.phone ?? "",
-    hasAccount: (raw.customer_id ?? 0) > 0,
+    hasAccount: hasCustomerAccount(raw),
     customerLocale: locale,
     items: (raw.line_items ?? []).map((item) => ({
       name: item.name,
