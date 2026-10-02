@@ -28,6 +28,14 @@ const GROW_BELOW = 8;
 // oba, sklep przestałby się wyróżniać.
 const SHOP_LINK_CLASS = "font-semibold tracking-[0.2em]";
 
+// Ikonki w nagłówku mają 22 px, a palec potrzebuje pola około 44 × 44 px.
+// Na telefonie rośnie więc samo pole dotyku: niewidoczna warstwa wystaje
+// 11 px z każdej strony ikonki. Nie zajmuje miejsca w układzie, więc pasek nie
+// robi się wyższy, a ikonki zostają tej samej wielkości. Od 768 px klika się
+// myszką i zostaje jak było.
+const TAP_AREA_CLASS =
+  "relative before:absolute before:-inset-[11px] before:content-[''] md:before:hidden";
+
 export default function Navbar({ categories }: CategoryNavigationProps) {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
@@ -77,11 +85,13 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
         {/* Odkąd „Strona główna" zniknęła z menu, to logo jest jedyną drogą
             na stronę główną — więc mówi wprost, dokąd prowadzi. Sam `alt`
             zdjęcia brzmiałby „Magda Ceramics" i nie zdradzał, że to odnośnik
-            do strony głównej. */}
+            do strony głównej. Warstwa wyżej niż ikonki: po zwinięciu
+            nagłówka pole dotyku serca (TAP_AREA_CLASS) sięga 3 px w dół logo,
+            a tam ma wygrywać logo. */}
         <Link
           href="/"
           aria-label={t("nav.homeLink")}
-          className="block max-w-full"
+          className="relative z-10 block max-w-full"
         >
           <Image
             src="/logo.svg"
@@ -215,15 +225,16 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
           </li>
         </ul>
 
-        {/* Right icons */}
-        <div className="flex-1 flex items-center justify-end gap-4 lg:gap-5 text-[var(--foreground)]">
+        {/* Right icons. Na telefonie odstęp 22 px zamiast 16: przy 16 pola
+            dotyku sąsiednich ikonek (44 px) nachodziłyby na siebie. */}
+        <div className="flex-1 flex items-center justify-end gap-[22px] md:gap-4 lg:gap-5 text-[var(--foreground)]">
           <CurrencySwitcher className="hidden md:flex" />
 
           <LanguageSwitcher className="hidden md:flex" />
 
           <AccountIconLink className="hidden md:block hover:opacity-60 transition-opacity" />
 
-          <Link href="/wishlist" aria-label={t("nav.wishlist")} className="relative hover:opacity-60 transition-opacity">
+          <Link href="/wishlist" aria-label={t("nav.wishlist")} className={cn(TAP_AREA_CLASS, "hover:opacity-60 transition-opacity")}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
@@ -234,7 +245,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
             )}
           </Link>
 
-          <button onClick={openCart} aria-label={t("nav.cart")} className="relative hover:opacity-60 transition-opacity">
+          <button onClick={openCart} aria-label={t("nav.cart")} className={cn(TAP_AREA_CLASS, "hover:opacity-60 transition-opacity")}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
               <path d="M3 6h18" />
@@ -248,7 +259,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
           </button>
 
           <button
-            className="md:hidden hover:opacity-60 transition-opacity"
+            className={cn(TAP_AREA_CLASS, "md:hidden hover:opacity-60 transition-opacity")}
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label={t(mobileOpen ? "nav.menuClose" : "nav.menuOpen")}
             aria-expanded={mobileOpen}
