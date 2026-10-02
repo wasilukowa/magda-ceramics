@@ -4,6 +4,7 @@ import {
   ConsentChoices,
   CookieConsent,
   Currency,
+  Theme,
 } from "@/contracts/shared";
 
 // Kształt stanu, który komponenty dostają przez providery z lib/store.
@@ -57,6 +58,13 @@ export type ConsentStore = ConsentActions & {
 export type CurrencyStore = {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
+};
+
+export type ThemeStore = {
+  // Wygląd, który klient widzi teraz: wybrany przełącznikiem, a gdy niczego
+  // nie wybierał — ten z ustawień jego urządzenia.
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
 };
 
 // O czym trzeba powiedzieć klientowi po kliknięciu serca. `GuestFirstLike`

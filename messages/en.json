@@ -35,7 +35,11 @@
     "archive": "Archive",
     "cart": "Cart",
     "menuOpen": "Open menu",
-    "menuClose": "Close menu"
+    "menuClose": "Close menu",
+    "theme": "Appearance",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeToggle": "Dark mode"
   },
   "categories": {
     "all": "All",
@@ -466,7 +470,7 @@
   },
   "cookies": {
     "bannerTitle": "Cookies",
-    "bannerText": "We only store what the store needs to work — your cart, login, payment and your settings (language, currency, wishlist). We use no analytics or marketing trackers; if that ever changes, we will ask for your consent first.",
+    "bannerText": "We only store what the store needs to work — your cart, login, payment and your settings (language, currency, appearance, wishlist). We use no analytics or marketing trackers; if that ever changes, we will ask for your consent first.",
     "policyLink": "Cookie Policy",
     "settings": "Cookie settings",
     "settingsTitle": "Cookie settings",
@@ -480,7 +484,7 @@
     "categories": {
       "necessary": {
         "label": "Necessary",
-        "description": "Keeping you logged in, holding your cart, running checkout and payment, and remembering preferences you set yourself (currency, wishlist). The store cannot work without these, so they need no consent (Art. 399(3) of the Polish Electronic Communications Law)."
+        "description": "Keeping you logged in, holding your cart, running checkout and payment, and remembering preferences you set yourself (currency, appearance, wishlist). The store cannot work without these, so they need no consent (Art. 399(3) of the Polish Electronic Communications Law)."
       },
       "analytics": {
         "label": "Analytics",
@@ -532,6 +536,10 @@
       "locale": {
         "purpose": "Remembers the language you selected (Polish / English).",
         "duration": "Until you close the browser"
+      },
+      "theme": {
+        "purpose": "Remembers the look you selected (light / dark).",
+        "duration": "Until you clear browser data"
       },
       "currency": {
         "purpose": "Remembers the currency you selected (PLN / EUR).",

@@ -1,6 +1,25 @@
 @import "tailwindcss";
 
+/* Wariant `dark:` dla Tailwinda. Strona jest ciemna w dwóch przypadkach:
+   klient kliknął tryb ciemny (data-theme="dark" na <html>, ustawia go skrypt
+   w layoucie jeszcze przed pierwszym malowaniem) albo niczego nie wybierał,
+   a jego urządzenie działa w trybie ciemnym. Wybrany „jasny" (data-theme=
+   "light") wygrywa z ustawieniem urządzenia. Te same warunki stoją niżej przy
+   ciemnej palecie — muszą się zgadzać. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
+
 :root {
+  color-scheme: light;
+
   /* Brand palette */
   --background: #faf9f7;
   --foreground: #1a1a1a;
@@ -48,6 +67,61 @@
   --color-navbar: #faf9f7;
   --color-navbar-border: #e5e2dc;
   --color-navbar-hover: #f0ede8;
+}
+
+/* Tryb ciemny — ta sama paleta, przełożona na ciemne tło w tonie wypalonej
+   gliny, a nie zimnej szarości. Każda para sprawdzona pod kątem kontrastu
+   (WCAG, 2026-10-02): tekst na tle 14,1:1, przygaszony tekst 6,5:1 (5,9:1 na
+   panelu), granica kontrolek 3,9:1, serce 7,4:1, gwiazdki 7,6:1, statusy co
+   najmniej 6,7:1, jasny tekst na szałwiowym tle sekcji powitalnej 5,1:1.
+   Akcent jest ciemniejszą szałwią, bo jest tłem tej sekcji — jako ozdobny
+   znak na tle strony ma 2,8:1, czyli tyle co w trybie jasnym (2,4:1).
+   Te same wartości stoją w obu blokach: pierwszy działa, gdy klient niczego
+   nie wybierał, a urządzenie jest ciemne; drugi, gdy kliknął tryb ciemny. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --background: #1b1916;
+    --foreground: #ebe6de;
+    --muted: #a39c91;
+    --border: #38332d;
+    --color-control-border: #7d7569;
+    --color-accent: #4a6560;
+    --color-heart: #e0939d;
+    --color-rating: #8db2aa;
+    --color-ceramic: #2b2722;
+    --color-ceramic-hover: #35302a;
+    --color-surface: #24211d;
+    --color-error: #e5937a;
+    --color-success: #94c09a;
+    --color-warning: #d9b46c;
+    --color-info: #96b8d1;
+    --color-navbar: #1b1916;
+    --color-navbar-border: #38332d;
+    --color-navbar-hover: #28251f;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #1b1916;
+  --foreground: #ebe6de;
+  --muted: #a39c91;
+  --border: #38332d;
+  --color-control-border: #7d7569;
+  --color-accent: #4a6560;
+  --color-heart: #e0939d;
+  --color-rating: #8db2aa;
+  --color-ceramic: #2b2722;
+  --color-ceramic-hover: #35302a;
+  --color-surface: #24211d;
+  --color-error: #e5937a;
+  --color-success: #94c09a;
+  --color-warning: #d9b46c;
+  --color-info: #96b8d1;
+  --color-navbar: #1b1916;
+  --color-navbar-border: #38332d;
+  --color-navbar-hover: #28251f;
 }
 
 @theme inline {

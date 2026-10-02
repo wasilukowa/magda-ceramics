@@ -10,7 +10,8 @@ import {
   useStripe,
 } from "@stripe/react-stripe-js";
 import { OrderProps } from "@/contracts/server/order";
-import { getStripeAppearance, getStripeFonts } from "@/lib/helpers/stripeAppearance";
+import { getStripeFonts } from "@/lib/helpers/stripeAppearance";
+import { useStripeAppearance } from "@/hooks/useStripeAppearance";
 import { formatPrice } from "@/lib/helpers/currency";
 
 const stripePromise = loadStripe(
@@ -75,6 +76,7 @@ export default function OrderPayment({
   clientSecret: string | null;
 }) {
   const t = useTranslations("account");
+  const stripeAppearance = useStripeAppearance();
 
   if (!clientSecret) {
     return (
@@ -120,7 +122,7 @@ export default function OrderPayment({
           // Ten sam wygląd co w kasie — klient nie powinien poznać, że to
           // inna strona sklepu.
           fonts: getStripeFonts(),
-          appearance: getStripeAppearance(),
+          appearance: stripeAppearance,
         }}
       >
         <PaymentForm order={order} />

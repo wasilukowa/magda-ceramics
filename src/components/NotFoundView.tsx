@@ -1,4 +1,4 @@
-import Image from "next/image";
+import ThemedImage from "@/components/ThemedImage";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
@@ -14,8 +14,9 @@ export default async function NotFoundView() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-24 text-center flex flex-col items-center gap-6">
-      <Image
+      <ThemedImage
         src="/magda_round_one.svg"
+        darkSrc="/magda_round_one-dark.svg"
         alt=""
         width={96}
         height={96}
