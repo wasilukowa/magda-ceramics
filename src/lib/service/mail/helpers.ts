@@ -127,7 +127,15 @@ export const buildUnpaidOrderMail = async ({
   </div>
 </div>`.trim();
 
-  return { to: order.email, subject: t("subject", { number: order.number }), text, html };
+  // Odpowiedź klienta ma trafić tam, gdzie przy pozostałych mailach
+  // o zamówieniu — na skrzynkę pracowni, a nie na adres nadawcy.
+  return {
+    to: order.email,
+    replyTo: CONTACT_EMAIL,
+    subject: t("subject", { number: order.number }),
+    text,
+    html,
+  };
 };
 
 
