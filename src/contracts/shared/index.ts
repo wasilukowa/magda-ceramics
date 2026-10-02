@@ -1,3 +1,4 @@
+import type { ImageProps as NextImageProps } from "next/image";
 import {
   CategoryProps,
   CategoryTileProps,
@@ -8,6 +9,13 @@ import {
 export enum Currency {
   PLN = "pln",
   EUR = "eur",
+}
+
+// Wygląd strony. Wartość trafia do atrybutu data-theme na <html> i do pamięci
+// przeglądarki, więc to te same słowa, co w globals.css.
+export enum Theme {
+  Light = "light",
+  Dark = "dark",
 }
 
 export type ImageProps = {
@@ -118,4 +126,11 @@ export enum LegalBlockType {
 
 export type JsonLdProps = {
   data: ProductJsonLd;
+};
+
+// Obrazek w dwóch wersjach: na jasne i na ciemne tło (np. czarne logo i jego
+// jasna kopia). Reszta ustawień jak w next/image.
+export type ThemedImageProps = Omit<NextImageProps, "src"> & {
+  src: string;
+  darkSrc: string;
 };

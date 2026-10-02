@@ -1,4 +1,4 @@
-import Image from "next/image";
+import ThemedImage from "@/components/ThemedImage";
 import { cacheLife } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
@@ -41,8 +41,9 @@ export default async function Footer({
           {/* Logo */}
           <div className="flex items-start">
             <Link href="/">
-              <Image
+              <ThemedImage
                 src="/magda_round_one.svg"
+                darkSrc="/magda_round_one-dark.svg"
                 alt="Magda Ceramics"
                 width={120}
                 height={120}

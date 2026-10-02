@@ -80,7 +80,7 @@ export const PRIVACY: LegalDocumentByLocale = {
       paragraph("This information is used to:"),
       bullets(
         "Maintain the Customer’s session, cart and checkout — necessary for the store to work.",
-        "Remember preferences the Customer sets themselves (currency, wishlist)."
+        "Remember preferences the Customer sets themselves (currency, appearance, wishlist)."
       ),
       paragraph(
         "The store does not use analytics or marketing trackers. Should that change, they will only run after the Customer opts in, and the choice can be withdrawn at any time."
@@ -166,7 +166,7 @@ export const PRIVACY: LegalDocumentByLocale = {
       paragraph("Informacje te wykorzystywane są w celu:"),
       bullets(
         "Utrzymania sesji Klienta, koszyka i procesu zamówienia — są niezbędne do działania sklepu.",
-        "Zapamiętania preferencji ustawionych samodzielnie przez Klienta (waluta, lista ulubionych)."
+        "Zapamiętania preferencji ustawionych samodzielnie przez Klienta (waluta, wygląd strony, lista ulubionych)."
       ),
       paragraph(
         "Sklep nie korzysta z narzędzi analitycznych ani marketingowych. Jeżeli to się zmieni, będą one uruchamiane wyłącznie po wyrażeniu zgody przez Klienta, a zgodę można w każdej chwili wycofać."

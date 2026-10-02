@@ -15,6 +15,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/lib/store/providers/CartProvider";
 import { CurrencyProvider } from "@/lib/store/providers/CurrencyProvider";
+import { ThemeProvider } from "@/lib/store/providers/ThemeProvider";
 import CartDrawer from "@/components/CartDrawer";
 import WishlistNotice from "@/components/WishlistNotice";
 import { AuthProvider } from "@/lib/store/providers/AuthProvider";
@@ -25,6 +26,7 @@ import { ConsentProvider } from "@/lib/store/providers/ConsentProvider";
 import { CookieBanner } from "@/components/cookies/CookieBanner";
 import { getServerConsent } from "@/lib/helpers/consentCookie";
 import { getDefaultCurrency } from "@/lib/helpers/currency";
+import { THEME_INIT_SCRIPT } from "@/lib/helpers/theme";
 import { productService } from "@/lib/service/product";
 import { SITE_URL } from "@/content/data";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/helpers/metadata";
@@ -151,11 +153,19 @@ export default async function LocaleLayout({
     //
     // Bezpieczne: wszystkie zdjęcia mają podane wymiary, więc nic się tu nie
     // doładowuje z opóźnieniem — a przed tym kotwiczenie normalnie chroni.
+    //
+    // `suppressHydrationWarning`: skrypt w <head> dopisuje do <html> atrybut
+    // data-theme (wygląd wybrany przez klienta), zanim React przejmie stronę.
+    // To zamierzona różnica względem HTML-a z serwera, nie błąd.
     <html
       lang={locale}
       className={`${montserrat.variable} ${cormorant.variable}`}
       style={{ overflowAnchor: "none" }}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="bg-[var(--background)]">
         {/* `formats` i `now` też muszą być podane, bo inaczej next-intl idzie
             po nie do konfiguracji żądania. Własnych formatów nie mamy (stąd
@@ -171,6 +181,7 @@ export default async function LocaleLayout({
           <ConsentProvider serverConsent={consentPromise}>
             <AuthProvider userPromise={userPromise}>
               <WishlistProvider userPromise={userPromise}>
+                <ThemeProvider>
                 <CurrencyProvider defaultCurrency={getDefaultCurrency(locale)}>
                   <CartProvider>
                     {/* Bez tego klawiatura musi przejść przez logo, menu,
@@ -196,6 +207,7 @@ export default async function LocaleLayout({
                     <CookieBanner />
                   </CartProvider>
                 </CurrencyProvider>
+                </ThemeProvider>
               </WishlistProvider>
             </AuthProvider>
           </ConsentProvider>

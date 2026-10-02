@@ -9,7 +9,10 @@ const montserrat = Montserrat({
 
 export default function ComingSoonLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={montserrat.variable}>
+    // Zaślepka jest zaprojektowana na jasno (białe panele na zdjęciu) i zniknie
+    // przy otwarciu sklepu, więc trybu ciemnego tu nie ma — także wtedy, gdy
+    // urządzenie klienta jest ciemne.
+    <html lang="en" className={montserrat.variable} data-theme="light">
       <body className="bg-[var(--background)]">{children}</body>
     </html>
   );

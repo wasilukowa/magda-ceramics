@@ -78,6 +78,13 @@ export const COOKIE_REGISTRY: CookieRegistryEntry[] = [
     category: CookieCategory.Necessary,
   },
   {
+    // Wygląd strony wybrany przełącznikiem (jasny / ciemny) — patrz ThemeProvider.
+    key: "theme",
+    name: "theme",
+    provider: "magdaceramics.com",
+    category: CookieCategory.Necessary,
+  },
+  {
     key: "currency",
     name: "currency",
     provider: "magdaceramics.com",

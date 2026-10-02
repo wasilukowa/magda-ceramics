@@ -1,12 +1,14 @@
 "use client";
 
-import Image from "next/image";
+import ThemedImage from "@/components/ThemedImage";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
 import CurrencySwitcher from "@/components/CurrencySwitcher";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import ThemeToggle from "@/components/ThemeToggle";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { useWishlist } from "@/hooks/useWishlist";
 import { AccountIconLink, AccountMenuLink } from "@/components/AccountLink";
 import { INSTAGRAM_URL } from "@/content/data";
@@ -93,8 +95,9 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
           aria-label={t("nav.homeLink")}
           className="relative z-10 block max-w-full"
         >
-          <Image
+          <ThemedImage
             src="/logo.svg"
+            darkSrc="/logo-dark.svg"
             alt="Magda Ceramics"
             width={501}
             height={97}
@@ -232,6 +235,8 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
 
           <LanguageSwitcher className="hidden md:flex" />
 
+          <ThemeToggle className="hidden md:block" />
+
           <AccountIconLink className="hidden md:block hover:opacity-60 transition-opacity" />
 
           <Link href="/wishlist" aria-label={t("nav.wishlist")} className={cn(TAP_AREA_CLASS, "hover:opacity-60 transition-opacity")}>
@@ -335,6 +340,12 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                     {t("nav.currency")}
                   </span>
                   <CurrencySwitcher />
+                </span>
+                <span className="flex items-center justify-between gap-4">
+                  <span className="text-xs tracking-widest uppercase text-[var(--muted)]">
+                    {t("nav.theme")}
+                  </span>
+                  <ThemeSwitcher />
                 </span>
               </li>
             </ul>

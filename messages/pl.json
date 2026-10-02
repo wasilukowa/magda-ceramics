@@ -35,7 +35,11 @@
     "archive": "Archiwum",
     "cart": "Koszyk",
     "menuOpen": "Otwórz menu",
-    "menuClose": "Zamknij menu"
+    "menuClose": "Zamknij menu",
+    "theme": "Wygląd",
+    "themeLight": "Jasny",
+    "themeDark": "Ciemny",
+    "themeToggle": "Tryb ciemny"
   },
   "categories": {
     "all": "Wszystkie",
@@ -466,7 +470,7 @@
   },
   "cookies": {
     "bannerTitle": "Pliki cookies",
-    "bannerText": "Zapisujemy na Twoim urządzeniu tylko to, co niezbędne do działania sklepu — koszyk, logowanie, płatność i Twoje ustawienia (język, waluta, ulubione). Nie używamy narzędzi analitycznych ani marketingowych; gdyby to się zmieniło, najpierw zapytamy Cię o zgodę.",
+    "bannerText": "Zapisujemy na Twoim urządzeniu tylko to, co niezbędne do działania sklepu — koszyk, logowanie, płatność i Twoje ustawienia (język, waluta, wygląd strony, ulubione). Nie używamy narzędzi analitycznych ani marketingowych; gdyby to się zmieniło, najpierw zapytamy Cię o zgodę.",
     "policyLink": "Polityka cookies",
     "settings": "Ustawienia cookies",
     "settingsTitle": "Ustawienia plików cookies",
@@ -480,7 +484,7 @@
     "categories": {
       "necessary": {
         "label": "Niezbędne",
-        "description": "Utrzymanie sesji logowania, zawartości koszyka, procesu zamówienia i płatności, a także preferencji, które ustawiasz samodzielnie (waluta, lista ulubionych). Bez nich sklep nie działa, dlatego nie wymagają zgody (art. 399 ust. 3 Prawa komunikacji elektronicznej)."
+        "description": "Utrzymanie sesji logowania, zawartości koszyka, procesu zamówienia i płatności, a także preferencji, które ustawiasz samodzielnie (waluta, wygląd strony, lista ulubionych). Bez nich sklep nie działa, dlatego nie wymagają zgody (art. 399 ust. 3 Prawa komunikacji elektronicznej)."
       },
       "analytics": {
         "label": "Analityczne",
@@ -532,6 +536,10 @@
       "locale": {
         "purpose": "Zapamiętanie języka wybranego przez Ciebie (polski / angielski).",
         "duration": "Do zamknięcia przeglądarki"
+      },
+      "theme": {
+        "purpose": "Zapamiętanie wyglądu strony wybranego przez Ciebie (jasny / ciemny).",
+        "duration": "Do wyczyszczenia danych przeglądarki"
       },
       "currency": {
         "purpose": "Zapamiętanie waluty wybranej przez Ciebie (PLN / EUR).",

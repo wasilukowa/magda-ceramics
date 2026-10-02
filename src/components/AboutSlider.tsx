@@ -34,7 +34,7 @@ export function AboutSlider() {
       <button
         onClick={prev}
         aria-label={t("sliderPrev")}
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-white/70 hover:bg-white transition-colors"
+        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-[var(--background)]/70 text-[var(--foreground)] hover:bg-[var(--background)] transition-colors"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M10 3L5 8l5 5" />
@@ -44,7 +44,7 @@ export function AboutSlider() {
       <button
         onClick={next}
         aria-label={t("sliderNext")}
-        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-white/70 hover:bg-white transition-colors"
+        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-[var(--background)]/70 text-[var(--foreground)] hover:bg-[var(--background)] transition-colors"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M6 3l5 5-5 5" />

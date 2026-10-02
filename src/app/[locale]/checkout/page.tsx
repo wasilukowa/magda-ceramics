@@ -26,7 +26,8 @@ import {
   getOrderItems,
   getPaymentIntentId,
 } from "@/lib/helpers/checkout";
-import { getStripeAppearance, getStripeFonts } from "@/lib/helpers/stripeAppearance";
+import { getStripeFonts } from "@/lib/helpers/stripeAppearance";
+import { useStripeAppearance } from "@/hooks/useStripeAppearance";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -49,6 +50,7 @@ function Checkout() {
   const { currency } = useCurrency();
   const user = useAuth();
   const t = useTranslations("checkout");
+  const stripeAppearance = useStripeAppearance();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   // Guests must first choose between signing in and continuing without an
   // account; logged-in customers skip the gate entirely.
@@ -164,7 +166,7 @@ function Checkout() {
           options={{
             clientSecret,
             fonts: getStripeFonts(),
-            appearance: getStripeAppearance(),
+            appearance: stripeAppearance,
           }}
         >
           <CheckoutContent
