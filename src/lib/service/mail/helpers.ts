@@ -69,7 +69,9 @@ export const buildPasswordResetMail = async ({
   </div>
 </div>`.trim();
 
-  return { to, subject: t("subject"), text, html };
+  // Odpowiedź klienta trafia na skrzynkę pracowni, jak przy mailach
+  // o zamówieniu — a nie na adres nadawcy.
+  return { to, replyTo: CONTACT_EMAIL, subject: t("subject"), text, html };
 };
 
 
