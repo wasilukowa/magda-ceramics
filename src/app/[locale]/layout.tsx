@@ -24,6 +24,7 @@ import { routing } from "@/i18n/routing";
 import { ConsentProvider } from "@/lib/store/providers/ConsentProvider";
 import { CookieBanner } from "@/components/cookies/CookieBanner";
 import { getServerConsent } from "@/lib/helpers/consentCookie";
+import { getDefaultCurrency } from "@/lib/helpers/currency";
 import { productService } from "@/lib/service/product";
 import { SITE_URL } from "@/content/data";
 import { DEFAULT_OG_IMAGE, SITE_NAME } from "@/lib/helpers/metadata";
@@ -170,7 +171,7 @@ export default async function LocaleLayout({
           <ConsentProvider serverConsent={consentPromise}>
             <AuthProvider userPromise={userPromise}>
               <WishlistProvider userPromise={userPromise}>
-                <CurrencyProvider>
+                <CurrencyProvider defaultCurrency={getDefaultCurrency(locale)}>
                   <CartProvider>
                     {/* Bez tego klawiatura musi przejść przez logo, menu,
                         rozwijane listy, przełączniki i trzy ikony — kilkanaście
