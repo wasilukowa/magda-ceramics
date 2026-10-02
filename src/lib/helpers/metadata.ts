@@ -22,6 +22,15 @@ const MAX_DESCRIPTION = 160;
 
 const absolute = (path: string) => new URL(path, SITE_URL).toString();
 
+// Język z adresu, a gdy jest nieznany — domyślny.
+const toLocale = (locale: string): Locale =>
+  hasLocale(routing.locales, locale) ? locale : routing.defaultLocale;
+
+// Pełny adres strony w danym języku: canonical, hreflang i adres w danych dla
+// Google liczą się z tej samej trasy, więc nie mogą się rozjechać.
+export const getPageUrl = (locale: string, route: AppRoute): string =>
+  absolute(getPathname({ locale: toLocale(locale), href: route }));
+
 // Opisy produktów przychodzą z WooCommerce jako HTML (akapity, pogrubienia,
 // encje). W metaopisie liczy się goły tekst — znaczniki wyglądałyby w wyniku
 // wyszukiwania jak śmieci.
@@ -81,11 +90,11 @@ export async function buildPageMetadata({
   descriptionKey,
   image,
 }: PageMetadataInput): Promise<Metadata> {
-  const current = hasLocale(routing.locales, locale) ? locale : routing.defaultLocale;
+  const current = toLocale(locale);
   const t = await getTranslations({ locale: current, namespace: "meta" });
 
   const languages = Object.fromEntries(
-    routing.locales.map((l) => [l, absolute(getPathname({ locale: l, href: route }))])
+    routing.locales.map((l) => [l, getPageUrl(l, route)])
   ) as Record<Locale, string>;
 
   const canonical = languages[current];

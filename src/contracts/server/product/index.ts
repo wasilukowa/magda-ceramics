@@ -107,3 +107,33 @@ export enum ProductSort {
   PriceDesc = "price-desc",
   NameAsc = "name-asc",
 }
+
+// Dostępność w słowniku schema.org. Praca jest jedna, więc sprzedana to
+// „wyprzedana", a nie „chwilowo brak".
+export enum SchemaAvailability {
+  InStock = "https://schema.org/InStock",
+  SoldOut = "https://schema.org/SoldOut",
+}
+
+// Opis produktu dla wyszukiwarek (schema.org/Product w JSON-LD). Tylko pola,
+// które wypełniamy — pełny słownik schema.org jest dużo większy.
+export type ProductJsonLd = {
+  "@context": "https://schema.org";
+  "@type": "Product";
+  name: string;
+  url: string;
+  sku: string;
+  image: string[];
+  description?: string;
+  brand: { "@type": "Brand"; name: string };
+  offers: {
+    "@type": "Offer";
+    url: string;
+    price: number;
+    // Kod waluty ISO 4217, wielkimi literami („PLN", „EUR").
+    priceCurrency: string;
+    availability: SchemaAvailability;
+    itemCondition: "https://schema.org/NewCondition";
+    seller: { "@type": "Organization"; name: string };
+  };
+};
