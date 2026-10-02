@@ -175,9 +175,11 @@ export const INPOST_LOCKER_COUNTRIES = [
 // Flat shipping rates per zone, in each currency's smallest unit
 // (grosze for PLN, euro cents for EUR). Customers pay in the currency they
 // browse in, so each zone has both a PLN and an EUR price point.
-// PL: 18 zł / 5 € · InPost International: 58 zł / 13 € · rest of EU: 75 zł / 17 €
+// PL: 18 zł / 5 € · InPost International: 50 zł / 12 € · rest of EU: 75 zł / 17 €
+// (InPost International obniżone z 58 zł / 13 € 2026-10-02; 12 € = 50 zł po
+// kursie sklepu 4,30, zaokrąglone w górę jak ceny prac).
 export const SHIPPING_RATES: ShippingRates = {
   [ShippingZone.Poland]: { pln: 1800, eur: 500 },
-  [ShippingZone.InPostEu]: { pln: 5800, eur: 1300 },
+  [ShippingZone.InPostEu]: { pln: 5000, eur: 1200 },
   [ShippingZone.RestEu]: { pln: 7500, eur: 1700 },
 };
