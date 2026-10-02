@@ -15,21 +15,24 @@ import { AboutByLocale } from "./types";
 // go w dwóch wersjach językowych; przy stronie zostaje tylko opis zdjęcia,
 // bo ten jest inny po polsku i po angielsku.
 //
+// 2026-10-02 osiem zdjęć podmienione na oryginały od Magdy (1600 px). Dwa
+// „pierwsze prace" (dynia, niebieski kubek) są nadal z dokumentu, ok. 600 px.
+//
 // ‼️ BRAKUJE JEDNEGO: w dokumencie jest w tym miejscu notatka „(Tu będzie
 // zdjęcie kuchni, która musze sprzątnąć ;))". Akapit o pracowni w kuchni
 // czeka więc bez zdjęcia — gdy przyślesz, wystarczy dołożyć je do grupy
 // `photos` pod tym akapitem.
 const PHOTO = {
-  portrait: { src: "/o-mnie/magda-portret.jpg", width: 431, height: 539 },
-  mark: { src: "/o-mnie/znak-na-spodzie.jpg", width: 473, height: 473 },
+  portrait: { src: "/o-mnie/magda-portret.jpg", width: 1600, height: 1600 },
+  mark: { src: "/o-mnie/znak-na-spodzie.jpg", width: 1600, height: 1600 },
   earlyPumpkin: { src: "/o-mnie/pierwsze-prace-dynia.jpg", width: 603, height: 603 },
   earlyMug: { src: "/o-mnie/pierwsze-prace-kubek.jpg", width: 610, height: 610 },
-  throwing: { src: "/o-mnie/proces-toczenie.jpg", width: 442, height: 442 },
-  trimming: { src: "/o-mnie/proces-trymowanie.jpg", width: 445, height: 445 },
-  handle: { src: "/o-mnie/proces-ucho.jpg", width: 442, height: 442 },
-  foot: { src: "/o-mnie/proces-stopka.jpg", width: 447, height: 447 },
-  carving: { src: "/o-mnie/proces-rzezbienie.jpg", width: 451, height: 451 },
-  finished: { src: "/o-mnie/proces-gotowy-kubek.jpg", width: 449, height: 449 },
+  throwing: { src: "/o-mnie/proces-toczenie.jpg", width: 1600, height: 1600 },
+  trimming: { src: "/o-mnie/proces-trymowanie.jpg", width: 1600, height: 1600 },
+  handle: { src: "/o-mnie/proces-ucho.jpg", width: 1600, height: 1600 },
+  foot: { src: "/o-mnie/proces-stopka.jpg", width: 1600, height: 1600 },
+  carving: { src: "/o-mnie/proces-rzezbienie.jpg", width: 1600, height: 1600 },
+  finished: { src: "/o-mnie/proces-gotowy-kubek.jpg", width: 1600, height: 1600 },
 } as const;
 
 export const ABOUT: AboutByLocale = {

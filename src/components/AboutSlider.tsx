@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { ABOUT_PHOTOS as PHOTOS } from "@/content/data";
+import { HERO_SLIDER_PHOTOS as PHOTOS } from "@/content/data";
 
 export function AboutSlider() {
   const t = useTranslations("home");

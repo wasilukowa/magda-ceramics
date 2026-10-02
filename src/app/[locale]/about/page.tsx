@@ -9,9 +9,10 @@ import { hasLocale } from "next-intl";
 import { routing } from "@/i18n/routing";
 import { getFeaturedReviews } from "@/lib/helpers/reviews";
 
-// Zdjęcia Magdy z dokumentu „O mnie" są niewielkie (ok. 450 px w boku), bo
-// Pages pomniejsza to, co się do niego wklei. Dlatego grupa decyduje o
-// szerokości: pojedyncze zdjęcie nie rozciąga się na całą kolumnę tekstu,
+// Zdjęcia z dokumentu „O mnie" były niewielkie (ok. 450 px w boku), bo Pages
+// pomniejsza to, co się do niego wklei; od 2026-10-02 osiem z nich to
+// oryginały, ale dwa „pierwsze prace" nadal mają ok. 600 px. Dlatego grupa
+// decyduje o szerokości: pojedyncze zdjęcie nie rozciąga się na całą kolumnę tekstu,
 // dwa stają obok siebie, a większa grupa układa się w siatkę. Nikt nie ogląda
 // tu zdjęcia większego, niż na to pozwala plik.
 const photoGroupLayout = (count: number) => {
