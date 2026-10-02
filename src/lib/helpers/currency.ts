@@ -6,6 +6,13 @@ import { CartItem } from "@/contracts/server/cart";
 // keeps prices stable and predictable.
 export const EXCHANGE_RATE_PLN_PER_EUR = 4.3;
 
+// The currency a visitor sees until they pick one with the switcher. Anyone
+// whose browser isn't set to Polish lands on the English site, so English
+// means "from abroad" and gets euro (decision 2026-10-02, N23 in the audit).
+// A currency picked by hand always wins, in both languages.
+export const getDefaultCurrency = (locale: string): Currency =>
+  locale === "pl" ? Currency.PLN : Currency.EUR;
+
 // Auto-convert a PLN amount to EUR, rounded UP to a whole euro — always in
 // the studio's favour. Every EUR product price comes from here: hand-set EUR
 // prices (the `price_eur` field in WooCommerce) were dropped on 2026-10-01, so
