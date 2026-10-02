@@ -9,17 +9,20 @@ import { hasLocale } from "next-intl";
 import { routing } from "@/i18n/routing";
 import { getFeaturedReviews } from "@/lib/helpers/reviews";
 
-// Zdjęcia z dokumentu „O mnie" były niewielkie (ok. 450 px w boku), bo Pages
-// pomniejsza to, co się do niego wklei; od 2026-10-02 osiem z nich to
-// oryginały, ale dwa „pierwsze prace" nadal mają ok. 600 px. Dlatego grupa
-// decyduje o szerokości: pojedyncze zdjęcie nie rozciąga się na całą kolumnę tekstu,
-// dwa stają obok siebie, a większa grupa układa się w siatkę. Nikt nie ogląda
-// tu zdjęcia większego, niż na to pozwala plik.
-const photoGroupLayout = (count: number) => {
-  if (count === 1) return "max-w-xs mx-auto";
-  if (count === 2) return "grid grid-cols-2 gap-3";
-  return "grid grid-cols-2 gap-3 sm:grid-cols-3";
-};
+// Szerokość zdjęć zależy od tego, ile ich stoi w grupie. Pojedyncze (portret,
+// znak na spodzie) zajmują całą kolumnę tekstu, para staje obok siebie,
+// a większa grupa (etapy pracy) układa się w dwie kolumny — przy trzech
+// kafelki wychodziły po 200 px i drobne szczegóły ginęły. Od 2026-10-02
+// osiem zdjęć to oryginały od Magdy (1600 px), więc mają z czego się
+// rozciągnąć. Para „pierwszych prac" to nadal pliki z dokumentu, ok. 600 px
+// w boku — w dwóch kolumnach i tak nie wychodzą ponad 312 px.
+const photoGroupLayout = (count: number) =>
+  count === 1 ? "" : "grid grid-cols-2 gap-3";
+
+// Podpowiedź dla przeglądarki, jakiej szerokości zdjęcie pobrać: kolumna
+// tekstu ma najwyżej 624 px (max-w-2xl minus odstępy po bokach).
+const photoSizes = (count: number) =>
+  count === 1 ? "(max-width: 672px) 100vw, 624px" : "(max-width: 672px) 50vw, 312px";
 
 const AboutBlocks = ({ blocks }: { blocks: AboutBlock[] }) =>
   blocks.map((block, index) => {
@@ -47,9 +50,9 @@ const AboutBlocks = ({ blocks }: { blocks: AboutBlock[] }) =>
               alt={photo.alt}
               width={photo.width}
               height={photo.height}
-              sizes="(max-width: 640px) 50vw, 320px"
-              // Samotne zdjęcie zachowuje własne proporcje — portret Magdy
-              // jest pionowy i kadrowanie go do kwadratu ucinało jej głowę.
+              sizes={photoSizes(block.photos.length)}
+              // Samotne zdjęcie zachowuje własne proporcje — pierwszy portret
+              // Magdy był pionowy i kadrowanie do kwadratu ucinało jej głowę.
               // W siatce równy kwadrat wygrywa z proporcjami, bo inaczej
               // wiersz rozjeżdża się o kilka pikseli.
               className={cn(
