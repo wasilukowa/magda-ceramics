@@ -13,9 +13,8 @@ import { getFeaturedReviews } from "@/lib/helpers/reviews";
 // znak na spodzie) zajmują całą kolumnę tekstu, para staje obok siebie,
 // a większa grupa (etapy pracy) układa się w dwie kolumny — przy trzech
 // kafelki wychodziły po 200 px i drobne szczegóły ginęły. Od 2026-10-02
-// osiem zdjęć to oryginały od Magdy (1600 px), więc mają z czego się
-// rozciągnąć. Para „pierwszych prac" to nadal pliki z dokumentu, ok. 600 px
-// w boku — w dwóch kolumnach i tak nie wychodzą ponad 312 px.
+// wszystkie zdjęcia to oryginały od Magdy (1600 px), więc mają z czego się
+// rozciągnąć.
 const photoGroupLayout = (count: number) =>
   count === 1 ? "" : "grid grid-cols-2 gap-3";
 
