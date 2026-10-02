@@ -1,6 +1,7 @@
 import {
   CategoryProps,
   CategoryTileProps,
+  ProductJsonLd,
   ProductProps,
 } from "@/contracts/server/product";
 
@@ -114,3 +115,7 @@ export enum LegalBlockType {
   Paragraph = "paragraph",
   List = "list",
 }
+
+export type JsonLdProps = {
+  data: ProductJsonLd;
+};

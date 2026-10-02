@@ -7,7 +7,10 @@ import WishlistButton from "@/components/WishlistButton";
 import Price from "@/components/Price";
 import { getCategoryLabel } from "@/lib/helpers/category";
 import NotFoundView from "@/components/NotFoundView";
-import { buildPageMetadata, toMetaDescription } from "@/lib/helpers/metadata";
+import JsonLd from "@/components/JsonLd";
+import { buildPageMetadata, getPageUrl, toMetaDescription } from "@/lib/helpers/metadata";
+import { getDefaultCurrency } from "@/lib/helpers/currency";
+import { buildProductJsonLd } from "@/lib/helpers/structuredData";
 import { PLACEHOLDER_PARAM, staticParamsOrPlaceholder } from "@/lib/helpers/staticParams";
 
 export async function generateStaticParams() {
@@ -72,8 +75,19 @@ export default async function ProductPage({
 
   if (!product) return <NotFoundView />;
 
+  // Opis taki sam jak w metaopisie: tylko „krótki opis" z WooCommerce — powód
+  // przy generateMetadata.
+  const jsonLd = buildProductJsonLd({
+    product,
+    url: getPageUrl(locale, { pathname: "/product/[slug]", params: { slug: product.slug } }),
+    currency: getDefaultCurrency(locale),
+    description: toMetaDescription(product.shortDescription),
+  });
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-16">
+      {jsonLd && <JsonLd data={jsonLd} />}
+
       <Link
         href="/shop"
         className="text-xs tracking-widest uppercase text-[var(--muted)] hover:text-[var(--foreground)] transition-colors mb-10 inline-block"
