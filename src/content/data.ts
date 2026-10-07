@@ -2,30 +2,33 @@ import { Country, CookieRegistryEntry, StaticRoute } from "./types";
 import { ShippingZone, ShippingRates } from "@/contracts/server/shipping";
 import { CookieCategory } from "@/contracts/shared";
 
-// Zdjęcia w sliderze na stronie głównej, w kolejności pokazywania. Pliki leżą
-// w public/slider/ (pomniejszone do 2000 px w dłuższym boku). Żeby usunąć
-// zdjęcie: skasuj wiersz tutaj (i sam plik, jeśli ma zniknąć z repozytorium).
-// Żeby dodać: wrzuć plik do public/slider/ i dopisz wiersz. Slider przycina
-// zdjęcie do swojej ramki (na komputerze prawie pionowej, na telefonie prawie
-// kwadratowej), więc najważniejsze powinno być blisko środka kadru.
+// Zdjęcia w sliderze na stronie głównej, w kolejności pokazywania (tej samej,
+// co nazwy plików u Natalii, 2026-10-07: „a_" na początek, „w_" na koniec).
+// Pliki leżą w public/slider/ (pomniejszone do 2000 px w dłuższym boku). Żeby
+// usunąć zdjęcie: skasuj wiersz tutaj (i sam plik, jeśli ma zniknąć
+// z repozytorium). Żeby dodać: wrzuć plik do public/slider/ i dopisz wiersz.
+// Slider przycina zdjęcie do swojej ramki (na komputerze prawie pionowej, na
+// telefonie prawie kwadratowej), więc najważniejsze powinno być blisko środka
+// kadru. Zdjęcia, które stały tu wcześniej, są teraz na „Moja ceramika" —
+// patrz CERAMICS_PHOTOS.
 export const HERO_SLIDER_PHOTOS: string[] = [
-  "/slider/dsc-0261.jpg",
-  "/slider/dsc-0263.jpg",
-  "/slider/dsc-0269.jpg",
-  "/slider/dsc-0305.jpg",
-  "/slider/dsc-0315.jpg",
-  "/slider/dsc-0321.jpg",
-  "/slider/dsc-0379.jpg",
-  "/slider/dsc-0396.jpg",
+  "/slider/dsc-1746.jpg",
+  "/slider/dsc-1388.jpg",
+  "/slider/dsc-1412.jpg",
+  "/slider/dsc-1427.jpg",
+  "/slider/dsc-1505.jpg",
+  "/slider/dsc-1578.jpg",
+  "/slider/dsc-1641.jpg",
+  "/slider/dsc-1650.jpg",
+  "/slider/dsc-2100.jpg",
+  "/slider/dsc-8101.jpg",
+  "/slider/dsc-9112.jpg",
+  "/slider/dsc-9290.jpg",
+  "/slider/dsc-9316.jpg",
+  "/slider/dsc-9581.jpg",
+  "/slider/dsc-9815.jpg",
   "/slider/dsc-0407.jpg",
-  "/slider/dsc-1195.jpg",
   "/slider/dsc-1196.jpg",
-  "/slider/dsc-6045-2.jpg",
-  "/slider/dsc-6108.jpg",
-  "/slider/dsc-6110.jpg",
-  "/slider/dsc-6281.jpg",
-  "/slider/dsc-7519.jpg",
-  "/slider/dsc-7722.jpg",
 ];
 
 // Everything the store writes to the customer's device, listed for the cookie

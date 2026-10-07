@@ -2,7 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { hasLocale } from "next-intl";
 import { routing } from "@/i18n/routing";
 import { buildPageMetadata } from "@/lib/helpers/metadata";
-import { CERAMICS, CERAMICS_DRAFT } from "@/content/ceramics";
+import { CERAMICS, CERAMICS_DRAFT, CERAMICS_PHOTOS } from "@/content/ceramics";
+import { PhotoSlider } from "@/components/PhotoSlider";
 
 export async function generateMetadata({
   params,
@@ -34,6 +35,18 @@ export default async function CeramicsPage({
       <h1 className="text-xs tracking-[0.3em] uppercase text-[var(--muted)] mb-12 text-center">
         {t("title")}
       </h1>
+
+      {/* Zdjęcia są kwadratowe (dwa pionowe), więc kwadratowa ramka pokazuje
+          je prawie bez przycinania. Kolumna ma 624 px treści. */}
+      <div className="aspect-square mb-12">
+        <PhotoSlider
+          photos={CERAMICS_PHOTOS.map((src, i) => ({
+            src,
+            alt: t("photoAlt", { number: i + 1 }),
+          }))}
+          sizes="(max-width: 672px) 100vw, 624px"
+        />
+      </div>
 
       {/* Notka znika sama, gdy Magda ustawi CERAMICS_DRAFT na false — patrz
           content/ceramics.ts. Lepiej powiedzieć wprost, że tekst jest w

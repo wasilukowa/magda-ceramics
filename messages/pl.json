@@ -67,10 +67,12 @@
     "wishlistSold": "Sprzedane",
     "carouselPrev": "Poprzednie prace",
     "carouselNext": "Następne prace",
-    "sliderPrev": "Poprzednie zdjęcie",
-    "sliderNext": "Następne zdjęcie",
-    "sliderGoTo": "Zdjęcie {number}",
     "sliderAlt": "Ceramika Magdy, zdjęcie {number}"
+  },
+  "photoSlider": {
+    "prev": "Poprzednie zdjęcie",
+    "next": "Następne zdjęcie",
+    "goTo": "Zdjęcie {number}"
   },
   "shop": {
     "title": "Sklep",
@@ -575,7 +577,8 @@
   "ceramics": {
     "title": "Moja ceramika",
     "metaDescription": "Jak powstaje naczynie w mojej pracowni — od bryły gliny, przez koło garncarskie i rzeźbienie, po dwa wypały.",
-    "draftNote": "Ta strona jest jeszcze w przygotowaniu — opisy kolejnych etapów wkrótce uzupełnię."
+    "draftNote": "Ta strona jest jeszcze w przygotowaniu — opisy kolejnych etapów wkrótce uzupełnię.",
+    "photoAlt": "Praca w pracowni Magdy, zdjęcie {number}"
   },
   "faq": {
     "title": "Pytania i odpowiedzi",

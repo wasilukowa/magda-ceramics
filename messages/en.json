@@ -67,10 +67,12 @@
     "wishlistSold": "Sold",
     "carouselPrev": "Previous pieces",
     "carouselNext": "Next pieces",
-    "sliderPrev": "Previous photo",
-    "sliderNext": "Next photo",
-    "sliderGoTo": "Photo {number}",
     "sliderAlt": "Magda's ceramics, photo {number}"
+  },
+  "photoSlider": {
+    "prev": "Previous photo",
+    "next": "Next photo",
+    "goTo": "Photo {number}"
   },
   "shop": {
     "title": "Shop",
@@ -575,7 +577,8 @@
   "ceramics": {
     "title": "My ceramics",
     "metaDescription": "How a piece is made in my studio — from a lump of clay, through the wheel and the carving, to two firings.",
-    "draftNote": "This page is still being written — descriptions of each stage are coming soon."
+    "draftNote": "This page is still being written — descriptions of each stage are coming soon.",
+    "photoAlt": "At work in Magda's studio, photo {number}"
   },
   "faq": {
     "title": "Questions & answers",
