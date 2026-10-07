@@ -306,7 +306,13 @@ const getOrderDelivery = (raw: RawOrder, locale: string): OrderDelivery => {
   return {
     kind: lockerCode ? DeliveryKind.Locker : DeliveryKind.Courier,
     lockerCode,
-    lines: [name, shipping.address_1 ?? "", cityLine, country].filter(Boolean),
+    lines: [
+      name,
+      shipping.address_1 ?? "",
+      shipping.address_2 ?? "",
+      cityLine,
+      country,
+    ].filter(Boolean),
   };
 };
 

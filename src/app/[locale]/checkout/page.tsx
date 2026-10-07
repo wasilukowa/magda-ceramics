@@ -43,6 +43,7 @@ const EMPTY_ADDRESS: Address = {
   email: "",
   phone: "",
   street: "",
+  street2: "",
   city: "",
   postcode: "",
   country: "PL",

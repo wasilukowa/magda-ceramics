@@ -46,6 +46,7 @@ const billingSchema = z.object({
   email: z.email().max(MAX_FIELD_LENGTH),
   phone: z.string().trim().max(MAX_FIELD_LENGTH).optional().default(""),
   address_1: text(200),
+  address_2: z.string().trim().max(200).optional().default(""),
   city: text(),
   postcode: text(20),
   country: countrySchema,

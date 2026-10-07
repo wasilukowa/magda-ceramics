@@ -127,6 +127,7 @@ export type RawOrderAddress = {
   first_name?: string;
   last_name?: string;
   address_1?: string;
+  address_2?: string;
   city?: string;
   postcode?: string;
   country?: string;

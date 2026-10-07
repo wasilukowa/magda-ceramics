@@ -239,6 +239,7 @@ class CheckoutService {
           ...billing,
           company: `Paczkomat ${locker!.code}`,
           address_1: locker!.description || locker!.code,
+          address_2: "",
           city: locker!.city,
           postcode: locker!.postCode,
         }

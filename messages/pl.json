@@ -196,6 +196,7 @@
     "lockerLoading": "Ładowanie mapy...",
     "lockerUnavailable": "Wybór paczkomatu jest chwilowo niedostępny. Wybierz dostawę kurierem.",
     "street": "Ulica i numer *",
+    "street2": "Nr mieszkania, piętro, firma (opcjonalnie)",
     "postcode": "Kod pocztowy *",
     "city": "Miasto *",
     "payment": "Płatność",

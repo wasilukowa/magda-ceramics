@@ -135,6 +135,7 @@ export default function CheckoutContent({
           }
         : {
             line1: address.street,
+            line2: address.street2,
             city: address.city,
             postal_code: address.postcode,
             country: address.country,
@@ -154,6 +155,7 @@ export default function CheckoutContent({
           email: address.email,
           phone: address.phone,
           address_1: shippingAddress.line1,
+          address_2: usingLocker ? "" : address.street2,
           city: shippingAddress.city,
           postcode: shippingAddress.postal_code,
           country: shippingAddress.country,

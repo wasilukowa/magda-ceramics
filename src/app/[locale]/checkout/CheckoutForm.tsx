@@ -221,7 +221,15 @@ export default function CheckoutForm({
                     value={address.street}
                     onChange={set("street")}
                     className={inputClass}
-                    autoComplete="street-address"
+                    autoComplete="address-line1"
+                  />
+                </Field>
+                <Field label={t("street2")}>
+                  <input
+                    value={address.street2}
+                    onChange={set("street2")}
+                    className={inputClass}
+                    autoComplete="address-line2"
                   />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
@@ -285,7 +293,9 @@ export default function CheckoutForm({
                 </p>
               ) : (
                 <p className="text-[var(--muted)]">
-                  {address.street}, {address.postcode} {address.city},{" "}
+                  {address.street},{" "}
+                  {address.street2 && <>{address.street2}, </>}
+                  {address.postcode} {address.city},{" "}
                   {countryLabel}
                 </p>
               )}

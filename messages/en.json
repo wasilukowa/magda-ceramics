@@ -196,6 +196,7 @@
     "lockerLoading": "Loading map...",
     "lockerUnavailable": "Parcel locker selection is unavailable right now. Please choose courier delivery.",
     "street": "Street address *",
+    "street2": "Flat, floor, company (optional)",
     "postcode": "Postcode *",
     "city": "City *",
     "payment": "Payment",
