@@ -69,11 +69,15 @@ function SuccessContent() {
   if (!paymentSucceeded) {
     return (
       <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-6">
+        {/* Nieudana płatność nie zakłada zamówienia (szkic w WooCommerce zostaje
+            niewidoczny), a praca zostaje w sklepie dla innych — koszyk jej nie
+            rezerwuje. Klient ma to usłyszeć wprost, bo inaczej nie wie, czy coś
+            kupił (pytanie Natalii 2026-10-07). */}
         <p className="text-sm text-[var(--color-error)]">{t("paymentFailed")}</p>
-        <Link
-          href="/checkout"
-          className="text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"
-        >
+        <p className="text-sm text-[var(--muted)] leading-relaxed">
+          {t("paymentFailedHint")}
+        </p>
+        <Link href="/checkout" className={buttonClass()}>
           {t("backToCheckout")}
           <ButtonArrow />
         </Link>
