@@ -7,6 +7,7 @@ import { Link } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
 import { CheckoutErrorResponse } from "@/contracts/server/checkout";
 import { getOrderErrorKey } from "@/lib/helpers/checkout";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 type OrderState =
   | { status: "loading" }
@@ -74,6 +75,7 @@ function SuccessContent() {
           className="text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"
         >
           {t("backToCheckout")}
+          <ButtonArrow />
         </Link>
       </div>
     );
@@ -91,11 +93,9 @@ function SuccessContent() {
     return (
       <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-6">
         <p className="text-sm text-[var(--color-error)]">{state.message}</p>
-        <Link
-          href="/checkout"
-          className="text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"
-        >
+        <Link href="/checkout" className={buttonClass()}>
           {t("backToCheckout")}
+          <ButtonArrow />
         </Link>
       </div>
     );
@@ -111,9 +111,10 @@ function SuccessContent() {
       </p>
       <Link
         href="/shop"
-        className="inline-block text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
+        className={buttonClass()}
       >
         {t("backToShop")}
+        <ButtonArrow />
       </Link>
     </div>
   );

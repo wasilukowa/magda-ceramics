@@ -2,6 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
+import { ButtonSize } from "@/contracts/shared";
 
 type Props = {
   // Proceed through checkout without an account.
@@ -20,9 +22,10 @@ export default function CheckoutAuthGate({ onGuestContinue }: Props) {
         </div>
         <Link
           href={{ pathname: "/login", query: { redirect: "/checkout" } }}
-          className="shrink-0 text-center border border-[var(--foreground)] text-xs tracking-widest uppercase px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
+          className={buttonClass({ className: "shrink-0" })}
         >
           {t("signIn")}
+          <ButtonArrow />
         </Link>
       </div>
 
@@ -32,9 +35,10 @@ export default function CheckoutAuthGate({ onGuestContinue }: Props) {
         <button
           type="button"
           onClick={onGuestContinue}
-          className="w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 hover:opacity-80 transition-opacity"
+          className={buttonClass({ size: ButtonSize.Block })}
         >
           {t("continueAsGuest")}
+          <ButtonArrow />
         </button>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { requestPasswordReset } from "@/server-actions/auth";
 import { ForgotPasswordFormState } from "@/contracts/server/auth";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 const initialState: ForgotPasswordFormState = { status: "idle", message: "" };
 
@@ -66,9 +67,16 @@ export default function ForgotPasswordForm() {
       <button
         type="submit"
         disabled={pending}
-        className="text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[var(--foreground)]"
+        className={buttonClass()}
       >
-        {pending ? t("forgot.submitting") : t("forgot.submit")}
+        {pending ? (
+          t("forgot.submitting")
+        ) : (
+          <>
+            {t("forgot.submit")}
+            <ButtonArrow />
+          </>
+        )}
       </button>
 
       <p className="text-sm text-[var(--muted)] text-center">

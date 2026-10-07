@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useWishlist } from "@/hooks/useWishlist";
 import { WishlistNoticeKind } from "@/contracts/store";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
+import { ButtonSize, ButtonVariant } from "@/contracts/shared";
 
 // Ile sekund wisi informacja o nieudanym zapisie. Podpowiedź o koncie NIE znika
 // sama — jest w niej odnośnik do kliknięcia, a komunikat, który ucieka spod
@@ -61,14 +63,18 @@ export default function WishlistNotice() {
           <Link
             href={{ pathname: "/login", query: { redirect: "/wishlist" } }}
             onClick={dismissNotice}
-            className="bg-[var(--foreground)] py-3 text-center text-xs uppercase tracking-widest text-[var(--background)] transition-opacity hover:opacity-80"
+            className={buttonClass({ size: ButtonSize.Block })}
           >
             {t("signIn")}
+            <ButtonArrow />
           </Link>
           <Link
             href="/register"
             onClick={dismissNotice}
-            className="border border-[var(--color-control-border)] py-3 text-center text-xs uppercase tracking-widest transition-colors hover:border-[var(--foreground)]"
+            className={buttonClass({
+              variant: ButtonVariant.Secondary,
+              size: ButtonSize.Block,
+            })}
           >
             {t("register")}
           </Link>

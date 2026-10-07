@@ -1,6 +1,7 @@
 "use client";
 
 import "./globals.css";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 // Last line of defence: this replaces the whole document when even the root
 // layout fails, so it has to bring its own <html>/<body> and cannot use the
@@ -23,9 +24,10 @@ export default function GlobalError({ reset }: { reset: () => void }) {
           <button
             type="button"
             onClick={reset}
-            className="text-xs tracking-widest uppercase border border-current px-8 py-3 hover:opacity-60 transition-opacity"
+            className={buttonClass()}
           >
             Odśwież · Reload
+            <ButtonArrow />
           </button>
         </div>
       </body>

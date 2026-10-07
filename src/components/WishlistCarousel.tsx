@@ -10,6 +10,7 @@ import ProductCard from "@/components/ProductCard";
 import ProductCarousel, {
   CAROUSEL_ITEM_CLASS,
 } from "@/components/ProductCarousel";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 // Ulubione klienta na stronie głównej, pod cytatem. Sekcja istnieje tylko
 // wtedy, gdy jest co pokazać: pusta lista, niewczytane jeszcze dane albo
@@ -66,9 +67,10 @@ export default function WishlistCarousel() {
       <div className="mt-12 flex justify-center">
         <Link
           href="/wishlist"
-          className="inline-block border border-current px-7 py-3 text-xs uppercase tracking-widest transition-opacity hover:opacity-60"
+          className={buttonClass()}
         >
           {t("wishlistLink")}
+          <ButtonArrow />
         </Link>
       </div>
     </section>

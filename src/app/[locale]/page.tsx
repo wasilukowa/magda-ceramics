@@ -11,6 +11,7 @@ import { Quote } from "@/components/Quote";
 import WishlistCarousel from "@/components/WishlistCarousel";
 import ReviewsSlider from "@/components/ReviewsSlider";
 import { getFeaturedReviews } from "@/lib/helpers/reviews";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   kubki: (
@@ -123,9 +124,10 @@ export default async function Home({
               </p>
               <Link
                 href="/about"
-                className="inline-block border border-current px-7 py-3 text-xs tracking-widest uppercase hover:opacity-60 transition-opacity"
+                className={buttonClass()}
               >
                 {t("home.heroLink")}
+                <ButtonArrow />
               </Link>
             </div>
           </div>

@@ -9,6 +9,8 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { getCartTotal, formatPrice } from "@/lib/helpers/currency";
 import { cn } from "@/lib/utils";
 import Price from "@/components/Price";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
+import { ButtonSize } from "@/contracts/shared";
 
 export default function CartDrawer() {
   const { items, removeItem, isOpen, closeCart, soldOutIds } = useCart();
@@ -137,9 +139,10 @@ export default function CartDrawer() {
               <Link
                 href="/checkout"
                 onClick={closeCart}
-                className="block w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 text-center hover:opacity-80 transition-opacity"
+                className={buttonClass({ size: ButtonSize.Block })}
               >
                 {t("checkout")}
+                <ButtonArrow />
               </Link>
             )}
           </div>

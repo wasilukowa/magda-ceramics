@@ -7,6 +7,7 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { getWishlistProducts } from "@/server-actions/wishlist";
 import { ProductProps } from "@/contracts/server/product";
 import ProductCard, { EAGER_CARDS } from "@/components/ProductCard";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 export default function WishlistGrid() {
   const t = useTranslations("wishlist");
@@ -66,9 +67,10 @@ export default function WishlistGrid() {
         <p className="text-sm text-[var(--muted)]">{t("empty")}</p>
         <Link
           href="/shop"
-          className="text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
+          className={buttonClass()}
         >
           {t("browse")}
+          <ButtonArrow />
         </Link>
       </div>
     );

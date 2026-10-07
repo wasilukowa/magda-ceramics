@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import { UnavailableItem } from "@/contracts/server/checkout";
 import { getUnavailableReasonKey } from "@/lib/helpers/checkout";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
+import { ButtonSize } from "@/contracts/shared";
 
 type Props = {
   items: UnavailableItem[];
@@ -39,9 +41,10 @@ export default function CheckoutUnavailable({ items, onRemove }: Props) {
       <button
         type="button"
         onClick={onRemove}
-        className="w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 hover:opacity-80 transition-opacity"
+        className={buttonClass({ size: ButtonSize.Block })}
       >
         {t("soldOutRemove")}
+        <ButtonArrow />
       </button>
     </div>
   );

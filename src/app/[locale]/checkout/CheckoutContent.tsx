@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useStripe, useElements } from "@stripe/react-stripe-js";
 import { CartItem, Address } from "@/contracts/server/cart";
-import { Currency } from "@/contracts/shared";
+import { ButtonSize, ButtonVariant, Currency } from "@/contracts/shared";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { CheckoutStep, UnavailableItem } from "@/contracts/server/checkout";
 import { getOrderItems, getSoldOutItems } from "@/lib/helpers/checkout";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import CheckoutStepper from "@/components/checkout/CheckoutStepper";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import CheckoutForm from "./CheckoutForm";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 type Props = {
   items: CartItem[];
@@ -32,11 +33,12 @@ type Props = {
   paymentIntentId: string;
 };
 
-const primaryButtonClass =
-  "w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 hover:opacity-80 transition-opacity disabled:opacity-40";
+const primaryButtonClass = buttonClass({ size: ButtonSize.Block });
 
-const secondaryButtonClass =
-  "w-full border border-[var(--color-control-border)] text-xs tracking-widest uppercase py-4 hover:border-[var(--foreground)] transition-colors";
+const secondaryButtonClass = buttonClass({
+  variant: ButtonVariant.Secondary,
+  size: ButtonSize.Block,
+});
 
 export default function CheckoutContent({
   items,
@@ -244,6 +246,7 @@ export default function CheckoutContent({
           className={primaryButtonClass}
         >
           {primaryLabel}
+          {!loading && <ButtonArrow />}
         </button>
       </div>
 

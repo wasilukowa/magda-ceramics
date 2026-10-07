@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { changePassword } from "@/server-actions/account";
 import { AccountFormState } from "@/contracts/server/auth";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 const initialState: AccountFormState = { status: "idle", message: "" };
 
@@ -77,9 +78,16 @@ export default function PasswordForm() {
       <button
         type="submit"
         disabled={pending}
-        className="text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors self-start disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[var(--foreground)]"
+        className={buttonClass({ className: "self-start" })}
       >
-        {pending ? t("saving") : t("password.submit")}
+        {pending ? (
+          t("saving")
+        ) : (
+          <>
+            {t("password.submit")}
+            <ButtonArrow />
+          </>
+        )}
       </button>
     </form>
   );

@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { sendContactMessage } from "@/server-actions/contact";
 import { ContactFormState } from "@/contracts/server/contact";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 const initialState: ContactFormState = { status: "idle", message: "" };
 
@@ -121,9 +122,16 @@ export default function ContactForm() {
       <button
         type="submit"
         disabled={pending}
-        className="text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors self-start disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[var(--foreground)]"
+        className={buttonClass({ className: "self-start" })}
       >
-        {pending ? t("sending") : t("send")}
+        {pending ? (
+          t("sending")
+        ) : (
+          <>
+            {t("send")}
+            <ButtonArrow />
+          </>
+        )}
       </button>
     </form>
   );

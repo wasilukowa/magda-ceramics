@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { resetPassword } from "@/server-actions/auth";
 import { ResetPasswordFormState } from "@/contracts/server/auth";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 const initialState: ResetPasswordFormState = { status: "idle", message: "" };
 
@@ -26,9 +27,10 @@ export default function ResetPasswordForm({ token }: { token: string }) {
         <p>
           <Link
             href="/login"
-            className="inline-block text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
+            className={buttonClass()}
           >
             {t("login.submit")}
+            <ButtonArrow />
           </Link>
         </p>
       </div>
@@ -87,9 +89,16 @@ export default function ResetPasswordForm({ token }: { token: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[var(--foreground)]"
+        className={buttonClass()}
       >
-        {pending ? t("reset.submitting") : t("reset.submit")}
+        {pending ? (
+          t("reset.submitting")
+        ) : (
+          <>
+            {t("reset.submit")}
+            <ButtonArrow />
+          </>
+        )}
       </button>
     </form>
   );

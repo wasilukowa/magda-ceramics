@@ -4,8 +4,13 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import { EmptyCategoryProps, EmptyCategoryReason } from "@/contracts/shared";
+import {
+  ButtonVariant,
+  EmptyCategoryProps,
+  EmptyCategoryReason,
+} from "@/contracts/shared";
 import { getCategoryLabel } from "@/lib/helpers/category";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 // How long the customer gets to read the message and pick a tile before the
 // full catalogue takes over.
@@ -55,15 +60,16 @@ export default function EmptyCategory({
         <div className="flex flex-wrap gap-3 justify-center mt-2">
           <Link
             href="/shop"
-            className="text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
+            className={buttonClass()}
           >
             {t("goNow")}
+            <ButtonArrow />
           </Link>
           {!stopped && (
             <button
               type="button"
               onClick={() => setStopped(true)}
-              className="text-xs tracking-widest uppercase border border-[var(--color-control-border)] px-8 py-3 hover:border-[var(--foreground)] transition-colors"
+              className={buttonClass({ variant: ButtonVariant.Secondary })}
             >
               {t("stay")}
             </button>

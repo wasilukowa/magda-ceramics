@@ -1,6 +1,8 @@
 import ThemedImage from "@/components/ThemedImage";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
+import { ButtonVariant } from "@/contracts/shared";
 
 // Widok „nie ma takiej strony". Wydzielony, bo rysują go dwa miejsca:
 // `[locale]/not-found.tsx` (granica dla `notFound()`) oraz strony, które
@@ -32,13 +34,14 @@ export default async function NotFoundView() {
       <div className="flex flex-wrap gap-3 justify-center mt-2">
         <Link
           href="/shop"
-          className="text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
+          className={buttonClass()}
         >
           {t("shop")}
+          <ButtonArrow />
         </Link>
         <Link
           href="/"
-          className="text-xs tracking-widest uppercase border border-[var(--color-control-border)] px-8 py-3 hover:border-[var(--foreground)] transition-colors"
+          className={buttonClass({ variant: ButtonVariant.Secondary })}
         >
           {t("home")}
         </Link>
