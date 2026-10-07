@@ -81,6 +81,9 @@ export type ProductCardProps = {
   // Karty z pierwszego ekranu ładują zdjęcie od razu, zamiast czekać, aż
   // przewinięcie je „odkryje" — patrz ProductCard.
   eager?: boolean;
+  // Archiwum nie pokazuje ceny — cena i opis są dopiero na stronie
+  // produktu (decyzja Natalii 2026-10-07).
+  hidePrice?: boolean;
 };
 
 export type QuoteProps = {
