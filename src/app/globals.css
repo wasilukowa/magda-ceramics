@@ -17,6 +17,23 @@
   }
 }
 
+/* „Łapka" nad wszystkim, co da się kliknąć (prośba Natalii 2026-10-07).
+   Linki mają ją z przeglądarki, ale Tailwind 4 zostawia przyciskom zwykłą
+   strzałkę kursora. Wyłączony przycisk zostaje bez łapki, a klasa
+   `cursor-not-allowed` (warstwa utilities) i tak wygrywa z tą regułą. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  select:not(:disabled),
+  summary,
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  label:has(> input[type="checkbox"]:not(:disabled)),
+  label:has(> input[type="radio"]:not(:disabled)) {
+    cursor: pointer;
+  }
+}
+
 :root {
   color-scheme: light;
 
