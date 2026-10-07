@@ -1,11 +1,14 @@
 export enum ShippingZone {
   Poland = "PL",
   InPostEu = "INPOST_EU",
+  GermanyAustria = "DE_AT",
+  UnitedKingdom = "GB",
   RestEu = "REST_EU",
 }
 
-// How a Polish order is delivered. Locker = picked on the InPost Geowidget map;
-// Courier = shipped to the typed-in address. Only relevant for the Poland zone.
+// How an order is delivered. Locker = picked on the InPost Geowidget map;
+// Courier = shipped to the typed-in address. Lockers exist only in the
+// countries listed in INPOST_LOCKER_COUNTRIES; everywhere else it is courier.
 export enum DeliveryMethod {
   Locker = "locker",
   Courier = "courier",
@@ -28,7 +31,22 @@ export type ZoneRate = {
   eur: number;
 };
 
-export type ShippingRates = Record<ShippingZone, ZoneRate>;
+// Stawki jednej strefy: kurier jest wszędzie, paczkomat tylko tam, gdzie InPost
+// ma paczkomaty. Paczkomat bywa tańszy od kuriera (InPost International),
+// a w Polsce kosztuje tyle samo.
+export type ZoneRates = {
+  courier: ZoneRate;
+  locker?: ZoneRate;
+};
+
+export type ShippingRates = Record<ShippingZone, ZoneRates>;
+
+// Jedna pozycja cennika na stronie „Wysyłka i zwroty": sposób dostawy i jego
+// cena. Sposoby w tej samej cenie (w Polsce paczkomat i kurier) idą razem.
+export type ShippingOption = {
+  methods: DeliveryMethod[];
+  rate: ZoneRate;
+};
 
 // Jedna strefa tak, jak pokazuje ją strona „Wysyłka i zwroty": dokąd, czym
 // i za ile. Składane z CHECKOUT_COUNTRIES i SHIPPING_RATES, żeby tabela na
@@ -36,7 +54,7 @@ export type ShippingRates = Record<ShippingZone, ZoneRate>;
 export type ShippingZoneSummary = {
   zone: ShippingZone;
   countryCodes: string[];
-  rate: ZoneRate;
-  // Kraje strefy, w których paczkomat NIE wchodzi w grę (dziś: Austria).
+  options: ShippingOption[];
+  // Kraje strefy, w których paczkomat NIE wchodzi w grę.
   courierOnlyCodes: string[];
 };

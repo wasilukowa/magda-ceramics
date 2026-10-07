@@ -26,7 +26,7 @@ export const SHIPPING_INTRO: LegalDocumentByLocale = {
         "Orders are prepared within 3–5 business days of the payment being credited, unless the description of a particular product says otherwise. The carrier’s own transit time is added to that."
       ),
       paragraph(
-        "The studio ships within Poland and the European Union. Destinations outside the EU are not available — shipping there costs more than the ceramics are worth."
+        "The studio ships within Poland and the European Union, and to the United Kingdom. Other destinations outside the EU are not available — shipping there costs more than the ceramics are worth."
       )
     ),
   ],
@@ -40,7 +40,7 @@ export const SHIPPING_INTRO: LegalDocumentByLocale = {
         "Zamówienie przygotowujemy w 3–5 dni roboczych od zaksięgowania wpłaty, chyba że opis konkretnego produktu mówi inaczej. Do tego dochodzi czas transportu po stronie przewoźnika."
       ),
       paragraph(
-        "Wysyłamy na terenie Polski i Unii Europejskiej. Kierunków spoza UE nie obsługujemy — przesyłka kosztowałaby tam więcej niż sama ceramika."
+        "Wysyłamy na terenie Polski i Unii Europejskiej, a także do Wielkiej Brytanii. Innych kierunków spoza UE nie obsługujemy — przesyłka kosztowałaby tam więcej niż sama ceramika."
       )
     ),
   ],

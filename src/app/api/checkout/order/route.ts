@@ -10,7 +10,9 @@ import {
   getRequestError,
 } from "@/lib/service/checkout/helpers";
 import { isRateLimited } from "@/lib/helpers/rateLimit";
+import { getShippingAmount, resolveDeliveryMethod } from "@/lib/helpers/shipping";
 import { CheckoutError } from "@/contracts/server/checkout";
+import { DeliveryMethod } from "@/contracts/server/shipping";
 
 // Każde żądanie zapisuje szkic w WooCommerce, więc z jednego miejsca nie może
 // ich przyjść bez końca. Uczciwy klient klika „Zapłać" raz, najwyżej kilka
@@ -35,16 +37,25 @@ export async function POST(request: Request) {
     return checkoutErrorResponse(getRequestError(body));
   }
 
-  const { billing, items, paymentIntentId, note, deliveryMethod, locker, locale } =
-    parsed.data;
+  const { billing, items, paymentIntentId, note, locker, locale } = parsed.data;
+  const deliveryMethod = resolveDeliveryMethod(
+    billing.country,
+    parsed.data.deliveryMethod,
+    !!locker
+  );
 
   // Szkic wolno przypiąć wyłącznie do płatności, która czeka na klienta i którą
-  // kasa wyceniła za dokładnie ten koszyk i ten kraj.
+  // kasa wyceniła za dokładnie ten koszyk, ten kraj i tę wysyłkę.
   const payment = await paymentService.getPayment(paymentIntentId);
   if (
     !payment ||
     !payment.currency ||
-    !canDraftOrderFor(payment, getCartFingerprint(items), billing.country)
+    !canDraftOrderFor(
+      payment,
+      getCartFingerprint(items),
+      billing.country,
+      getShippingAmount(billing.country, payment.currency, deliveryMethod)
+    )
   ) {
     return checkoutErrorResponse(CheckoutError.PaymentNotVerified);
   }
@@ -58,7 +69,7 @@ export async function POST(request: Request) {
     note,
     customerId: session?.customerId ?? null,
     deliveryMethod,
-    locker,
+    locker: deliveryMethod === DeliveryMethod.Locker ? locker : null,
     locale,
     // Waluta płatności, którą kasa wyceniła — nie to, co przyszło w żądaniu.
     currency: payment.currency,

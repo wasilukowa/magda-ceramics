@@ -19,7 +19,11 @@ import {
   UnavailableItem,
 } from "@/contracts/server/checkout";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
-import { getShippingCost, hasInPostLocker } from "@/lib/helpers/shipping";
+import {
+  getPricedDeliveryMethod,
+  getShippingCost,
+  hasInPostLocker,
+} from "@/lib/helpers/shipping";
 import { getCartTotal } from "@/lib/helpers/currency";
 import {
   getCheckoutErrorKey,
@@ -81,7 +85,10 @@ function Checkout() {
   const effectiveMethod = hasLocker ? deliveryMethod : DeliveryMethod.Courier;
   const usingLocker = hasLocker && effectiveMethod === DeliveryMethod.Locker;
   const subtotal = getCartTotal(items, currency);
-  const shippingCost = getShippingCost(country, currency);
+  const shippingCost = getShippingCost(country, currency, effectiveMethod);
+  // Sposób dostawy, z którym wyceniamy płatność. W Polsce paczkomat i kurier
+  // kosztują tyle samo, więc przełączanie nie zakłada płatności od nowa.
+  const pricedMethod = getPricedDeliveryMethod(country, effectiveMethod);
   const grandTotal = subtotal + shippingCost;
   const deliveryLabel = usingLocker
     ? t("summaryDeliveryLocker")
@@ -96,8 +103,9 @@ function Checkout() {
   }
 
   // (Re)create the PaymentIntent whenever pricing inputs change. Stripe does
-  // not allow changing an intent's currency after creation, so country and
-  // currency changes recreate it; the new client secret remounts the form.
+  // not allow changing an intent's currency after creation, so country,
+  // currency and priced delivery-method changes recreate it; the new client
+  // secret remounts the form.
   useEffect(() => {
     if (items.length === 0) return;
 
@@ -106,7 +114,12 @@ function Checkout() {
     fetch("/api/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: getOrderItems(items), country, currency }),
+      body: JSON.stringify({
+        items: getOrderItems(items),
+        country,
+        currency,
+        deliveryMethod: pricedMethod,
+      }),
     })
       .then((r) => r.json())
       .then((data: CheckoutErrorResponse & { clientSecret?: string }) => {
@@ -121,7 +134,7 @@ function Checkout() {
         }
       })
       .catch(() => setError(t("connectionError")));
-  }, [items, country, currency, t]);
+  }, [items, country, currency, pricedMethod, t]);
 
   // Wyrzucenie sprzedanych prac zmienia koszyk, więc wycena i płatność liczą
   // się od nowa same — tu zostaje tylko sprzątnięcie komunikatu.

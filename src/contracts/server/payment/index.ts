@@ -27,6 +27,9 @@ export type PaymentRecord = {
   // PricedCart.fingerprint.
   cart: string;
   country: string;
+  // Wysyłka wliczona w płatność, w groszach / eurocentach. Null dla płatności,
+  // której kasa nie wyceniała (np. „Zapłać" z panelu klienta).
+  shippingAmount: number | null;
   // Zamówienie przypisane do tej płatności. Numer zapisuje albo kasa (gdy
   // zamówienie powstało z płatności), albo panel klienta (gdy płatność powstała
   // DLA zamówienia, które już było) — dlatego numer bywa bez klucza, a sam

@@ -14,13 +14,18 @@ export async function POST(request: Request) {
     return checkoutErrorResponse(getRequestError(body));
   }
 
-  const { items, country, currency } = parsed.data;
+  const { items, country, currency, deliveryMethod } = parsed.data;
 
   // Kwota do zapłaty liczy się z cen wziętych z WooCommerce po numerze
   // produktu. Ceny przysłane przez przeglądarkę są ignorowane — wcześniej to
   // one o niej decydowały, więc żądanie z `price: "0.01"` kupowało wazon
   // za grosz.
-  const pricing = await checkoutService.priceCart(items, country, currency);
+  const pricing = await checkoutService.priceCart(
+    items,
+    country,
+    currency,
+    deliveryMethod
+  );
   if (!pricing.ok) {
     return checkoutErrorResponse(pricing.error, pricing.unavailable);
   }
