@@ -10,6 +10,7 @@ import { getCountryLabel, getShippingCost } from "@/lib/helpers/shipping";
 import { formatPrice } from "@/lib/helpers/currency";
 import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
+import { isPhoneNumber } from "@/utility";
 import ParcelLockerField from "@/components/checkout/ParcelLockerField";
 
 type Props = {
@@ -145,7 +146,7 @@ export default function CheckoutForm({
                 autoComplete="email"
               />
             </Field>
-            <Field label={t("phone")}>
+            <Field label={t(usingLocker ? "phoneRequired" : "phone")}>
               <input
                 type="tel"
                 value={address.phone}
@@ -154,6 +155,16 @@ export default function CheckoutForm({
                 autoComplete="tel"
               />
             </Field>
+            {usingLocker &&
+              (address.phone && !isPhoneNumber(address.phone) ? (
+                <p className="-mt-2 text-xs text-[var(--color-error)]">
+                  {t("phoneInvalid")}
+                </p>
+              ) : (
+                <p className="-mt-2 text-xs text-[var(--muted)]">
+                  {t("phoneLockerHint")}
+                </p>
+              ))}
           </div>
         </div>
 

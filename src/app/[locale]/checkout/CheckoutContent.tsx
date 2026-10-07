@@ -9,6 +9,7 @@ import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { CheckoutStep, UnavailableItem } from "@/contracts/server/checkout";
 import { getOrderItems, getSoldOutItems } from "@/lib/helpers/checkout";
 import { cn } from "@/lib/utils";
+import { isPhoneNumber } from "@/utility";
 import CheckoutStepper from "@/components/checkout/CheckoutStepper";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import CheckoutForm from "./CheckoutForm";
@@ -68,12 +69,15 @@ export default function CheckoutContent({
 
   // Every required field for the chosen delivery method is filled in. Drives
   // both the "continue" button's enabled state and step-1 validation.
+  // Do paczkomatu telefon jest obowiązkowy — InPost wysyła na niego SMS
+  // z kodem odbioru (decyzja Natalii 2026-10-07). Przy kurierze zostaje
+  // nieobowiązkowy.
   const isAddressComplete =
     !!address.firstName &&
     !!address.lastName &&
     !!address.email &&
     (usingLocker
-      ? !!locker
+      ? !!locker && isPhoneNumber(address.phone)
       : !!address.street && !!address.postcode && !!address.city);
 
   function goToStep(target: CheckoutStep) {

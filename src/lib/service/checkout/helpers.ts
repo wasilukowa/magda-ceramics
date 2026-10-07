@@ -10,6 +10,7 @@ import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
 import { isCheckoutCountry } from "@/lib/helpers/shipping";
 import { routing } from "@/i18n/routing";
+import { isPhoneNumber } from "@/utility";
 
 // Sufity na to, co przyjmujemy z przeglądarki. Pracownia sprzedaje pojedyncze
 // prace, więc nikt uczciwy się o nie nie obije, a żądanie z tysiącem pozycji
@@ -78,18 +79,29 @@ export const completeOrderRequestSchema = z.object({
 
 // Dane zamówienia wysyłane tuż przed płatnością. Waluty ani kwoty tu nie ma —
 // jedno i drugie siedzi w płatności, wycenionej wcześniej na serwerze.
-export const draftOrderRequestSchema = z.object({
-  billing: billingSchema,
-  items: cartSchema,
-  paymentIntentId: z.string().trim().min(1).max(255),
-  note: z.string().trim().max(MAX_NOTE_LENGTH).optional().default(""),
-  deliveryMethod: z.enum(DeliveryMethod).optional(),
-  locker: lockerSchema.nullish(),
-  // Język strony, na której klient zamawia — w nim dostanie maile. Opcjonalny,
-  // bo karta otwarta przed wdrożeniem go nie wysyła; wtedy język idzie
-  // z kraju adresu.
-  locale: z.enum(routing.locales).optional(),
-});
+export const draftOrderRequestSchema = z
+  .object({
+    billing: billingSchema,
+    items: cartSchema,
+    paymentIntentId: z.string().trim().min(1).max(255),
+    note: z.string().trim().max(MAX_NOTE_LENGTH).optional().default(""),
+    deliveryMethod: z.enum(DeliveryMethod).optional(),
+    locker: lockerSchema.nullish(),
+    // Język strony, na której klient zamawia — w nim dostanie maile. Opcjonalny,
+    // bo karta otwarta przed wdrożeniem go nie wysyła; wtedy język idzie
+    // z kraju adresu.
+    locale: z.enum(routing.locales).optional(),
+  })
+  // Do paczkomatu telefon jest obowiązkowy: InPost wysyła na niego SMS
+  // z kodem odbioru. Kasa pilnuje tego sama, to jest zabezpieczenie na
+  // żądanie złożone z pominięciem formularza.
+  .refine(
+    ({ deliveryMethod, locker, billing }) =>
+      deliveryMethod !== DeliveryMethod.Locker ||
+      !locker ||
+      isPhoneNumber(billing.phone),
+    { path: ["billing", "phone"] }
+  );
 
 // Pusty koszyk zasługuje na własny komunikat („Twój koszyk jest pusty"), a nie
 // na to samo „nieprawidłowe żądanie" co bzdurne dane.
