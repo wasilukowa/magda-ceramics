@@ -3,29 +3,31 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { HERO_SLIDER_PHOTOS as PHOTOS } from "@/content/data";
+import { PhotoSliderProps } from "@/contracts/shared";
 
-export function AboutSlider() {
-  const t = useTranslations("home");
+// Wypełnia ramkę rodzica (wysokość i proporcje ustawia strona) i przycina
+// zdjęcia do niej, więc najważniejsze powinno być blisko środka kadru.
+export function PhotoSlider({ photos, sizes }: PhotoSliderProps) {
+  const t = useTranslations("photoSlider");
   const [current, setCurrent] = useState(0);
 
-  const prev = () => setCurrent((c) => (c === 0 ? PHOTOS.length - 1 : c - 1));
-  const next = () => setCurrent((c) => (c === PHOTOS.length - 1 ? 0 : c + 1));
+  const prev = () => setCurrent((c) => (c === 0 ? photos.length - 1 : c - 1));
+  const next = () => setCurrent((c) => (c === photos.length - 1 ? 0 : c + 1));
 
   return (
     <div className="relative w-full h-full min-h-[300px] overflow-hidden bg-[var(--color-accent)]">
-      {PHOTOS.map((src, i) => (
+      {photos.map((photo, i) => (
         <div
-          key={src}
+          key={photo.src}
           className="absolute inset-0 transition-opacity duration-500"
           style={{ opacity: i === current ? 1 : 0 }}
         >
           <Image
-            src={src}
-            alt={t("sliderAlt", { number: i + 1 })}
+            src={photo.src}
+            alt={photo.alt}
             fill
             className="object-cover"
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes={sizes}
             preload={i === 0}
           />
         </div>
@@ -33,7 +35,7 @@ export function AboutSlider() {
 
       <button
         onClick={prev}
-        aria-label={t("sliderPrev")}
+        aria-label={t("prev")}
         className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-[var(--background)]/70 text-[var(--foreground)] hover:bg-[var(--background)] transition-colors"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -43,7 +45,7 @@ export function AboutSlider() {
 
       <button
         onClick={next}
-        aria-label={t("sliderNext")}
+        aria-label={t("next")}
         className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-[var(--background)]/70 text-[var(--foreground)] hover:bg-[var(--background)] transition-colors"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -52,11 +54,11 @@ export function AboutSlider() {
       </button>
 
       <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-        {PHOTOS.map((_, i) => (
+        {photos.map((photo, i) => (
           <button
-            key={i}
+            key={photo.src}
             onClick={() => setCurrent(i)}
-            aria-label={t("sliderGoTo", { number: i + 1 })}
+            aria-label={t("goTo", { number: i + 1 })}
             className="w-1.5 h-1.5 rounded-full transition-colors"
             style={{ background: i === current ? "white" : "rgba(255,255,255,0.45)" }}
           />

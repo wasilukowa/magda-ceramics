@@ -4,7 +4,8 @@ import { buildPageMetadata } from "@/lib/helpers/metadata";
 import { Link } from "@/i18n/navigation";
 import { productService } from "@/lib/service/product";
 import { getCategoryLabel } from "@/lib/helpers/category";
-import { AboutSlider } from "@/components/AboutSlider";
+import { PhotoSlider } from "@/components/PhotoSlider";
+import { HERO_SLIDER_PHOTOS } from "@/content/data";
 import { FeaturedWorks } from "@/components/FeaturedWorks";
 import { Quote } from "@/components/Quote";
 import WishlistCarousel from "@/components/WishlistCarousel";
@@ -104,7 +105,13 @@ export default async function Home({
       <div className="max-w-[1200px] mx-auto px-6 mt-8">
         <section className="bg-[var(--color-accent)] flex flex-col md:flex-row md:min-h-[580px]">
           <div className="md:w-[42%] flex-shrink-0 min-h-[300px] md:min-h-0">
-            <AboutSlider />
+            <PhotoSlider
+              photos={HERO_SLIDER_PHOTOS.map((src, i) => ({
+                src,
+                alt: t("home.sliderAlt", { number: i + 1 }),
+              }))}
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
           </div>
           <div className="flex-1 flex items-center px-10 md:px-14 py-12">
             <div>

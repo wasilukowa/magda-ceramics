@@ -88,7 +88,8 @@ export type DraftOrderInput = {
   // Zalogowany klient — z sesji, nigdy z żądania. Dzięki temu zamówienie
   // pojawia się potem w jego „Moich zamówieniach".
   customerId: number | null;
-  deliveryMethod?: DeliveryMethod;
+  // Już rozstrzygnięty (resolveDeliveryMethod): paczkomat zawsze z punktem.
+  deliveryMethod: DeliveryMethod;
   locker?: InPostPoint | null;
   // Język i waluta z kasy — patrz OrderPreferences.
   locale?: string;

@@ -36,11 +36,12 @@
   /* Accent */
   --color-accent: #8AAAA6;
 
-  /* Serce ulubionych. Bordo, nie czerwień alarmowa — ta jest zarezerwowana dla
-     błędów (--color-error) i nie chcemy, żeby polubienie pracy wyglądało jak
-     ostrzeżenie. Kontrast na tle strony 8,75:1, na kafelku ceramicznym 7,04:1,
-     czyli AA z zapasem nawet dla drobnego znaku. */
-  --color-heart: #7B2D3B;
+  /* Serce ulubionych — turkus ze strony (decyzja Natalii 2026-10-07; wcześniej
+     bordo). Ten sam głęboki odcień co gwiazdki przy opiniach, nie jasny
+     akcent: serce NIESIE INFORMACJĘ (polubione czy nie), a akcent ma na tle
+     strony tylko 2,38:1, więc cienki obrys niepolubionego serca ginąłby.
+     Ten ma 4,78:1 na tle strony i 3,84:1 na kafelku ceramicznym. */
+  --color-heart: #57756F;
 
   /* Gwiazdki przy opiniach. Sam akcent ma na tle strony kontrast 2,38:1 —
      za mało jak na znak, który NIESIE INFORMACJĘ (ocenę). Ta sama szałwia,
@@ -72,7 +73,7 @@
 /* Tryb ciemny — ta sama paleta, przełożona na ciemne tło w tonie wypalonej
    gliny, a nie zimnej szarości. Każda para sprawdzona pod kątem kontrastu
    (WCAG, 2026-10-02): tekst na tle 14,1:1, przygaszony tekst 6,5:1 (5,9:1 na
-   panelu), granica kontrolek 3,9:1, serce 7,4:1, gwiazdki 7,6:1, statusy co
+   panelu), granica kontrolek 3,9:1, serce i gwiazdki 7,6:1, statusy co
    najmniej 6,7:1, jasny tekst na szałwiowym tle sekcji powitalnej 5,1:1.
    Akcent jest ciemniejszą szałwią, bo jest tłem tej sekcji — jako ozdobny
    znak na tle strony ma 2,8:1, czyli tyle co w trybie jasnym (2,4:1).
@@ -87,7 +88,7 @@
     --border: #38332d;
     --color-control-border: #7d7569;
     --color-accent: #4a6560;
-    --color-heart: #e0939d;
+    --color-heart: #8db2aa;
     --color-rating: #8db2aa;
     --color-ceramic: #2b2722;
     --color-ceramic-hover: #35302a;
@@ -110,7 +111,7 @@
   --border: #38332d;
   --color-control-border: #7d7569;
   --color-accent: #4a6560;
-  --color-heart: #e0939d;
+  --color-heart: #8db2aa;
   --color-rating: #8db2aa;
   --color-ceramic: #2b2722;
   --color-ceramic-hover: #35302a;

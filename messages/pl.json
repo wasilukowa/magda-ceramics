@@ -6,7 +6,7 @@
       "shop": "Wszystkie prace z domowej pracowni Magdy — kubki, miski, świeczniki i wazony. Każdy egzemplarz rzeźbiony i malowany ręcznie.",
       "about": "Magda o sobie i o swojej pracowni w Warszawie: skąd wzięła się ceramika, jak powstają naczynia i dlaczego żadne nie jest takie samo.",
       "contact": "Napisz do Magdy — pytanie o pracę, zamówienie albo przesyłkę. Odpowiadamy też na Instagramie @magda_ceramics.",
-      "shipping": "Jak wysyłamy zamówienia — paczkomat i kurier, Polska i Unia Europejska — ile to trwa i jak zwrócić albo zareklamować zakup.",
+      "shipping": "Jak wysyłamy zamówienia — paczkomat i kurier, Polska, Unia Europejska i Wielka Brytania — ile to trwa i jak zwrócić albo zareklamować zakup.",
       "terms": "Regulamin sklepu Magda Ceramics: zamawianie, płatności, dostawa, odstąpienie od umowy i reklamacje.",
       "privacy": "Jak przetwarzamy dane osobowe kupujących i jakie pliki cookies zapisujemy — polityka prywatności sklepu Magda Ceramics.",
       "cookies": "Pełna lista plików cookies zapisywanych przez sklep: co robią, jak długo żyją i jak w każdej chwili zmienić swoją zgodę."
@@ -67,10 +67,12 @@
     "wishlistSold": "Sprzedane",
     "carouselPrev": "Poprzednie prace",
     "carouselNext": "Następne prace",
-    "sliderPrev": "Poprzednie zdjęcie",
-    "sliderNext": "Następne zdjęcie",
-    "sliderGoTo": "Zdjęcie {number}",
     "sliderAlt": "Ceramika Magdy, zdjęcie {number}"
+  },
+  "photoSlider": {
+    "prev": "Poprzednie zdjęcie",
+    "next": "Następne zdjęcie",
+    "goTo": "Zdjęcie {number}"
   },
   "shop": {
     "title": "Sklep",
@@ -212,15 +214,15 @@
   "shipping": {
     "pageTitle": "Wysyłka i zwroty",
     "ratesTitle": "Ile kosztuje wysyłka",
-    "ratesNote": "Koszt dostawy dolicza się w kasie i zależy od kraju dostawy. Kwoty podajemy w walucie wybranej w nagłówku strony.",
+    "ratesNote": "Koszt dostawy dolicza się w kasie i zależy od kraju i sposobu dostawy. Kwoty podajemy w walucie wybranej w nagłówku strony.",
     "tableDestination": "Kierunek",
     "tableDelivery": "Sposób dostawy",
     "tableCost": "Koszt",
     "deliveryLockerOrCourier": "Paczkomat InPost albo kurier",
+    "deliveryLocker": "Paczkomat InPost",
     "deliveryCourier": "Kurier",
     "courierOnlyNote": "{countries} — tylko kurier: InPost nie ma tam paczkomatów.",
     "zones": {
-      "PL": "Polska",
       "INPOST_EU": "Kraje z paczkomatami InPost",
       "REST_EU": "Pozostałe kraje Unii Europejskiej"
     }
@@ -575,7 +577,8 @@
   "ceramics": {
     "title": "Moja ceramika",
     "metaDescription": "Jak powstaje naczynie w mojej pracowni — od bryły gliny, przez koło garncarskie i rzeźbienie, po dwa wypały.",
-    "draftNote": "Ta strona jest jeszcze w przygotowaniu — opisy kolejnych etapów wkrótce uzupełnię."
+    "draftNote": "Ta strona jest jeszcze w przygotowaniu — opisy kolejnych etapów wkrótce uzupełnię.",
+    "photoAlt": "Praca w pracowni Magdy, zdjęcie {number}"
   },
   "faq": {
     "title": "Pytania i odpowiedzi",

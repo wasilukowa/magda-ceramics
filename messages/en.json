@@ -6,7 +6,7 @@
       "shop": "Every piece from Magda's home studio — mugs, bowls, candle holders and vases. Each one hand-sculpted and hand-painted.",
       "about": "Magda on herself and her studio in Warsaw: how the ceramics began, how each piece is made and why no two are alike.",
       "contact": "Write to Magda — about a piece, an order or a parcel on its way. We answer on Instagram @magda_ceramics too.",
-      "shipping": "How orders travel — parcel locker or courier, Poland and the European Union — how long it takes, and how to return a purchase.",
+      "shipping": "How orders travel — parcel locker or courier, Poland, the European Union and the United Kingdom — how long it takes, and how to return a purchase.",
       "terms": "Magda Ceramics terms and conditions: ordering, payment, delivery, withdrawal from the contract and complaints.",
       "privacy": "How we handle buyers' personal data and which cookies we store — the Magda Ceramics privacy policy.",
       "cookies": "The full list of cookies this shop stores: what each one does, how long it lives and how to change your choice at any time."
@@ -67,10 +67,12 @@
     "wishlistSold": "Sold",
     "carouselPrev": "Previous pieces",
     "carouselNext": "Next pieces",
-    "sliderPrev": "Previous photo",
-    "sliderNext": "Next photo",
-    "sliderGoTo": "Photo {number}",
     "sliderAlt": "Magda's ceramics, photo {number}"
+  },
+  "photoSlider": {
+    "prev": "Previous photo",
+    "next": "Next photo",
+    "goTo": "Photo {number}"
   },
   "shop": {
     "title": "Shop",
@@ -212,15 +214,15 @@
   "shipping": {
     "pageTitle": "Shipping and returns",
     "ratesTitle": "What delivery costs",
-    "ratesNote": "Delivery is added at checkout and depends on the destination country. Amounts are shown in the currency picked in the page header.",
+    "ratesNote": "Delivery is added at checkout and depends on the destination country and the delivery method. Amounts are shown in the currency picked in the page header.",
     "tableDestination": "Destination",
     "tableDelivery": "Delivery",
     "tableCost": "Cost",
     "deliveryLockerOrCourier": "InPost parcel locker or courier",
+    "deliveryLocker": "InPost parcel locker",
     "deliveryCourier": "Courier",
     "courierOnlyNote": "{countries} — courier only: InPost has no lockers there.",
     "zones": {
-      "PL": "Poland",
       "INPOST_EU": "Countries with InPost lockers",
       "REST_EU": "Rest of the European Union"
     }
@@ -575,7 +577,8 @@
   "ceramics": {
     "title": "My ceramics",
     "metaDescription": "How a piece is made in my studio — from a lump of clay, through the wheel and the carving, to two firings.",
-    "draftNote": "This page is still being written — descriptions of each stage are coming soon."
+    "draftNote": "This page is still being written — descriptions of each stage are coming soon.",
+    "photoAlt": "At work in Magda's studio, photo {number}"
   },
   "faq": {
     "title": "Questions & answers",

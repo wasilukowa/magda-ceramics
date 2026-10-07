@@ -3,11 +3,19 @@ import {
   INPOST_LOCKER_COUNTRIES,
   SHIPPING_RATES,
 } from "@/content/data";
-import { ShippingZone, ShippingZoneSummary } from "@/contracts/server/shipping";
+import {
+  DeliveryMethod,
+  ShippingOption,
+  ShippingZone,
+  ShippingZoneSummary,
+  ZoneRate,
+  ZoneRates,
+} from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
 
-// Falls back to the most expensive (rest-of-EU) zone for any unknown code,
-// so we never undercharge if the country list and rates drift apart.
+// Falls back to the rest-of-EU zone for any unknown code. The checkout only
+// accepts codes from CHECKOUT_COUNTRIES (see isCheckoutCountry), so this only
+// matters for orders placed before a country left the list.
 export const getShippingZone = (countryCode: string): ShippingZone =>
   CHECKOUT_COUNTRIES.find((country) => country.code === countryCode)?.zone ??
   ShippingZone.RestEu;
@@ -24,29 +32,88 @@ export const isCheckoutCountry = (countryCode: string): boolean =>
 export const hasInPostLocker = (countryCode: string): boolean =>
   INPOST_LOCKER_COUNTRIES.includes(countryCode);
 
+const isSameRate = (a: ZoneRate, b: ZoneRate): boolean =>
+  a.pln === b.pln && a.eur === b.eur;
+
+// Stawka za dostawę danym sposobem. Cena paczkomatu obowiązuje tylko tam,
+// gdzie paczkomat naprawdę jest (kraj z paczkomatami, strefa z ceną za
+// paczkomat) — w każdym innym wypadku liczy się kurier.
+const getRate = (countryCode: string, method: DeliveryMethod): ZoneRate => {
+  const { locker, courier } = SHIPPING_RATES[getShippingZone(countryCode)];
+  return method === DeliveryMethod.Locker && locker && hasInPostLocker(countryCode)
+    ? locker
+    : courier;
+};
+
+// Sposób dostawy zamówienia: paczkomat tylko wtedy, gdy klient go wybrał,
+// wskazał konkretny punkt, a w tym kraju paczkomaty są. Inaczej kurier.
+export const resolveDeliveryMethod = (
+  countryCode: string,
+  requested: DeliveryMethod | undefined,
+  hasLockerPoint: boolean
+): DeliveryMethod =>
+  requested === DeliveryMethod.Locker && hasLockerPoint && hasInPostLocker(countryCode)
+    ? DeliveryMethod.Locker
+    : DeliveryMethod.Courier;
+
+// Sposób dostawy, od którego zależy cena — z nim kasa wycenia płatność. Tam,
+// gdzie paczkomat kosztuje tyle co kurier (Polska), przełączenie nie zmienia
+// kwoty, więc płatności nie trzeba zakładać od nowa (nowa płatność przeładowuje
+// formularz i zamknęłaby klientowi otwartą mapę paczkomatów).
+export const getPricedDeliveryMethod = (
+  countryCode: string,
+  method: DeliveryMethod
+): DeliveryMethod => {
+  const { locker, courier } = SHIPPING_RATES[getShippingZone(countryCode)];
+  return locker && !isSameRate(locker, courier)
+    ? resolveDeliveryMethod(countryCode, method, true)
+    : DeliveryMethod.Courier;
+};
+
 // Shipping cost in the chosen currency's smallest unit (grosze / euro cents),
 // for Stripe.
 export const getShippingAmount = (
   countryCode: string,
-  currency: Currency
-): number => SHIPPING_RATES[getShippingZone(countryCode)][currency];
+  currency: Currency,
+  method: DeliveryMethod
+): number => getRate(countryCode, method)[currency];
 
 // Shipping cost in major units, for display.
 export const getShippingCost = (
   countryCode: string,
-  currency: Currency
-): number => getShippingAmount(countryCode, currency) / 100;
+  currency: Currency,
+  method: DeliveryMethod
+): number => getShippingAmount(countryCode, currency, method) / 100;
 
 // Shipping cost in zł, used for WooCommerce shipping_lines (orders are always
 // recorded in the PLN store currency regardless of the paid currency).
-export const getShippingCostInZloty = (countryCode: string): number =>
-  SHIPPING_RATES[getShippingZone(countryCode)].pln / 100;
+export const getShippingCostInZloty = (
+  countryCode: string,
+  method: DeliveryMethod
+): number => getRate(countryCode, method).pln / 100;
+
+// Pozycje cennika strefy. Paczkomat i kurier w tej samej cenie to jedna
+// pozycja, „paczkomat albo kurier".
+const getShippingOptions = ({ locker, courier }: ZoneRates): ShippingOption[] => {
+  if (!locker) return [{ methods: [DeliveryMethod.Courier], rate: courier }];
+  if (isSameRate(locker, courier)) {
+    return [
+      { methods: [DeliveryMethod.Locker, DeliveryMethod.Courier], rate: courier },
+    ];
+  }
+  return [
+    { methods: [DeliveryMethod.Locker], rate: locker },
+    { methods: [DeliveryMethod.Courier], rate: courier },
+  ];
+};
 
 // Kolejność stref na stronie „Wysyłka i zwroty" — od najtańszej.
 const ZONE_ORDER = [
   ShippingZone.Poland,
   ShippingZone.InPostEu,
+  ShippingZone.GermanyAustria,
   ShippingZone.RestEu,
+  ShippingZone.UnitedKingdom,
 ];
 
 // Stawki zebrane po strefach, prosto z tych samych danych, na których liczy
@@ -58,7 +125,7 @@ export const getShippingZoneSummaries = (): ShippingZoneSummary[] =>
     return {
       zone,
       countryCodes: countries.map((country) => country.code),
-      rate: SHIPPING_RATES[zone],
+      options: getShippingOptions(SHIPPING_RATES[zone]),
       courierOnlyCodes: countries
         .filter((country) => !hasInPostLocker(country.code))
         .map((country) => country.code),

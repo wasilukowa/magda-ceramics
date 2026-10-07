@@ -62,6 +62,9 @@ export const paymentIntentRequestSchema = z.object({
   items: cartSchema,
   country: countrySchema,
   currency: z.enum(Currency),
+  // Od niego zależy cena wysyłki (paczkomat bywa tańszy od kuriera). Karta
+  // otwarta przed wdrożeniem go nie wysyła — wtedy kurier.
+  deliveryMethod: z.enum(DeliveryMethod).optional().default(DeliveryMethod.Courier),
 });
 
 export const availabilityRequestSchema = z.object({ items: cartSchema });

@@ -16,6 +16,7 @@ import {
   UnpaidOrder,
 } from "@/contracts/server/order";
 import { LedgerAmount } from "@/contracts/server/exchangeRate";
+import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
 import { routing } from "@/i18n/routing";
 import { convertPlnToEur } from "@/lib/helpers/currency";
@@ -61,6 +62,10 @@ export const ORDER_META = {
   // Mail „nowe zamówienie" do pracowni.
   mailStudioNewOrder: "_mc_mail_studio_new_order",
 } as const;
+
+// Kod paczkomatu w zamówieniu (zapisuje go kasa — CheckoutService.saveDraftOrder).
+// Jest tylko w zamówieniach do paczkomatu, więc mówi też o sposobie dostawy.
+export const LOCKER_META_KEY = "_inpost_locker_id";
 
 // Dopisek o paczkomacie, który kasa dokłada do uwagi klienta (patrz
 // CheckoutService.saveDraftOrder). Mail pokazuje paczkomat osobno, więc
@@ -110,8 +115,8 @@ export const getOrderPreferences = (raw: RawOrder): OrderPreferences => {
 
 // Kwoty w walucie klienta. Złotówki idą prosto z WooCommerce. Euro liczymy
 // tą samą regułą co kasa (cena sztuki przeliczona i zaokrąglona w górę,
-// wysyłka z tabeli dla kraju), a suma opłaconego zamówienia to kwota, którą
-// pobrał Stripe — nie nasze przeliczenie.
+// wysyłka z cennika dla kraju i sposobu dostawy), a suma opłaconego
+// zamówienia to kwota, którą pobrał Stripe — nie nasze przeliczenie.
 export const getOrderAmounts = (raw: RawOrder, currency: Currency): OrderAmounts => {
   const lines = raw.line_items ?? [];
 
@@ -139,7 +144,10 @@ export const getOrderAmounts = (raw: RawOrder, currency: Currency): OrderAmounts
     };
   });
   const country = raw.shipping?.country || raw.billing?.country || "";
-  const shipping = getShippingCost(country, Currency.EUR);
+  const method = getMetaValue(raw, LOCKER_META_KEY)
+    ? DeliveryMethod.Locker
+    : DeliveryMethod.Courier;
+  const shipping = getShippingCost(country, Currency.EUR, method);
   const paid = parsePositive(getMetaValue(raw, ORDER_META.paidAmount));
 
   return {
@@ -288,7 +296,7 @@ export const prepareSalesOrder = (
 
 // Gdzie jedzie paczka: paczkomat (kod i adres punktu) albo adres dla kuriera.
 const getOrderDelivery = (raw: RawOrder, locale: string): OrderDelivery => {
-  const lockerCode = getMetaValue(raw, "_inpost_locker_id") ?? null;
+  const lockerCode = getMetaValue(raw, LOCKER_META_KEY) ?? null;
   const shipping = raw.shipping ?? {};
   const billing = raw.billing ?? {};
   const name = [billing.first_name, billing.last_name].filter(Boolean).join(" ");

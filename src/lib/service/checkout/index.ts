@@ -26,7 +26,11 @@ import { prepareProduct } from "@/lib/service/product/helpers";
 import { orderService } from "@/lib/service/order";
 import { customerMailService } from "@/lib/service/customerMail";
 import { studioMailService } from "@/lib/service/studioMail";
-import { LOCKER_NOTE_PREFIX, ORDER_META } from "@/lib/service/order/helpers";
+import {
+  LOCKER_META_KEY,
+  LOCKER_NOTE_PREFIX,
+  ORDER_META,
+} from "@/lib/service/order/helpers";
 import { getUnitPrice } from "@/lib/helpers/currency";
 import { getShippingAmount, getShippingCostInZloty } from "@/lib/helpers/shipping";
 import { getCartFingerprint, getUnavailableItems } from "./helpers";
@@ -146,11 +150,13 @@ class CheckoutService {
   }
 
   // Ile naprawdę kosztuje ten koszyk. Ceny biorą się z WooCommerce po numerze
-  // produktu, wysyłka ze strefy kraju — nic z tego nie przychodzi z żądania.
+  // produktu, wysyłka z cennika dla kraju i sposobu dostawy — żadnej kwoty nie
+  // bierzemy z żądania.
   async priceCart(
     items: OrderItem[],
     country: string,
-    currency: Currency
+    currency: Currency,
+    deliveryMethod: DeliveryMethod
   ): Promise<CartPricingResult> {
     const result = await this.getPurchasableProducts(items);
     if (!result.ok) return result;
@@ -170,7 +176,7 @@ class CheckoutService {
     });
 
     const productsAmount = lines.reduce((sum, line) => sum + line.amount, 0);
-    const shippingAmount = getShippingAmount(country, currency);
+    const shippingAmount = getShippingAmount(country, currency, deliveryMethod);
 
     return {
       ok: true,
@@ -217,10 +223,12 @@ class CheckoutService {
     locale,
     currency,
   }: DraftOrderInput): Promise<DraftOrderResult> {
-    // Wysyłkę liczymy z kraju adresu, nie z tego, co przyszło w żądaniu — a że
-    // ten sam kraj musiał być użyty przy płatności (metadane w Stripe), suma
-    // zamówienia zgadza się z tym, co klient zapłaci.
-    const shippingTotal = getShippingCostInZloty(billing.country);
+    // Wysyłkę liczymy z cennika dla kraju adresu i sposobu dostawy, nie z kwoty
+    // z żądania — a że ta sama kwota musiała być w płatności (metadane
+    // w Stripe, patrz canDraftOrderFor), suma zamówienia zgadza się z tym, co
+    // klient zapłaci. Sposób dostawy przychodzi tu już rozstrzygnięty
+    // (resolveDeliveryMethod).
+    const shippingTotal = getShippingCostInZloty(billing.country, deliveryMethod);
 
     // Parcel-locker orders (Poland + InPost International countries): ship to
     // the locker's address and label the shipping line with the locker code so
@@ -275,7 +283,7 @@ class CheckoutService {
           ],
           customer_note: noteParts.length ? noteParts.join("\n") : undefined,
           meta_data: [
-            ...(isLocker ? [{ key: "_inpost_locker_id", value: locker!.code }] : []),
+            ...(isLocker ? [{ key: LOCKER_META_KEY, value: locker!.code }] : []),
             // W tym języku i tej walucie klient dostanie maile i zobaczy
             // zamówienie na koncie — patrz getOrderPreferences.
             ...(locale ? [{ key: ORDER_META.locale, value: locale }] : []),

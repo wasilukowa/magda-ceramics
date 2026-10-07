@@ -2,30 +2,33 @@ import { Country, CookieRegistryEntry, StaticRoute } from "./types";
 import { ShippingZone, ShippingRates } from "@/contracts/server/shipping";
 import { CookieCategory } from "@/contracts/shared";
 
-// Zdjęcia w sliderze na stronie głównej, w kolejności pokazywania. Pliki leżą
-// w public/slider/ (pomniejszone do 2000 px w dłuższym boku). Żeby usunąć
-// zdjęcie: skasuj wiersz tutaj (i sam plik, jeśli ma zniknąć z repozytorium).
-// Żeby dodać: wrzuć plik do public/slider/ i dopisz wiersz. Slider przycina
-// zdjęcie do swojej ramki (na komputerze prawie pionowej, na telefonie prawie
-// kwadratowej), więc najważniejsze powinno być blisko środka kadru.
+// Zdjęcia w sliderze na stronie głównej, w kolejności pokazywania (tej samej,
+// co nazwy plików u Natalii, 2026-10-07: „a_" na początek, „w_" na koniec).
+// Pliki leżą w public/slider/ (pomniejszone do 2000 px w dłuższym boku). Żeby
+// usunąć zdjęcie: skasuj wiersz tutaj (i sam plik, jeśli ma zniknąć
+// z repozytorium). Żeby dodać: wrzuć plik do public/slider/ i dopisz wiersz.
+// Slider przycina zdjęcie do swojej ramki (na komputerze prawie pionowej, na
+// telefonie prawie kwadratowej), więc najważniejsze powinno być blisko środka
+// kadru. Zdjęcia, które stały tu wcześniej, są teraz na „Moja ceramika" —
+// patrz CERAMICS_PHOTOS.
 export const HERO_SLIDER_PHOTOS: string[] = [
-  "/slider/dsc-0261.jpg",
-  "/slider/dsc-0263.jpg",
-  "/slider/dsc-0269.jpg",
-  "/slider/dsc-0305.jpg",
-  "/slider/dsc-0315.jpg",
-  "/slider/dsc-0321.jpg",
-  "/slider/dsc-0379.jpg",
-  "/slider/dsc-0396.jpg",
+  "/slider/dsc-1746.jpg",
+  "/slider/dsc-1388.jpg",
+  "/slider/dsc-1412.jpg",
+  "/slider/dsc-1427.jpg",
+  "/slider/dsc-1505.jpg",
+  "/slider/dsc-1578.jpg",
+  "/slider/dsc-1641.jpg",
+  "/slider/dsc-1650.jpg",
+  "/slider/dsc-2100.jpg",
+  "/slider/dsc-8101.jpg",
+  "/slider/dsc-9112.jpg",
+  "/slider/dsc-9290.jpg",
+  "/slider/dsc-9316.jpg",
+  "/slider/dsc-9581.jpg",
+  "/slider/dsc-9815.jpg",
   "/slider/dsc-0407.jpg",
-  "/slider/dsc-1195.jpg",
   "/slider/dsc-1196.jpg",
-  "/slider/dsc-6045-2.jpg",
-  "/slider/dsc-6108.jpg",
-  "/slider/dsc-6110.jpg",
-  "/slider/dsc-6281.jpg",
-  "/slider/dsc-7519.jpg",
-  "/slider/dsc-7722.jpg",
 ];
 
 // Everything the store writes to the customer's device, listed for the cookie
@@ -157,21 +160,21 @@ export const COMING_SOON_META = {
   photoAlt: "Handmade ceramics",
 };
 
-// Only countries the studio actually ships to (Poland + EU). Non-EU
-// destinations are intentionally excluded — shipping there is too costly.
-// Zones: Poland flat rate, InPost International countries, and the rest of
-// the EU (courier). See SHIPPING_RATES below for the amounts.
+// Only countries the studio actually ships to: Poland, the EU countries below
+// and the United Kingdom. Other destinations are intentionally excluded —
+// shipping there is too costly. See SHIPPING_RATES below for the amounts.
 export const CHECKOUT_COUNTRIES: Country[] = [
   { code: "PL", label: "Poland", zone: ShippingZone.Poland },
   { code: "FR", label: "France", zone: ShippingZone.InPostEu },
   { code: "NL", label: "Netherlands", zone: ShippingZone.InPostEu },
   { code: "BE", label: "Belgium", zone: ShippingZone.InPostEu },
-  { code: "AT", label: "Austria", zone: ShippingZone.InPostEu },
   { code: "IT", label: "Italy", zone: ShippingZone.InPostEu },
   { code: "ES", label: "Spain", zone: ShippingZone.InPostEu },
   { code: "PT", label: "Portugal", zone: ShippingZone.InPostEu },
   { code: "LU", label: "Luxembourg", zone: ShippingZone.InPostEu },
-  { code: "DE", label: "Germany", zone: ShippingZone.RestEu },
+  { code: "DE", label: "Germany", zone: ShippingZone.GermanyAustria },
+  { code: "AT", label: "Austria", zone: ShippingZone.GermanyAustria },
+  { code: "GB", label: "United Kingdom", zone: ShippingZone.UnitedKingdom },
   { code: "CZ", label: "Czech Republic", zone: ShippingZone.RestEu },
   { code: "SE", label: "Sweden", zone: ShippingZone.RestEu },
   { code: "DK", label: "Denmark", zone: ShippingZone.RestEu },
@@ -193,14 +196,36 @@ export const INPOST_LOCKER_COUNTRIES = [
   "LU",
 ];
 
-// Flat shipping rates per zone, in each currency's smallest unit
-// (grosze for PLN, euro cents for EUR). Customers pay in the currency they
-// browse in, so each zone has both a PLN and an EUR price point.
-// PL: 18 zł / 5 € · InPost International: 50 zł / 12 € · rest of EU: 75 zł / 17 €
-// (InPost International obniżone z 58 zł / 13 € 2026-10-02; 12 € = 50 zł po
-// kursie sklepu 4,30, zaokrąglone w górę jak ceny prac).
+// Flat shipping rates per zone and delivery method, in each currency's
+// smallest unit (grosze for PLN, euro cents for EUR). Customers pay in the
+// currency they browse in, so each rate has both a PLN and an EUR price point.
+// Cennik od Natalii, 2026-10-07:
+// · Polska — paczkomat i kurier: 20 zł / 5 €
+// · paczkomaty InPost International (BE, FR, ES, NL, LU, PT, IT): 50 zł / 11,50 €;
+//   kurier do tych samych krajów: 80 zł / 18 €
+// · Niemcy i Austria — tylko kurier: 55 zł / 12 €
+// · Wielka Brytania — tylko kurier: 95 zł / 21 € (Natalia podała też 18 £,
+//   ale sklep nie przyjmuje funtów)
+// · pozostałe kraje — kurier: 80 zł / 18 €
+// Dwie kwoty spoza cennika, wyliczone po kursie sklepu: Polska w euro
+// (20 zł / 4,30 = 4,65 → 5 €) i kurier za 18 € w złotych (18 × 4,30 = 77,40
+// → 80 zł, w górę do pełnej piątki jak reszta cennika).
 export const SHIPPING_RATES: ShippingRates = {
-  [ShippingZone.Poland]: { pln: 1800, eur: 500 },
-  [ShippingZone.InPostEu]: { pln: 5000, eur: 1200 },
-  [ShippingZone.RestEu]: { pln: 7500, eur: 1700 },
+  [ShippingZone.Poland]: {
+    locker: { pln: 2000, eur: 500 },
+    courier: { pln: 2000, eur: 500 },
+  },
+  [ShippingZone.InPostEu]: {
+    locker: { pln: 5000, eur: 1150 },
+    courier: { pln: 8000, eur: 1800 },
+  },
+  [ShippingZone.GermanyAustria]: {
+    courier: { pln: 5500, eur: 1200 },
+  },
+  [ShippingZone.UnitedKingdom]: {
+    courier: { pln: 9500, eur: 2100 },
+  },
+  [ShippingZone.RestEu]: {
+    courier: { pln: 8000, eur: 1800 },
+  },
 };

@@ -28,6 +28,14 @@ export type ProductGalleryProps = {
   productName: string;
 };
 
+// Slider zdjęć (strona główna, „Moja ceramika"). Opisy zdjęć składa strona,
+// bo każda mówi o nich co innego. `sizes` jak w next/image — slider wypełnia
+// ramkę rodzica, więc tylko strona wie, jak szeroka ona jest.
+export type PhotoSliderProps = {
+  photos: ImageProps[];
+  sizes: string;
+};
+
 // Cookie categories in the order they are shown to the customer. "Necessary"
 // covers storage exempt from consent under art. 399 PKE — the login session,
 // the cart, the payment step, and preferences the customer sets themselves

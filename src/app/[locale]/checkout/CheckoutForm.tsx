@@ -6,7 +6,9 @@ import { Address } from "@/contracts/server/cart";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { CheckoutStep } from "@/contracts/server/checkout";
 import { CHECKOUT_COUNTRIES } from "@/content/data";
-import { getCountryLabel } from "@/lib/helpers/shipping";
+import { getCountryLabel, getShippingCost } from "@/lib/helpers/shipping";
+import { formatPrice } from "@/lib/helpers/currency";
+import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
 import ParcelLockerField from "@/components/checkout/ParcelLockerField";
 
@@ -88,6 +90,7 @@ export default function CheckoutForm({
 }: Props) {
   const t = useTranslations("checkout");
   const locale = useLocale();
+  const { currency } = useCurrency();
 
   const usingLocker = hasLocker && deliveryMethod === DeliveryMethod.Locker;
   const countryLabel = getCountryLabel(address.country, locale);
@@ -191,6 +194,14 @@ export default function CheckoutForm({
                       {method === DeliveryMethod.Locker
                         ? t("methodLocker")
                         : t("methodCourier")}
+                      {/* Za granicą paczkomat i kurier mają różne ceny, więc
+                          cena stoi przy wyborze, a nie tylko w podsumowaniu. */}
+                      <span className="block mt-1 text-xs tracking-normal normal-case">
+                        {formatPrice(
+                          getShippingCost(address.country, currency, method),
+                          currency
+                        )}
+                      </span>
                     </button>
                   )
                 )}
