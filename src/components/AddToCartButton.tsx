@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useCart } from "@/hooks/useCart";
-import { AddToCartButtonProps } from "@/contracts/shared";
+import { AddToCartButtonProps, ButtonSize } from "@/contracts/shared";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 export default function AddToCartButton({
   id, slug, name, price, image, inStock, hasPrice,
@@ -46,9 +47,10 @@ export default function AddToCartButton({
   return (
     <button
       onClick={handleClick}
-      className="w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 hover:opacity-80 transition-opacity"
+      className={buttonClass({ size: ButtonSize.Block })}
     >
       {alreadyInCart ? t("inCart") : added ? t("added") : t("add")}
+      <ButtonArrow />
     </button>
   );
 }

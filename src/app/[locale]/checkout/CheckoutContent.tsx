@@ -4,14 +4,16 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useStripe, useElements } from "@stripe/react-stripe-js";
 import { CartItem, Address } from "@/contracts/server/cart";
-import { Currency } from "@/contracts/shared";
+import { ButtonSize, ButtonVariant, Currency } from "@/contracts/shared";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { CheckoutStep, UnavailableItem } from "@/contracts/server/checkout";
 import { getOrderItems, getSoldOutItems } from "@/lib/helpers/checkout";
 import { cn } from "@/lib/utils";
+import { isPhoneNumber } from "@/utility";
 import CheckoutStepper from "@/components/checkout/CheckoutStepper";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import CheckoutForm from "./CheckoutForm";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 type Props = {
   items: CartItem[];
@@ -32,11 +34,12 @@ type Props = {
   paymentIntentId: string;
 };
 
-const primaryButtonClass =
-  "w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 hover:opacity-80 transition-opacity disabled:opacity-40";
+const primaryButtonClass = buttonClass({ size: ButtonSize.Block });
 
-const secondaryButtonClass =
-  "w-full border border-[var(--color-control-border)] text-xs tracking-widest uppercase py-4 hover:border-[var(--foreground)] transition-colors";
+const secondaryButtonClass = buttonClass({
+  variant: ButtonVariant.Secondary,
+  size: ButtonSize.Block,
+});
 
 export default function CheckoutContent({
   items,
@@ -66,12 +69,15 @@ export default function CheckoutContent({
 
   // Every required field for the chosen delivery method is filled in. Drives
   // both the "continue" button's enabled state and step-1 validation.
+  // Do paczkomatu telefon jest obowiązkowy — InPost wysyła na niego SMS
+  // z kodem odbioru (decyzja Natalii 2026-10-07). Przy kurierze zostaje
+  // nieobowiązkowy.
   const isAddressComplete =
     !!address.firstName &&
     !!address.lastName &&
     !!address.email &&
     (usingLocker
-      ? !!locker
+      ? !!locker && isPhoneNumber(address.phone)
       : !!address.street && !!address.postcode && !!address.city);
 
   function goToStep(target: CheckoutStep) {
@@ -133,6 +139,7 @@ export default function CheckoutContent({
           }
         : {
             line1: address.street,
+            line2: address.street2,
             city: address.city,
             postal_code: address.postcode,
             country: address.country,
@@ -152,6 +159,7 @@ export default function CheckoutContent({
           email: address.email,
           phone: address.phone,
           address_1: shippingAddress.line1,
+          address_2: usingLocker ? "" : address.street2,
           city: shippingAddress.city,
           postcode: shippingAddress.postal_code,
           country: shippingAddress.country,
@@ -244,6 +252,7 @@ export default function CheckoutContent({
           className={primaryButtonClass}
         >
           {primaryLabel}
+          {!loading && <ButtonArrow />}
         </button>
       </div>
 

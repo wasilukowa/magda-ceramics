@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { register } from "@/server-actions/auth";
 import { RegisterFormState } from "@/contracts/server/auth";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 const initialState: RegisterFormState = { status: "idle", message: "" };
 
@@ -106,9 +107,16 @@ export default function RegisterForm() {
       <button
         type="submit"
         disabled={pending}
-        className="text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[var(--foreground)]"
+        className={buttonClass()}
       >
-        {pending ? t("register.submitting") : t("register.submit")}
+        {pending ? (
+          t("register.submitting")
+        ) : (
+          <>
+            {t("register.submit")}
+            <ButtonArrow />
+          </>
+        )}
       </button>
 
       <p className="text-sm text-[var(--muted)] text-center">

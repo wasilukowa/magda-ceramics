@@ -6,6 +6,7 @@ import { updateAddress } from "@/server-actions/account";
 import { AccountFormState, CustomerAddress } from "@/contracts/server/auth";
 import { CHECKOUT_COUNTRIES } from "@/content/data";
 import { getCountryLabel } from "@/lib/helpers/shipping";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 const initialState: AccountFormState = { status: "idle", message: "" };
 
@@ -153,9 +154,16 @@ export default function AddressForm({ billing }: { billing: CustomerAddress }) {
       <button
         type="submit"
         disabled={pending}
-        className="text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors self-start disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[var(--foreground)]"
+        className={buttonClass({ className: "self-start" })}
       >
-        {pending ? t("saving") : t("save")}
+        {pending ? (
+          t("saving")
+        ) : (
+          <>
+            {t("save")}
+            <ButtonArrow />
+          </>
+        )}
       </button>
     </form>
   );

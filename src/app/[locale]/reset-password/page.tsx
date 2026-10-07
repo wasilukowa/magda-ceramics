@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
 import { verifyPasswordResetToken } from "@/lib/auth/resetToken";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 export async function generateMetadata() {
   const t = await getTranslations("auth");
@@ -30,9 +31,10 @@ async function ResetContent({
         <p>
           <Link
             href="/forgot-password"
-            className="inline-block text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
+            className={buttonClass()}
           >
             {t("reset.requestAgain")}
+            <ButtonArrow />
           </Link>
         </p>
       </div>

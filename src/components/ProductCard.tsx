@@ -21,7 +21,12 @@ export const EAGER_CARDS = 4;
 const CARD_IMAGE_SIZES =
   "(min-width: 1224px) 270px, (min-width: 1024px) calc(25vw - 30px), (min-width: 768px) calc(33.33vw - 32px), calc(50vw - 36px)";
 
-export default function ProductCard({ product, soldOutLabel, eager }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  soldOutLabel,
+  eager,
+  hidePrice,
+}: ProductCardProps) {
   const image = product.images[0];
   const showSoldOut = !product.inStock && !!soldOutLabel;
 
@@ -72,10 +77,12 @@ export default function ProductCard({ product, soldOutLabel, eager }: ProductCar
           )}
         </div>
         <p className="text-xs tracking-widest uppercase text-[var(--foreground)]">{product.name}</p>
-        <Price
-          price={product.price}
-          className="block text-sm text-[var(--muted)] mt-1"
-        />
+        {!hidePrice && (
+          <Price
+            price={product.price}
+            className="block text-sm text-[var(--muted)] mt-1"
+          />
+        )}
       </Link>
 
       {/* Widoczne od razu, nie dopiero po najechaniu — na telefonie nie ma

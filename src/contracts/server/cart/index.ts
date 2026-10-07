@@ -31,6 +31,8 @@ export type BillingAddress = {
   email: string;
   phone: string;
   address_1: string;
+  // Druga linia adresu (mieszkanie, piętro, firma) — opcjonalna.
+  address_2: string;
   city: string;
   postcode: string;
   country: string;
@@ -42,6 +44,11 @@ export type Address = {
   email: string;
   phone: string;
   street: string;
+  // Druga, nieobowiązkowa linia adresu: numer mieszkania, piętro, nazwa firmy
+  // albo budynku. W Polsce zwykle zbędna (mieszczą się w „ulicy i numerze"),
+  // ale w Wielkiej Brytanii, Francji, Hiszpanii czy we Włoszech to osobna
+  // linijka na kopercie (decyzja 2026-10-07).
+  street2: string;
   city: string;
   postcode: string;
   country: string;

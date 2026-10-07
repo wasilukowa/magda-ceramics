@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
+import { ButtonVariant } from "@/contracts/shared";
 
 // Catches render/fetch failures below the locale layout — a WooCommerce outage
 // on the shop page, for instance — instead of showing the Next.js error screen.
@@ -30,13 +32,14 @@ export default function Error({
         <button
           type="button"
           onClick={reset}
-          className="text-xs tracking-widest uppercase border border-[var(--foreground)] px-8 py-3 hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
+          className={buttonClass()}
         >
           {t("retry")}
+          <ButtonArrow />
         </button>
         <Link
           href="/"
-          className="text-xs tracking-widest uppercase border border-[var(--color-control-border)] px-8 py-3 hover:border-[var(--foreground)] transition-colors"
+          className={buttonClass({ variant: ButtonVariant.Secondary })}
         >
           {t("home")}
         </Link>

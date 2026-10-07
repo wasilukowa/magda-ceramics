@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { useAuth } from "@/lib/store/providers/AuthProvider";
 
 // Jedyny kawałek nagłówka, który zależy od sesji: zalogowany idzie na konto,
@@ -33,6 +33,14 @@ const AccountIcon = ({ isLoggedIn }: { isLoggedIn: boolean }) => (
   </svg>
 );
 
+// Logowanie zaczęte w kasie wraca do kasy (prośba Natalii 2026-10-07) — tak
+// samo jak przycisk „Zaloguj się" w samej kasie. Z każdej innej strony
+// logowanie prowadzi na konto, jak dotąd.
+const useLoginHref = () =>
+  usePathname() === "/checkout"
+    ? { pathname: "/login" as const, query: { redirect: "/checkout" } }
+    : ("/login" as const);
+
 function IconLink({
   className,
   isLoggedIn,
@@ -41,10 +49,11 @@ function IconLink({
   isLoggedIn: boolean;
 }) {
   const t = useTranslations();
+  const loginHref = useLoginHref();
 
   return (
     <Link
-      href={isLoggedIn ? "/account" : "/login"}
+      href={isLoggedIn ? "/account" : loginHref}
       aria-label={isLoggedIn ? t("nav.account") : t("nav.login")}
       className={className}
     >
@@ -73,9 +82,10 @@ function MenuLink({
   onNavigate?: () => void;
 }) {
   const t = useTranslations();
+  const loginHref = useLoginHref();
 
   return (
-    <Link href={isLoggedIn ? "/account" : "/login"} onClick={onNavigate}>
+    <Link href={isLoggedIn ? "/account" : loginHref} onClick={onNavigate}>
       {isLoggedIn ? t("nav.account") : t("nav.login")}
     </Link>
   );

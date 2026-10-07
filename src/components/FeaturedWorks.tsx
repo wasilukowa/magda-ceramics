@@ -5,6 +5,7 @@ import ProductCarousel, {
   CAROUSEL_ITEM_CLASS,
 } from "@/components/ProductCarousel";
 import { ProductProps } from "@/contracts/server/product";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 // Sekcja „Wybrane prace" na stronie głównej. Wybór produktów robi serwis
 // (gwiazdka „Polecany" w WooCommerce), tutaj zostaje sam widok. Pusta lista
@@ -41,9 +42,10 @@ export async function FeaturedWorks({
       <div className="flex justify-center mt-12">
         <Link
           href="/shop"
-          className="inline-block border border-current px-7 py-3 text-xs tracking-widest uppercase hover:opacity-60 transition-opacity"
+          className={buttonClass()}
         >
           {t("featuredLink")}
+          <ButtonArrow />
         </Link>
       </div>
     </section>

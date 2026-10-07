@@ -28,6 +28,21 @@ export type ProductGalleryProps = {
   productName: string;
 };
 
+// Przyciski sklepu — patrz components/ui/button.tsx. Główny to czarne tło,
+// biały napis i strzałka; drugorzędny stoi obok głównego (np. „Wstecz") i ma
+// sam obrys, ale w pełnym kolorze tekstu, żeby nie wyglądał na nieaktywny.
+export enum ButtonVariant {
+  Primary = "primary",
+  Secondary = "secondary",
+}
+
+// Default — przycisk na szerokość napisu; Block — na całą szerokość kolumny
+// (kasa, koszyk, karta produktu).
+export enum ButtonSize {
+  Default = "default",
+  Block = "block",
+}
+
 // Slider zdjęć (strona główna, „Moja ceramika"). Opisy zdjęć składa strona,
 // bo każda mówi o nich co innego. `sizes` jak w next/image — slider wypełnia
 // ramkę rodzica, więc tylko strona wie, jak szeroka ona jest.
@@ -81,6 +96,9 @@ export type ProductCardProps = {
   // Karty z pierwszego ekranu ładują zdjęcie od razu, zamiast czekać, aż
   // przewinięcie je „odkryje" — patrz ProductCard.
   eager?: boolean;
+  // Archiwum nie pokazuje ceny — cena i opis są dopiero na stronie
+  // produktu (decyzja Natalii 2026-10-07).
+  hidePrice?: boolean;
 };
 
 export type QuoteProps = {

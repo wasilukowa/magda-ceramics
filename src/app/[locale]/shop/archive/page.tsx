@@ -48,11 +48,15 @@ async function ArchiveGrid({ locale }: { locale: string }) {
 
       <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
         {sorted.map((product, index) => (
+          // Zdjęcie, nazwa i pasek „Sprzedane", żeby było jasne, że tego się
+          // nie kupi — bez ceny (decyzja Natalii 2026-10-07). Cenę i opis
+          // widać po wejściu w pracę.
           <ProductCard
             key={product.id}
             product={product}
             soldOutLabel={t("sold")}
             eager={index < EAGER_CARDS}
+            hidePrice
           />
         ))}
       </div>

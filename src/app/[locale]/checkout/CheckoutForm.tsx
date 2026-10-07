@@ -10,6 +10,7 @@ import { getCountryLabel, getShippingCost } from "@/lib/helpers/shipping";
 import { formatPrice } from "@/lib/helpers/currency";
 import { useCurrency } from "@/hooks/useCurrency";
 import { cn } from "@/lib/utils";
+import { isPhoneNumber } from "@/utility";
 import ParcelLockerField from "@/components/checkout/ParcelLockerField";
 
 type Props = {
@@ -145,7 +146,7 @@ export default function CheckoutForm({
                 autoComplete="email"
               />
             </Field>
-            <Field label={t("phone")}>
+            <Field label={t(usingLocker ? "phoneRequired" : "phone")}>
               <input
                 type="tel"
                 value={address.phone}
@@ -154,6 +155,16 @@ export default function CheckoutForm({
                 autoComplete="tel"
               />
             </Field>
+            {usingLocker &&
+              (address.phone && !isPhoneNumber(address.phone) ? (
+                <p className="-mt-2 text-xs text-[var(--color-error)]">
+                  {t("phoneInvalid")}
+                </p>
+              ) : (
+                <p className="-mt-2 text-xs text-[var(--muted)]">
+                  {t("phoneLockerHint")}
+                </p>
+              ))}
           </div>
         </div>
 
@@ -221,7 +232,15 @@ export default function CheckoutForm({
                     value={address.street}
                     onChange={set("street")}
                     className={inputClass}
-                    autoComplete="street-address"
+                    autoComplete="address-line1"
+                  />
+                </Field>
+                <Field label={t("street2")}>
+                  <input
+                    value={address.street2}
+                    onChange={set("street2")}
+                    className={inputClass}
+                    autoComplete="address-line2"
                   />
                 </Field>
                 <div className="grid grid-cols-2 gap-4">
@@ -285,7 +304,9 @@ export default function CheckoutForm({
                 </p>
               ) : (
                 <p className="text-[var(--muted)]">
-                  {address.street}, {address.postcode} {address.city},{" "}
+                  {address.street},{" "}
+                  {address.street2 && <>{address.street2}, </>}
+                  {address.postcode} {address.city},{" "}
                   {countryLabel}
                 </p>
               )}

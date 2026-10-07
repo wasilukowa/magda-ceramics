@@ -13,6 +13,8 @@ import { OrderProps } from "@/contracts/server/order";
 import { getStripeFonts } from "@/lib/helpers/stripeAppearance";
 import { useStripeAppearance } from "@/hooks/useStripeAppearance";
 import { formatPrice } from "@/lib/helpers/currency";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
+import { ButtonSize } from "@/contracts/shared";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -58,11 +60,16 @@ function PaymentForm({ order }: { order: OrderProps }) {
       <button
         type="submit"
         disabled={!stripe || loading}
-        className="w-full bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-4 hover:opacity-80 transition-opacity disabled:opacity-40"
+        className={buttonClass({ size: ButtonSize.Block })}
       >
-        {loading
-          ? t("pay.processing")
-          : t("pay.button", { total: formatPrice(order.total, order.currency) })}
+        {loading ? (
+          t("pay.processing")
+        ) : (
+          <>
+            {t("pay.button", { total: formatPrice(order.total, order.currency) })}
+            <ButtonArrow />
+          </>
+        )}
       </button>
     </form>
   );

@@ -2,6 +2,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { OrderProps } from "@/contracts/server/order";
 import { formatPrice } from "@/lib/helpers/currency";
+import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 const STATUS_TONE: Record<string, string> = {
   completed: "var(--color-success)",
@@ -90,9 +91,10 @@ export default async function OrderList({ orders }: { orders: OrderProps[] }) {
                   pathname: "/account/orders/pay",
                   query: { order: order.id },
                 }}
-                className="bg-[var(--foreground)] text-[var(--background)] text-xs tracking-widest uppercase py-3 text-center hover:opacity-80 transition-opacity"
+                className={buttonClass()}
               >
                 {t("orders.payNow")}
+                <ButtonArrow />
               </Link>
             </div>
           )}

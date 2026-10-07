@@ -9,3 +9,11 @@ export const isCorrectNumber = (value: unknown): value is number =>
 
 export const isObjectEmpty = (object: object): boolean =>
   Object.keys(object).length === 0;
+
+// Numer telefonu „wygląda na prawdziwy": od 6 do 15 cyfr (15 to limit numeru
+// międzynarodowego), plus dowolne spacje, myślniki, nawiasy i „+". Formatu
+// kraju nie sprawdzamy — wystarczy, że nikt nie wpisze „-" albo „brak".
+export const isPhoneNumber = (value: string): boolean => {
+  const digits = value.replace(/\D/g, "").length;
+  return /^[\d\s()+-]+$/.test(value.trim()) && digits >= 6 && digits <= 15;
+};
