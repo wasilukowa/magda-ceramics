@@ -56,8 +56,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Wybór zmieniony w innej karcie dociera tu przez pamięć przeglądarki —
   // atrybut na <html> trzeba wtedy przestawić także w tej karcie.
+  // ‼️ Wartość czytana prosto z pamięci, nie z `chosen`: przy hydratacji
+  // `chosen` to jeszcze wartość z serwera (null), więc efekt zdejmował atrybut
+  // ustawiony przez skrypt w <head>. Klient z ciemnym urządzeniem, który
+  // wybrał jasny wygląd, dostawał wtedy na chwilę ciemną stronę — a formularz
+  // Stripe'a montujący się w tej chwili zostawał ciemny na jasnej stronie
+  // (znalezione 2026-10-07).
   useEffect(() => {
-    applyTheme(chosen);
+    applyTheme(chosenStore.getSnapshot());
   }, [chosen]);
 
   // Atrybut zmienia się PRZED zapisem, nie w efekcie: po zapisie komponenty
