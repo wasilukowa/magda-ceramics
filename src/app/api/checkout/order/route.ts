@@ -5,25 +5,24 @@ import { paymentService } from "@/lib/service/payment";
 import { canDraftOrderFor } from "@/lib/service/payment/helpers";
 import {
   checkoutErrorResponse,
-  draftOrderRequestSchema,
   getCartFingerprint,
   getRequestError,
+  placeOrderRequestSchema,
 } from "@/lib/service/checkout/helpers";
 import { isRateLimited } from "@/lib/helpers/rateLimit";
 import { getShippingAmount, resolveDeliveryMethod } from "@/lib/helpers/shipping";
 import { CheckoutError } from "@/contracts/server/checkout";
 import { DeliveryMethod } from "@/contracts/server/shipping";
 
-// Każde żądanie zapisuje szkic w WooCommerce, więc z jednego miejsca nie może
-// ich przyjść bez końca. Uczciwy klient klika „Zapłać" raz, najwyżej kilka
-// razy po odrzuconej karcie.
+// Każde żądanie zapisuje zamówienie w WooCommerce, więc z jednego miejsca nie
+// może ich przyjść bez końca. Uczciwy klient klika raz, najwyżej kilka razy.
 const DRAFT_WINDOW_MS = 15 * 60 * 1000;
 const DRAFT_LIMIT_PER_IP = 20;
 
-// Zamówienie zapisane tuż PRZED płatnością i przypięte do niej w Stripe. Od tej
-// chwili płatność sama wie, które zamówienie opłaca — domknie je strona
-// potwierdzenia albo webhook, cokolwiek przyjdzie pierwsze. Patrz
-// CheckoutService.saveDraftOrder.
+// Złożenie zamówienia — tuż PRZED płatnością, przypięte do niej w Stripe.
+// Zamówienie od tej chwili istnieje, a praca czeka na klienta 48 h; płatność
+// domknie je webhookiem, a jeśli nie przejdzie, klient zapłaci później z linku
+// w mailu. Patrz CheckoutService.placeOrder.
 export async function POST(request: Request) {
   const ip =
     (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
@@ -32,7 +31,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
-  const parsed = draftOrderRequestSchema.safeParse(body);
+  const parsed = placeOrderRequestSchema.safeParse(body);
   if (!parsed.success) {
     return checkoutErrorResponse(getRequestError(body));
   }
@@ -44,8 +43,8 @@ export async function POST(request: Request) {
     !!locker
   );
 
-  // Szkic wolno przypiąć wyłącznie do płatności, która czeka na klienta i którą
-  // kasa wyceniła za dokładnie ten koszyk, ten kraj i tę wysyłkę.
+  // Zamówienie wolno przypiąć wyłącznie do płatności, która czeka na klienta
+  // i którą kasa wyceniła za dokładnie ten koszyk, ten kraj i tę wysyłkę.
   const payment = await paymentService.getPayment(paymentIntentId);
   if (
     !payment ||
@@ -63,29 +62,25 @@ export async function POST(request: Request) {
   // Właściciela zamówienia bierzemy z sesji, nigdy z żądania.
   const session = await getSession();
 
-  const result = await checkoutService.saveDraftOrder({
-    billing,
-    items,
-    note,
-    customerId: session?.customerId ?? null,
-    deliveryMethod,
-    locker: deliveryMethod === DeliveryMethod.Locker ? locker : null,
-    locale,
-    // Waluta płatności, którą kasa wyceniła — nie to, co przyszło w żądaniu.
-    currency: payment.currency,
-  });
+  const result = await checkoutService.placeOrder(
+    {
+      billing,
+      items,
+      note,
+      customerId: session?.customerId ?? null,
+      deliveryMethod,
+      locker: deliveryMethod === DeliveryMethod.Locker ? locker : null,
+      locale,
+      // Waluta płatności, którą kasa wyceniła — nie to, co przyszło w żądaniu.
+      currency: payment.currency,
+    },
+    payment
+  );
   if (!result.ok) {
-    return checkoutErrorResponse(result.error);
+    return checkoutErrorResponse(result.error, result.unavailable);
   }
 
-  try {
-    await paymentService.attachOrder(payment.id, result.order);
-  } catch (error) {
-    // Bez przypięcia płatność nie wiedziałaby, co opłaca — dokładnie ta
-    // dziura, którą ten szkic zamyka. Klient nie zapłaci, dopóki się nie uda.
-    console.error("Stripe order attach failed:", error);
-    return checkoutErrorResponse(CheckoutError.OrderFailed);
-  }
-
-  return Response.json({ ok: true });
+  // Numer i klucz zamówienia — gdyby płatność nie przeszła, przeglądarka
+  // przeniesie klienta na stronę zamówienia, gdzie spróbuje jeszcze raz.
+  return Response.json({ ok: true, orderId: result.order.id, key: result.order.key });
 }

@@ -3,9 +3,10 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
 import { CheckoutErrorResponse } from "@/contracts/server/checkout";
+import { CheckoutReturn, OrderCompletion } from "@/contracts/server/order";
 import { getOrderErrorKey } from "@/lib/helpers/checkout";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
@@ -14,47 +15,52 @@ type OrderState =
   | { status: "success"; orderId: number }
   | { status: "error"; message: string };
 
-// Stripe odsyła tu klienta z wynikiem w adresie. „processing" to metoda
-// odroczona (np. przelew albo Klarna): pieniądze jeszcze idą, ale zamówienie
-// już jest i poczeka na nie — to nie porażka.
-const ACCEPTED_REDIRECT_STATUSES = ["succeeded", "processing"];
-
 function SuccessContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { clearCart } = useCart();
   const t = useTranslations("success");
   const [state, setState] = useState<OrderState>({ status: "loading" });
 
-  // Wynik płatności widać wprost w adresie, więc nie ma po co trzymać go w
-  // stanie — wyliczamy przy renderze i nie pytamy o nic, gdy płatność nie
-  // doszła do skutku.
+  // Stripe odsyła tu klienta z numerem płatności, jej „client secret"
+  // i wynikiem w adresie. Zamówienie jest złożone od kliknięcia w kasie —
+  // niezależnie od wyniku płatności.
   const paymentIntent = searchParams.get("payment_intent");
-  const paymentSucceeded =
-    ACCEPTED_REDIRECT_STATUSES.includes(searchParams.get("redirect_status") ?? "") &&
-    Boolean(paymentIntent);
+  const clientSecret = searchParams.get("payment_intent_client_secret");
 
   useEffect(() => {
-    if (!paymentSucceeded) return;
+    if (!paymentIntent) return;
 
     let active = true;
 
-    // Zamówienie istnieje od kliknięcia „Zapłać" — tu tylko prosimy serwer,
-    // żeby je domknął. To samo robi webhook Stripe'a, więc wynik jest ten sam,
-    // niezależnie od tego, która droga była pierwsza.
     fetch("/api/checkout/complete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ paymentIntentId: paymentIntent }),
+      body: JSON.stringify({
+        paymentIntentId: paymentIntent,
+        ...(clientSecret ? { clientSecret } : {}),
+      }),
     })
       .then((r) => r.json())
-      .then((data: CheckoutErrorResponse & { orderId?: number }) => {
+      .then((data: Partial<CheckoutErrorResponse & CheckoutReturn>) => {
         if (!active) return;
-        if (data.orderId) {
-          clearCart();
-          setState({ status: "success", orderId: data.orderId });
-        } else {
+        if (!data.orderId) {
           setState({ status: "error", message: t(getOrderErrorKey(data.error)) });
+          return;
         }
+        // Prace z koszyka są już w złożonym zamówieniu, zarezerwowane dla tego
+        // klienta — także wtedy, gdy płatność nie przeszła.
+        clearCart();
+        if (data.completion === OrderCompletion.Unpaid && data.key) {
+          // Druga próba na stronie zamówienia — tej samej, do której prowadzi
+          // link z maila.
+          router.replace({
+            pathname: "/order",
+            query: { id: data.orderId, key: data.key, retry: "1" },
+          });
+          return;
+        }
+        setState({ status: "success", orderId: data.orderId });
       })
       .catch(() => {
         if (!active) return;
@@ -64,28 +70,14 @@ function SuccessContent() {
     return () => {
       active = false;
     };
-  }, [paymentSucceeded, paymentIntent, clearCart, t]);
+  }, [paymentIntent, clientSecret, clearCart, router, t]);
 
-  if (!paymentSucceeded) {
-    return (
-      <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-6">
-        {/* Nieudana płatność nie zakłada zamówienia (szkic w WooCommerce zostaje
-            niewidoczny), a praca zostaje w sklepie dla innych — koszyk jej nie
-            rezerwuje. Klient ma to usłyszeć wprost, bo inaczej nie wie, czy coś
-            kupił (pytanie Natalii 2026-10-07). */}
-        <p className="text-sm text-[var(--color-error)]">{t("paymentFailed")}</p>
-        <p className="text-sm text-[var(--muted)] leading-relaxed">
-          {t("paymentFailedHint")}
-        </p>
-        <Link href="/checkout" className={buttonClass()}>
-          {t("backToCheckout")}
-          <ButtonArrow />
-        </Link>
-      </div>
-    );
-  }
+  // Bez numeru płatności w adresie nie ma o co pytać — wynik widać od razu.
+  const shown: OrderState = paymentIntent
+    ? state
+    : { status: "error", message: t("paymentNotVerified") };
 
-  if (state.status === "loading") {
+  if (shown.status === "loading") {
     return (
       <div className="max-w-xl mx-auto px-6 py-24 text-center">
         <p className="text-sm text-[var(--muted)]">{t("loading")}</p>
@@ -93,12 +85,15 @@ function SuccessContent() {
     );
   }
 
-  if (state.status === "error") {
+  if (shown.status === "error") {
+    // Zamówienie najpewniej jest złożone (powstaje przed płatnością), tylko
+    // nie udało się tego tu potwierdzić — link do zapłaty klient ma w mailu.
     return (
       <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-6">
-        <p className="text-sm text-[var(--color-error)]">{state.message}</p>
-        <Link href="/checkout" className={buttonClass()}>
-          {t("backToCheckout")}
+        <p className="text-sm text-[var(--color-error)]">{shown.message}</p>
+        <p className="text-sm text-[var(--muted)] leading-relaxed">{t("checkEmail")}</p>
+        <Link href="/shop" className={buttonClass()}>
+          {t("backToShop")}
           <ButtonArrow />
         </Link>
       </div>
@@ -111,7 +106,7 @@ function SuccessContent() {
         {t("thankYou")}
       </p>
       <p className="text-sm">
-        {t("orderReceived", { orderId: state.orderId })}
+        {t("orderReceived", { orderId: shown.orderId })}
       </p>
       <Link
         href="/shop"

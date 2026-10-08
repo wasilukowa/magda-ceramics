@@ -43,22 +43,47 @@ export type OrderAmounts = {
   total: number;
 };
 
+// Gdzie zamówienie jest z pieniędzmi — w ujęciu klienta, nie WooCommerce.
+// Zamówienie składa się PRZED zapłatą (decyzja Natalii 2026-10-08), więc
+// „złożone” i „opłacone” to dwa różne kroki.
+export enum OrderPaymentState {
+  // Złożone, czeka na wpłatę. Praca jest zarezerwowana do `reservedUntil`.
+  Unpaid = "unpaid",
+  // Metoda odroczona (np. Klarna): bank jeszcze potwierdza płatność.
+  AwaitingConfirmation = "awaiting-confirmation",
+  Paid = "paid",
+  Cancelled = "cancelled",
+  // Zwrócone — zamówienie jest zamknięte.
+  Refunded = "refunded",
+}
+
 export type OrderProps = {
   id: number;
   number: string;
+  // Klucz zamówienia z WooCommerce. Razem z numerem otwiera stronę zamówienia
+  // bez logowania (link w mailu) — dlatego nigdy nie trafia do adresu
+  // niczyjego poza właścicielem.
+  key: string;
   status: OrderStatus;
   dateCreated: string; // ISO
   total: number;
   currency: Currency;
   items: OrderLineItem[];
-  // Czeka na pieniądze — patrz PAYABLE_STATUSES. Liczone raz, w adapterze,
+  paymentState: OrderPaymentState;
+  // Do kiedy praca czeka zarezerwowana (ISO). Null przy zamówieniach sprzed
+  // rezerwacji i przy tych, które już nie czekają.
+  reservedUntil: string | null;
+  // Czeka na pieniądze i da się za nie zapłacić. Liczone raz, w adapterze,
   // żeby widok nie musiał znać reguł WooCommerce.
   payable: boolean;
 };
 
-// Stany, w których zamówienie wciąż czeka na zapłatę. „on-hold" jest tu, bo
-// tak zapisujemy zamówienie z metody odroczonej (Klarna), której Stripe
-// jeszcze nie potwierdził, a „failed" — bo tak kończy płatność odrzucona.
+// Stany, w których zamówienie wciąż czeka na zapłatę. „on-hold" to zamówienie
+// złożone i nieopłacone — WooCommerce przy wejściu w ten stan sam zdejmuje
+// sztukę z magazynu, a przy anulowaniu ją oddaje. Tym samym stanem czeka
+// metoda odroczona (Klarna), ale tę rozpoznaje się po stanie płatności
+// w Stripe i zapłacić drugi raz się jej nie da. „failed" kończy płatność
+// odrzuconą w starszych zamówieniach.
 export const PAYABLE_STATUSES = [
   OrderStatus.Pending,
   OrderStatus.OnHold,
@@ -80,6 +105,13 @@ export type OrderForPayment = {
   key: string;
   status: OrderStatus;
   items: { id: number; quantity: number }[];
+  // Stripe już raz powiedział „płatność w toku" (metoda odroczona).
+  awaitingConfirmation: boolean;
+  // Zamówienie złożone z rezerwacją (od 2026-10-08) — do kiedy czeka.
+  reservedUntil: string | null;
+  // Ostatnia płatność w Stripe założona dla tego zamówienia — przy anulowaniu
+  // trzeba ją zamknąć, żeby nie dało się zapłacić za anulowane.
+  paymentIntentId: string | null;
   // Czy klient dostał już potwierdzenie — webhook Stripe'a potrafi przyjść
   // drugi raz, a potwierdzenie ma wyjść raz.
   confirmationSent: boolean;
@@ -99,6 +131,12 @@ export type RawOrderLineItem = {
   name: string;
   quantity: number;
   total: string;
+};
+
+// Zamówienie okrojone do pozycji — tyle wystarcza, żeby wiedzieć, które prace
+// są zarezerwowane (patrz ProductService.getReservedIds).
+export type RawReservingOrder = {
+  line_items?: Pick<RawOrderLineItem, "product_id">[];
 };
 
 export type RawOrder = {
@@ -157,18 +195,58 @@ export type SalesOrder = {
   cancelled: boolean;
 };
 
-// Zamówienie czekające na zapłatę dłużej, niż wypada — tyle, ile trzeba, żeby
-// wysłać klientowi przypomnienie.
+// Złożone i nieopłacone zamówienie z rezerwacją — tyle, ile trzeba, żeby
+// przypomnieć klientowi o zapłacie albo anulować je po terminie.
 export type UnpaidOrder = {
   id: number;
   number: string;
+  key: string;
   total: number;
   currency: Currency;
   email: string;
   firstName: string;
   locale: string;
   items: OrderLineItem[];
+  // Do kiedy praca czeka (ISO).
+  reservedUntil: string;
+  // Ile przypomnień już wyszło (0, 1 albo 2).
+  remindersSent: number;
+  // Bank właśnie potwierdza płatność (metoda odroczona) — nie przypominamy.
+  awaitingConfirmation: boolean;
 };
+
+// Co zrobić z nieopłaconym zamówieniem w danej chwili.
+export enum ReservationStep {
+  Wait = "wait",
+  Remind = "remind",
+  Expire = "expire",
+}
+
+// Wynik jednego przebiegu pilnowania rezerwacji (patrz ReservationService).
+export type ReservationRun = {
+  checked: number;
+  reminded: number;
+  cancelled: number;
+  failed: number;
+};
+
+// Dlaczego zamówienie zostało anulowane — od tego zależy treść maila.
+export enum CancelReason {
+  // Minęło 48 h bez wpłaty.
+  Expired = "expired",
+  // Klient sam anulował (przycisk w mailu albo na stronie zamówienia).
+  Customer = "customer",
+}
+
+// Czym kończy się próba anulowania nieopłaconego zamówienia.
+export enum CancelResult {
+  Cancelled = "cancelled",
+  // W ostatniej chwili okazało się, że zapłacono — zamówienie zostaje.
+  Paid = "paid",
+  // Nie czeka na wpłatę (opłacone, już anulowane albo bank właśnie
+  // potwierdza płatność) — nie ma czego anulować.
+  NotCancellable = "not-cancellable",
+}
 
 // Czym kończy się domknięcie zapłaty za istniejące zamówienie.
 export enum OrderConfirmResult {
@@ -188,6 +266,8 @@ export enum OrderCompletion {
   // Metoda odroczona (np. Klarna): Stripe jeszcze potwierdza. Zamówienie czeka
   // wstrzymane, a webhook domknie je, gdy pieniądze dojdą.
   AwaitingConfirmation = "awaiting-confirmation",
+  // Zamówienie złożone, ale płatność nie przeszła — czeka na drugą próbę.
+  Unpaid = "unpaid",
 }
 
 // Wynik domknięcia: numer zamówienia do pokazania klientowi i to, jak się
@@ -198,11 +278,22 @@ export type CompletedOrder = {
   completion: OrderCompletion;
 };
 
+// Co strona potwierdzenia dostaje po powrocie ze Stripe'a. Klucz zamówienia
+// tylko przy nieudanej płatności — żeby przekierować klienta na stronę
+// zamówienia, gdzie spróbuje jeszcze raz.
+export type CheckoutReturn = {
+  orderId: number;
+  completion: OrderCompletion;
+  key?: string;
+};
+
 // --- Maile do klienta --------------------------------------------------------
 // Wysyła je sklep, nie WooCommerce: w języku i walucie klienta (WooCommerce
 // pisał po angielsku i w złotych do wszystkich).
 
 export enum CustomerMailKind {
+  // Złożone — czeka na wpłatę, praca zarezerwowana.
+  Placed = "placed",
   // Zapłacone.
   Confirmed = "confirmed",
   // Metoda odroczona — bank jeszcze potwierdza.
@@ -212,6 +303,8 @@ export enum CustomerMailKind {
   // Magda dodała notatkę „dla klienta".
   Note = "note",
   Refunded = "refunded",
+  // Anulowane przed zapłatą — patrz CancelReason.
+  Cancelled = "cancelled",
 }
 
 export enum DeliveryKind {
@@ -231,6 +324,10 @@ export type OrderDelivery = {
 export type CustomerOrderMail = {
   id: number;
   number: string;
+  // Klucz zamówienia — do linku „Zapłać" bez logowania.
+  key: string;
+  // Do kiedy praca czeka zarezerwowana (ISO), jeśli czeka.
+  reservedUntil: string | null;
   email: string;
   firstName: string;
   preferences: OrderPreferences;
@@ -241,8 +338,10 @@ export type CustomerOrderMail = {
   hasAccount: boolean;
   // Które maile już wyszły — patrz ORDER_META w serwisie zamówień.
   sent: {
+    placed: boolean;
     confirmation: boolean;
     onHold: boolean;
+    cancelled: boolean;
     shipped: boolean;
     refundIds: number[];
   };
@@ -284,6 +383,8 @@ export type CustomerMailInput = {
   // Zwrot (CustomerMailKind.Refunded). Kwota w walucie klienta albo null,
   // gdy nie da się jej podać dokładnie (część zwrotu zamówienia w euro).
   refund?: { amount: number | null; full: boolean };
+  // Powód anulowania (CustomerMailKind.Cancelled).
+  cancelReason?: CancelReason;
 };
 
 // Webhook WooCommerce „action.woocommerce_new_customer_note": pierwszy

@@ -16,6 +16,9 @@ export enum CheckoutStep {
 export enum UnavailableReason {
   SoldOut = "sold-out",
   Gone = "gone",
+  // Ktoś złożył na nią zamówienie i ma 48 h na zapłatę. Klient widzi wtedy
+  // „niedostępne", nie „sprzedane" — praca może jeszcze wrócić do sklepu.
+  Reserved = "reserved",
 }
 
 export type UnavailableItem = {
@@ -78,10 +81,10 @@ export type CheckoutErrorResponse = {
   unavailable?: UnavailableItem[];
 };
 
-// Wszystko, czego potrzeba, żeby zapisać zamówienie w WooCommerce, zanim
+// Wszystko, czego potrzeba, żeby złożyć zamówienie w WooCommerce, zanim
 // klient zapłaci. O tym, czy zapłacono, rozstrzyga dopiero domknięcie
 // płatności — patrz CheckoutService.completePayment.
-export type DraftOrderInput = {
+export type PlaceOrderInput = {
   billing: BillingAddress;
   items: OrderItem[];
   note: string;
@@ -96,4 +99,4 @@ export type DraftOrderInput = {
   currency: Currency;
 };
 
-export type DraftOrderResult = { ok: true; order: PlacedOrder } | CheckoutFailure;
+export type PlaceOrderResult = { ok: true; order: PlacedOrder } | CheckoutFailure;

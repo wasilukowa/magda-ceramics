@@ -22,9 +22,9 @@ import { exchangeRateService } from "@/lib/service/exchangeRate";
 import {
   getLedgerMeta,
   getLedgerRemark,
-  hasCustomerAccount,
-  hasReminderBeenSent,
+  getReservationDeadline,
   isCheckoutDraft,
+  isOrderKey,
   ORDER_META,
   prepareOrder,
   prepareCustomerOrderMail,
@@ -32,7 +32,7 @@ import {
   prepareSalesOrder,
   prepareStudioOrderMail,
   prepareUnpaidOrder,
-  REMINDER_SENT_META_KEY,
+  RESERVATION_HOURS,
 } from "./helpers";
 
 const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
@@ -45,8 +45,8 @@ const WC_SECRET = process.env.WC_CONSUMER_SECRET;
 // w złotych, więc przy płatności w euro zostaje zapis prawdziwej kwoty i kursu
 // — żeby dało się je uzgodnić ze Stripe'em.
 const getPaymentMeta = (payment: PaymentRecord) => [
-  { key: "_stripe_payment_intent", value: payment.id },
-  { key: "_stripe_payment_status", value: payment.status },
+  { key: ORDER_META.stripeIntent, value: payment.id },
+  { key: ORDER_META.stripeStatus, value: payment.status },
   ...(payment.currency === Currency.EUR
     ? [
         { key: ORDER_META.paidCurrency, value: "EUR" },
@@ -148,25 +148,29 @@ class OrderService {
     }
   }
 
-  // Zamówienia, za które nie zapłacono, starsze niż `olderThan` i nie starsze
-  // niż `notOlderThan` — czyli takie, którym warto przypomnieć, a nie takie
-  // sprzed pół roku. Te z zapisanym przypomnieniem odpadają, podobnie jak
-  // zamówienia gości: przycisk w przypomnieniu prowadzi do „Zapłać” w koncie
-  // klienta, a gość bez logowania dostałby tam „nie znaleziono”.
-  async getOrdersAwaitingReminder({
-    olderThan,
-    notOlderThan,
-  }: {
-    olderThan: Date;
-    notOlderThan: Date;
-  }): Promise<UnpaidOrder[]> {
-    const raw = await this.wcFetch<RawOrder[]>(
-      `orders?status=pending,failed&per_page=50&orderby=date&order=desc` +
-        `&before=${olderThan.toISOString()}&after=${notOlderThan.toISOString()}`
-    );
+  // Jedno zamówienie dla kogoś, kto ma do niego link z maila: numer i klucz
+  // zamówienia zamiast logowania. Null, gdy zamówienia nie ma, klucz się nie
+  // zgadza albo to wciąż szkic z kasy; awaria WordPressa leci dalej.
+  async getOrderByKey(orderId: number, key: string): Promise<OrderProps | null> {
+    try {
+      const raw = await this.wcFetch<RawOrder>(`orders/${orderId}`);
+      if (!isOrderKey(raw, key) || isCheckoutDraft(raw)) return null;
+      return prepareOrder(raw);
+    } catch (error) {
+      if (isNotFoundError(error)) return null;
+      throw error;
+    }
+  }
 
+  // Złożone, nieopłacone zamówienia z rezerwacją — do przypomnień i do
+  // anulowania po terminie. Wszystkie naraz: u pracowni to garstka, a sto na
+  // stronie to sufit WooCommerce. Zamówienia sprzed rezerwacji (bez terminu)
+  // odpadają w prepareUnpaidOrder.
+  async getReservedOrders(): Promise<UnpaidOrder[]> {
+    const raw = await this.wcFetch<RawOrder[]>(
+      `orders?status=${OrderStatus.OnHold}&per_page=100&orderby=date&order=asc`
+    );
     return raw
-      .filter((order) => hasCustomerAccount(order) && !hasReminderBeenSent(order))
       .map(prepareUnpaidOrder)
       .filter((order): order is UnpaidOrder => order !== null);
   }
@@ -200,15 +204,12 @@ class OrderService {
     return orders;
   }
 
-  async markReminderSent(orderId: number): Promise<void> {
-    await this.wcFetch(`orders/${orderId}`, {
-      method: "PUT",
-      body: JSON.stringify({
-        meta_data: [
-          { key: REMINDER_SENT_META_KEY, value: new Date().toISOString() },
-        ],
-      }),
-    });
+  // Ile przypomnień o zapłacie już wyszło — liczba, nie znacznik, bo
+  // przypomnienia są dwa (po 12 i po 24 h).
+  async markRemindersSent(orderId: number, count: number): Promise<void> {
+    await this.updateMeta(orderId, [
+      { key: ORDER_META.reminders, value: count.toString() },
+    ]);
   }
 
   // Zamówienie, do którego należy płatność. Null WYŁĄCZNIE wtedy, gdy
@@ -229,6 +230,52 @@ class OrderService {
     }
   }
 
+  // Złożenie zamówienia: szkic z kasy staje się zamówieniem „wstrzymanym"
+  // (on-hold) — tak WooCommerce oznacza „czeka na wpłatę, towar odłożony".
+  // To nie tylko nazwa: przy wejściu w ten stan WooCommerce SAM zdejmuje
+  // sztukę z magazynu (i zapamiętuje, że to zrobił), przy anulowaniu SAM ją
+  // oddaje, a przy późniejszej zapłacie nie zdejmuje jej drugi raz. Ze szkicu
+  // prosto do on-hold, bo przejście przez „oczekuje na płatność" oddałoby
+  // sztukę z powrotem. ‼️ Z tego samego powodu zamówienie złożone nie może już
+  // nigdy wrócić do „oczekuje na płatność".
+  // Zwraca termin rezerwacji (ISO).
+  async markPlaced(orderId: number, paymentIntentId: string): Promise<string> {
+    const reservedUntil = getReservationDeadline(new Date());
+    await this.wcFetch(`orders/${orderId}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        status: OrderStatus.OnHold,
+        meta_data: [
+          { key: ORDER_META.reservedUntil, value: reservedUntil },
+          { key: ORDER_META.paymentIntent, value: paymentIntentId },
+        ],
+      }),
+    });
+    await this.addPrivateNotes(orderId, [
+      `Zamówienie złożone, czeka na wpłatę — praca zarezerwowana na ` +
+        `${RESERVATION_HOURS} h. Bez wpłaty sklep sam je anuluje. Nie wysyłać ` +
+        `przed wpłatą.`,
+    ]);
+    return reservedUntil;
+  }
+
+  // Płatność, którą klient opłaca to zamówienie — patrz ORDER_META.paymentIntent.
+  async setPaymentIntent(orderId: number, paymentIntentId: string): Promise<void> {
+    await this.updateMeta(orderId, [
+      { key: ORDER_META.paymentIntent, value: paymentIntentId },
+    ]);
+  }
+
+  // Anulowanie. WooCommerce sam oddaje wtedy sztukę do magazynu (patrz
+  // markPlaced). Notatka mówi Magdzie, dlaczego.
+  async cancel(orderId: number, note: string): Promise<void> {
+    await this.wcFetch(`orders/${orderId}`, {
+      method: "PUT",
+      body: JSON.stringify({ status: OrderStatus.Cancelled }),
+    });
+    await this.addPrivateNotes(orderId, [note]);
+  }
+
   // Szkic z kasy staje się najpierw zwykłym zamówieniem „oczekuje na płatność".
   // To nie formalność: maile WooCommerce — „nowe zamówienie" do Magdy
   // i potwierdzenie do klienta — wychodzą przy przejściu Z tego stanu. Prosto
@@ -241,10 +288,20 @@ class OrderService {
     });
   }
 
-  // Zapłacone. `set_paid` to w WooCommerce `payment_complete()`: zmienia stan
-  // na „w realizacji", zapisuje datę zapłaty i numer transakcji, zdejmuje
-  // sztukę z magazynu i wysyła maile. Stanu nie ustawiamy obok ręcznie — przy
-  // stanie już zmienionym `payment_complete()` uznałby, że nie ma nic do roboty.
+  // Zapłacone. Dwie drogi, bo WooCommerce przez API przyjmuje `set_paid`
+  // WYŁĄCZNIE od zamówień „oczekujących na płatność" (i „nieudanych") —
+  // przy każdym innym stanie po cichu go ignoruje.
+  //
+  // - Szkic i „oczekuje na płatność" (zamówienia sprzed 2026-10-08): `set_paid`,
+  //   czyli `payment_complete()` — stan „w realizacji", data zapłaty, numer
+  //   transakcji, zdjęcie sztuki z magazynu. Stanu nie ustawiamy obok ręcznie:
+  //   przy stanie już zmienionym `payment_complete()` uznałby, że nie ma nic
+  //   do roboty.
+  // - Złożone (on-hold) i anulowane: wprost stan „w realizacji" z numerem
+  //   transakcji. Datę zapłaty WooCommerce stawia sam przy przejściu w ten
+  //   stan. Sztuki złożone zamówienie już nie zdejmuje (zrobiło to przy
+  //   złożeniu — patrz markPlaced), a anulowane zdejmuje ją na nowo.
+  //
   // Kwotę i walutę bierze ze Stripe'a, nie z żądania. Kurs NBP do ewidencji
   // pobiera się w tym samym czasie co wyjście ze szkicu, więc domknięcie
   // na niego nie czeka dłużej, niż musi — a gdy NBP nie odpowie, zapłata
@@ -259,10 +316,12 @@ class OrderService {
       getLedgerAmount(payment),
       this.leaveDraft(orderId, status),
     ]);
+    const viaStatus =
+      status === OrderStatus.OnHold || status === OrderStatus.Cancelled;
     await this.wcFetch(`orders/${orderId}`, {
       method: "PUT",
       body: JSON.stringify({
-        set_paid: true,
+        ...(viaStatus ? { status: OrderStatus.Processing } : { set_paid: true }),
         transaction_id: payment.id,
         meta_data: [...getPaymentMeta(payment), ...getLedgerMeta(ledger)],
       }),

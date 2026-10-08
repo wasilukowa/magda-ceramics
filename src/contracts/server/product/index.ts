@@ -20,6 +20,9 @@ export type RawProduct = {
   images: RawProductImage[];
   categories: RawProductCategory[];
   stock_status: string;
+  // Stan magazynu — liczony tylko przy produktach z włączonym zarządzaniem
+  // magazynem (u Magdy wszystkie, po jednej sztuce).
+  stock_quantity?: number | null;
   meta_data?: RawMetaData[];
 };
 
@@ -76,6 +79,10 @@ export type ProductProps = {
   categories: ProductCategory[];
   dimensions: ProductDimension[];
   inStock: boolean;
+  // Brak na stanie, bo ktoś złożył zamówienie i ma 48 h na zapłatę. Taka praca
+  // nie jest ani w sklepie, ani w archiwum — do archiwum trafia dopiero po
+  // wpłacie, a bez wpłaty wraca do sklepu (decyzja Natalii 2026-10-08).
+  reserved: boolean;
   // Data dodania w WooCommerce — po niej idzie domyślne sortowanie „najnowsze".
   createdAt: string;
 };

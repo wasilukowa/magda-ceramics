@@ -13,7 +13,7 @@ import { ButtonArrow, buttonClass } from "@/components/ui/button";
 import { ButtonSize } from "@/contracts/shared";
 
 export default function CartDrawer() {
-  const { items, removeItem, isOpen, closeCart, soldOutIds } = useCart();
+  const { items, removeItem, isOpen, closeCart, soldOutIds, reservedIds } = useCart();
   const { currency } = useCurrency();
   const t = useTranslations("cart");
 
@@ -97,10 +97,12 @@ export default function CartDrawer() {
 
                   {/* Sprzedana praca zostaje w koszyku, przekreślona i
                       podpisana. Ciche usunięcie byłoby dokładnie tym, czego
-                      klient się boi: rzeczy znikają, a nikt nie mówi czemu. */}
+                      klient się boi: rzeczy znikają, a nikt nie mówi czemu.
+                      Zarezerwowana (czeka na czyjąś wpłatę) dostaje
+                      „niedostępne" — może jeszcze wrócić. */}
                   {isSoldOut && (
                     <p className="mt-1 text-[10px] tracking-widest uppercase text-[var(--color-error)]">
-                      {t("soldOut")}
+                      {reservedIds.includes(item.id) ? t("unavailable") : t("soldOut")}
                     </p>
                   )}
 

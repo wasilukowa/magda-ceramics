@@ -4,13 +4,15 @@ import { routing } from "@/i18n/routing";
 import { SITE_URL } from "@/content/data";
 import { StaticRoute } from "@/content/types";
 
-// Strony, które nie mają czego szukać w wynikach wyszukiwania: kasa, konto
-// klienta, logowanie, ulubione i zaślepka sprzed premiery. Adresy liczymy
+// Strony, które nie mają czego szukać w wynikach wyszukiwania: kasa, strona
+// zamówienia z maila, konto klienta, logowanie, ulubione i zaślepka sprzed
+// premiery. Adresy liczymy
 // dla obu języków, więc polska „/pl/konto" jest wykluczona tak samo jak
 // angielska „/account" — bez przepisywania ich ręcznie.
 const PRIVATE_ROUTES: StaticRoute[] = [
   "/checkout",
   "/checkout/success",
+  "/order",
   "/account",
   "/account/orders",
   "/account/details",

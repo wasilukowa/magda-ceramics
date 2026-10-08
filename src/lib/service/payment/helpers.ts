@@ -78,6 +78,20 @@ export const canDraftOrderFor = (
   payment.country === country &&
   payment.shippingAmount === shippingAmount;
 
+// Czy do tej płatności można wrócić przy kolejnej próbie: wciąż czeka na
+// klienta (np. po odrzuconej karcie) i opiewa dokładnie na tę kwotę w tej
+// walucie.
+export const isReusableFor = (
+  intent: Stripe.PaymentIntent,
+  amount: number,
+  currency: Currency
+): boolean =>
+  (intent.status === "requires_payment_method" ||
+    intent.status === "requires_confirmation" ||
+    intent.status === "requires_action") &&
+  intent.amount === amount &&
+  intent.currency === currency;
+
 // Czy ta płatność jest za to konkretne zamówienie. Numer zamówienia zapisuje
 // w metadanych sam serwis przy tworzeniu płatności, więc nie da się nim
 // domknąć cudzego zamówienia.

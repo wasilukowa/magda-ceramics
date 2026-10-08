@@ -7,7 +7,14 @@ import {
   CategoryProps,
   CategoryTileProps,
 } from "@/contracts/server/product";
-import { prepareProduct, prepareCategory, UNCATEGORIZED_SLUG } from "./helpers";
+import { RawReservingOrder } from "@/contracts/server/order";
+import {
+  getReservedProductIds,
+  prepareProduct,
+  prepareCategory,
+  UNCATEGORIZED_SLUG,
+  withReservations,
+} from "./helpers";
 
 const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
 const WC_KEY = process.env.WC_CONSUMER_KEY;
@@ -136,14 +143,37 @@ class ProductService {
     return products.filter((product) => product.inStock);
   }
 
+  // Prace czekające na czyjąś wpłatę (patrz withReservations). Z tego samego
+  // cache'u co katalog, więc rezerwacja pojawia się i znika razem z nim.
+  // Awaria kończy się pustym zbiorem: zarezerwowana praca na minutę trafi
+  // wtedy do archiwum, ale żadna strona przez to nie padnie.
+  async getReservedIds(): Promise<Set<number>> {
+    try {
+      return getReservedProductIds(
+        await wcFetch<RawReservingOrder[]>(
+          "orders?status=on-hold&per_page=100&_fields=line_items"
+        )
+      );
+    } catch {
+      return new Set();
+    }
+  }
+
   // Archiwum: prace, które znalazły już właściciela. Ta sama lista, na której
   // stoi sklep — więc Next liczy ją raz — tylko odwrócona: zostaje to, czego
-  // nie ma już na stanie. Awaria WooCommerce kończy się pustym archiwum, a nie
-  // błędem strony; to galeria, nie sprzedaż, więc nie ma o co kruszyć kopii.
+  // nie ma już na stanie. Zarezerwowane tu nie trafiają: do archiwum idą
+  // dopiero po wpłacie (decyzja Natalii 2026-10-08). Awaria WooCommerce kończy
+  // się pustym archiwum, a nie błędem strony; to galeria, nie sprzedaż, więc
+  // nie ma o co kruszyć kopii.
   async getArchivedProducts(): Promise<ProductProps[]> {
     try {
-      const products = await this.getProducts();
-      return products.filter((product) => !product.inStock);
+      const [products, reservedIds] = await Promise.all([
+        this.getProducts(),
+        this.getReservedIds(),
+      ]);
+      return products.filter(
+        (product) => !product.inStock && !reservedIds.has(product.id)
+      );
     } catch {
       return [];
     }
@@ -201,16 +231,22 @@ class ProductService {
   }
 
   async getProductBySlug(slug: string): Promise<ProductProps | null> {
-    const results = await wcFetch<RawProduct[]>(`products?slug=${slug}`);
-    return results[0] ? prepareProduct(results[0]) : null;
+    const [results, reservedIds] = await Promise.all([
+      wcFetch<RawProduct[]>(`products?slug=${slug}`),
+      this.getReservedIds(),
+    ]);
+    return results[0]
+      ? withReservations([prepareProduct(results[0])], reservedIds)[0]
+      : null;
   }
 
   async getProductsByIds(ids: number[]): Promise<ProductProps[]> {
     if (ids.length === 0) return [];
-    const raw = await wcFetch<RawProduct[]>(
-      `products?include=${ids.join(",")}&per_page=${ids.length}`
-    );
-    return raw.map(prepareProduct);
+    const [raw, reservedIds] = await Promise.all([
+      wcFetch<RawProduct[]>(`products?include=${ids.join(",")}&per_page=${ids.length}`),
+      this.getReservedIds(),
+    ]);
+    return withReservations(raw.map(prepareProduct), reservedIds);
   }
 }
 

@@ -16,6 +16,9 @@ export const routing = defineRouting({
     "/contact": { en: "/contact", pl: "/kontakt" },
     "/checkout": "/checkout",
     "/checkout/success": "/checkout/success",
+    // Strona jednego zamówienia otwierana z maila (numer + klucz zamówienia,
+    // bez logowania): zapłata, anulowanie, stan.
+    "/order": { en: "/order", pl: "/zamowienie" },
     "/coming-soon": "/coming-soon",
     "/about": { en: "/about", pl: "/o-mnie" },
     "/about/ceramics": { en: "/about/my-ceramics", pl: "/o-mnie/moja-ceramika" },

@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/cron/unpaid-reminders",
+      "path": "/api/cron/unpaid-orders",
       "schedule": "0 9 * * *"
     },
     {

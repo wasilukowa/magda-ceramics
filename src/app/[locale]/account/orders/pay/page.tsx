@@ -1,10 +1,9 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
 import { getCurrentCustomer } from "@/lib/auth/dal";
 import { orderService } from "@/lib/service/order";
-import { paymentService } from "@/lib/service/payment";
-import OrderPayment from "@/components/account/OrderPayment";
 import AccountLoading from "@/components/account/AccountLoading";
 
 export async function generateMetadata() {
@@ -12,54 +11,45 @@ export async function generateMetadata() {
   return { title: `${t("pay.title")} — Magda Ceramics` };
 }
 
+// Zapłata za zamówienie odbywa się na stronie zamówienia (numer + klucz),
+// tej samej, do której prowadzą linki z maili — z terminem rezerwacji
+// i z anulowaniem. Ten adres zostaje dla starszych linków: po sprawdzeniu,
+// że zamówienie należy do zalogowanego klienta, przenosi tam.
+//
 // Numer zamówienia idzie w adresie jako ?order=, a nie jako segment ścieżki.
 // Segment dynamiczny bez `generateStaticParams` odbiera całej trasie statyczną
-// skorupę — łącznie z nagłówkiem sklepu, który wtedy czeka na serwer. Tak samo
-// zrobiony jest sklep z filtrami.
-async function PayContent({
+// skorupę — łącznie z nagłówkiem sklepu, który wtedy czeka na serwer.
+async function PayRedirect({
+  locale,
   searchParams,
 }: {
+  locale: string;
   searchParams: Promise<{ order?: string }>;
 }) {
   const { order: orderParam } = await searchParams;
   const orderId = Number(orderParam);
   const customer = await getCurrentCustomer();
-  const t = await getTranslations("account");
 
   if (!customer || !Number.isInteger(orderId) || orderId <= 0) notFound();
 
   const order = await orderService.getCustomerOrder(customer.id, orderId);
   if (!order) notFound();
 
-  // Zamówienie opłacone nie ma po co pokazywać formularza — i nie wolno mu
-  // tworzyć drugiej płatności.
-  if (!order.payable) {
-    return (
-      <p className="border border-[var(--border)] px-6 py-10 text-sm text-center text-[var(--muted)]">
-        {t("pay.alreadyPaid")}
-      </p>
-    );
-  }
-
-  return (
-    <OrderPayment
-      order={order}
-      clientSecret={await paymentService.createOrderIntent(order)}
-    />
-  );
+  return redirect({
+    href: { pathname: "/order", query: { id: order.id, key: order.key } },
+    locale,
+  });
 }
 
 export default async function PayOrderPage(props: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ order?: string }>;
 }) {
-  const t = await getTranslations("account");
+  const { locale } = await props.params;
 
   return (
-    <div className="flex flex-col gap-8">
-      <h2 className="text-sm tracking-widest uppercase">{t("pay.title")}</h2>
-      <Suspense fallback={<AccountLoading />}>
-        <PayContent {...props} />
-      </Suspense>
-    </div>
+    <Suspense fallback={<AccountLoading />}>
+      <PayRedirect locale={locale} searchParams={props.searchParams} />
+    </Suspense>
   );
 }

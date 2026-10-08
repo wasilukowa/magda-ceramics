@@ -18,6 +18,8 @@ export type CartItemState = {
   price: string;
   // Da się jeszcze kupić: jest w WooCommerce, ma cenę i jest na stanie.
   purchasable: boolean;
+  // Niedostępna, bo czeka zarezerwowana na czyjąś wpłatę — nie sprzedana.
+  reserved: boolean;
 };
 
 export type OrderItem = {

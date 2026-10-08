@@ -130,7 +130,13 @@ export default async function ProductPage({
 
           <div className="space-y-3">
             <p className="text-xs tracking-widest uppercase text-[var(--muted)]">
-              {product.inStock ? t("inStock") : t("outOfStock")}
+              {/* Zarezerwowana (czeka na czyjąś wpłatę) to nie sprzedana —
+                  może jeszcze wrócić do sklepu. */}
+              {product.inStock
+                ? t("inStock")
+                : product.reserved
+                  ? t("unavailable")
+                  : t("outOfStock")}
             </p>
             <AddToCartButton
               id={product.id}
@@ -140,6 +146,7 @@ export default async function ProductPage({
               image={product.images[0]?.src ?? ""}
               inStock={product.inStock}
               hasPrice={product.hasPrice}
+              reserved={product.reserved}
             />
             <WishlistButton
               productId={product.id}

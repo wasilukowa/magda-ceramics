@@ -36,6 +36,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // do koszyka. NIE usuwamy ich same z siebie — rzecz znikająca z koszyka bez
   // słowa jest gorsza niż rzecz przekreślona z wyjaśnieniem.
   const [soldOutIds, setSoldOutIds] = useState<number[]>([]);
+  // Te z nich, które tylko czekają na czyjąś wpłatę — koszyk podpisuje je
+  // „niedostępne", nie „sprzedane", bo mogą jeszcze wrócić do sklepu.
+  const [reservedIds, setReservedIds] = useState<number[]>([]);
 
   const addItem = useCallback((product: Omit<CartItem, "quantity">) => {
     const current = cartStore.read();
@@ -61,6 +64,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const current = cartStore.read();
     if (current.length === 0) {
       setSoldOutIds([]);
+      setReservedIds([]);
       return;
     }
 
@@ -71,6 +75,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     setSoldOutIds(
       state.filter((entry) => !entry.purchasable).map((entry) => entry.id)
+    );
+    setReservedIds(
+      state.filter((entry) => !entry.purchasable && entry.reserved).map((entry) => entry.id)
     );
 
     // Nazwa i cena wracają z serwera, żeby koszyk pokazywał to samo, co kasa
@@ -113,6 +120,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         itemCount,
         total,
         soldOutIds,
+        reservedIds,
         addItem,
         removeItem,
         clearCart,

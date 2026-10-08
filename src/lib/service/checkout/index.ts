@@ -4,26 +4,38 @@ import { serverFetch } from "@/lib/api";
 import { CartItemState, OrderItem } from "@/contracts/server/cart";
 import { ProductProps, RawProduct } from "@/contracts/server/product";
 import {
+  CancelReason,
+  CancelResult,
   CompletedOrder,
   OrderCompletion,
+  OrderPaymentState,
+  OrderProps,
   OrderStatus,
+  PlacedOrder,
   RawPlacedOrder,
+  RawReservingOrder,
 } from "@/contracts/server/order";
 import {
   AvailabilityResult,
   CartPricingResult,
   CheckoutError,
   CheckoutFailure,
-  DraftOrderInput,
-  DraftOrderResult,
+  PlaceOrderInput,
+  PlaceOrderResult,
   PricedLine,
   UnavailableItem,
+  UnavailableReason,
 } from "@/contracts/server/checkout";
 import { PaymentRecord, PaymentStatus } from "@/contracts/server/payment";
 import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
-import { prepareProduct } from "@/lib/service/product/helpers";
+import {
+  getReservedProductIds,
+  prepareProduct,
+  withReservations,
+} from "@/lib/service/product/helpers";
 import { orderService } from "@/lib/service/order";
+import { paymentService } from "@/lib/service/payment";
 import { customerMailService } from "@/lib/service/customerMail";
 import { studioMailService } from "@/lib/service/studioMail";
 import {
@@ -76,11 +88,24 @@ class CheckoutService {
   // (ProductService trzyma go przez minutę). Przy oglądaniu sklepu minuta
   // opóźnienia nic nie znaczy, przy płatności decyduje o cenie i o tym, czy
   // praca jest jeszcze do kupienia.
-  private async getLiveProducts(ids: number[]): Promise<ProductProps[]> {
-    const raw = await this.wcFetch<RawProduct[]>(
+  private async getLiveRawProducts(ids: number[]): Promise<RawProduct[]> {
+    return this.wcFetch<RawProduct[]>(
       `products?include=${ids.join(",")}&per_page=${ids.length}`
     );
-    return raw.map(prepareProduct);
+  }
+
+  // Do tego, które z niedostępnych prac są tylko zarezerwowane (czekają na
+  // czyjąś wpłatę). Bez tej wiedzy klient zobaczyłby „sprzedane" przy pracy,
+  // która za dwa dni może wrócić — więc awaria tej listy niczego nie blokuje,
+  // najwyżej napis będzie mniej dokładny.
+  private async getLiveProducts(ids: number[]): Promise<ProductProps[]> {
+    const [raw, reserving] = await Promise.all([
+      this.getLiveRawProducts(ids),
+      this.wcFetch<RawReservingOrder[]>(
+        "orders?status=on-hold&per_page=100&_fields=line_items"
+      ).catch(() => []),
+    ]);
+    return withReservations(raw.map(prepareProduct), getReservedProductIds(reserving));
   }
 
   // Świeże produkty z koszyka, o ile wszystkie da się jeszcze kupić. Jedno
@@ -135,7 +160,7 @@ class CheckoutService {
       // Produkt zniknął z WooCommerce — koszyk sam się o tym dowie po tym, że
       // nie ma go w odpowiedzi.
       if (!product) {
-        return [{ id, name: "", price: "", purchasable: false }];
+        return [{ id, name: "", price: "", purchasable: false, reserved: false }];
       }
 
       return [
@@ -144,6 +169,7 @@ class CheckoutService {
           name: product.name,
           price: product.price,
           purchasable: product.hasPrice && product.inStock,
+          reserved: product.reserved,
         },
       ];
     });
@@ -191,9 +217,11 @@ class CheckoutService {
     };
   }
 
-  // Prace, które zdążyły się sprzedać, zanim zamówienie doszło do skutku.
-  // Niedostępny WooCommerce nie liczy się jako konflikt — to nie jest moment
-  // na zgadywanie, a i tak jest już po płatności.
+  // Prace, które zdążyły się sprzedać (albo trafić do czyjegoś złożonego
+  // zamówienia), zanim to zamówienie zostało opłacone. Dotyczy tylko zamówień,
+  // które pracy nie trzymały — patrz completePayment. Niedostępny WooCommerce
+  // nie liczy się jako konflikt — to nie jest moment na zgadywanie, a i tak
+  // jest już po płatności.
   private async getSoldOutConflicts(
     items: OrderItem[]
   ): Promise<UnavailableItem[]> {
@@ -201,19 +229,126 @@ class CheckoutService {
     return availability.ok ? [] : availability.unavailable;
   }
 
-  // Szkic zamówienia zapisany tuż PRZED płatnością. Dzięki niemu płatność od
-  // początku wie, które zamówienie opłaca, i domknie je sama — webhookiem
-  // Stripe'a — nawet gdy klient po zapłacie nie wróci do tej karty
-  // przeglądarki (BLIK i przelewy na telefonie otwierają aplikację banku
-  // i wracają gdzie indziej). Wcześniej dane zamówienia żyły wyłącznie
-  // w przeglądarce, więc taka płatność kończyła się pieniędzmi bez zamówienia.
+  // Złożenie zamówienia — PRZED zapłatą (decyzja Natalii 2026-10-08):
+  // zamówienie jest złożone, klient dostaje maila, praca znika ze sklepu
+  // zarezerwowana na 48 h, a dopiero potem klient płaci. Płatność, która nie
+  // przejdzie, nie kasuje zamówienia — klient zapłaci później z linku
+  // w mailu, a bez wpłaty sklep sam anuluje zamówienie po terminie.
   //
-  // Szkic (`checkout-draft`) nie pokazuje się na liście zamówień ani w panelu
-  // klienta i nie łapie się na przypomnienie o zapłacie — porzucony przy
-  // odrzuconej karcie nikomu nie przeszkadza. Za drugim kliknięciem „Zapłać"
-  // powstaje nowy szkic zamiast poprawiania starego: poprawka przez API
+  // Kolejność: szkic w WooCommerce → przypięcie szkicu do płatności w Stripe
+  // (od tej chwili płatność sama wie, co opłaca, i domknie to webhookiem, choćby
+  // klient nie wrócił do tej karty przeglądarki) → złożenie (on-hold, sztuka
+  // zdjęta z magazynu) → mail „złożone". Gdy coś padnie przed złożeniem,
+  // szkic zostaje niewidoczny i nikomu nie przeszkadza.
+  //
+  // Ta sama płatność drugi raz (podwójne kliknięcie, ponowione żądanie) nie
+  // zakłada drugiego zamówienia: płatność ma już przypięte swoje.
+  async placeOrder(
+    input: PlaceOrderInput,
+    payment: PaymentRecord
+  ): Promise<PlaceOrderResult> {
+    if (payment.orderId) {
+      const existing = await orderService
+        .getOrderForPayment(payment.orderId)
+        .catch(() => null);
+      if (!existing || existing.key !== payment.orderKey) {
+        return { ok: false, error: CheckoutError.PaymentNotVerified, unavailable: [] };
+      }
+      const placed = { id: existing.id, key: existing.key };
+      if (existing.status === OrderStatus.OnHold) return { ok: true, order: placed };
+      if (existing.status !== OrderStatus.CheckoutDraft) {
+        return { ok: false, error: CheckoutError.PaymentNotVerified, unavailable: [] };
+      }
+      return this.finishPlacement(placed, existing.items, payment.id);
+    }
+
+    // Złożenie rezerwuje pracę, więc dostępność sprawdzamy tutaj, na serwerze,
+    // a nie tylko w przeglądarce.
+    const purchasable = await this.getPurchasableProducts(input.items);
+    if (!purchasable.ok) return purchasable;
+
+    const draft = await this.saveDraftOrder(input);
+    if (!draft.ok) return draft;
+
+    try {
+      await paymentService.attachOrder(payment.id, draft.order);
+    } catch (error) {
+      // Bez przypięcia płatność nie wiedziałaby, co opłaca. Klient nie
+      // zapłaci, dopóki się nie uda — szkic zostaje niewidoczny.
+      console.error("Stripe order attach failed:", error);
+      return { ok: false, error: CheckoutError.OrderFailed, unavailable: [] };
+    }
+
+    return this.finishPlacement(draft.order, input.items, payment.id);
+  }
+
+  private async finishPlacement(
+    order: PlacedOrder,
+    items: OrderItem[],
+    paymentIntentId: string
+  ): Promise<PlaceOrderResult> {
+    try {
+      await orderService.markPlaced(order.id, paymentIntentId);
+    } catch (error) {
+      console.error(`Order ${order.id}: placement failed:`, error);
+      return { ok: false, error: CheckoutError.OrderFailed, unavailable: [] };
+    }
+
+    // Dwie osoby, ta sama praca, ta sama sekunda: obie przeszły sprawdzenie
+    // dostępności, obie zdjęły sztukę, magazyn spadł poniżej zera. Zostaje
+    // zamówienie złożone pierwsze (niższy numer), drugie ustępuje — anuluje
+    // się (sztuka wraca) i klient dostaje „ktoś był szybszy". Sprawdzone
+    // 2026-10-08 dwoma równoczesnymi zamówieniami: bez tej reguły ustępowały
+    // obie i nikt pracy nie dostał.
+    const overbooked = await this.getOverbookedItems(items, order.id).catch(() => []);
+    if (overbooked.length) {
+      await orderService
+        .cancel(
+          order.id,
+          "Anulowane od razu przy składaniu: ktoś w tej samej chwili zamówił tę " +
+            "samą pracę. Klient zobaczył w kasie, że praca jest niedostępna, " +
+            "i nic nie zapłacił."
+        )
+        .catch((error) => console.error(`Order ${order.id}: cancel failed:`, error));
+      await paymentService.releaseIntent(paymentIntentId).catch(() => null);
+      return { ok: false, error: CheckoutError.Unavailable, unavailable: overbooked };
+    }
+
+    // Przed zwróceniem odpowiedzi, czyli zanim klient zacznie płacić — dzięki
+    // temu „złożone" zawsze przychodzi przed „opłacone".
+    await customerMailService.sendPlaced(order.id);
+    return { ok: true, order };
+  }
+
+  // Prace, których magazyn po złożeniu spadł poniżej zera, a które trzyma
+  // wcześniejsze złożone zamówienie — patrz finishPlacement.
+  private async getOverbookedItems(
+    items: OrderItem[],
+    orderId: number
+  ): Promise<UnavailableItem[]> {
+    const raw = await this.getLiveRawProducts(items.map((item) => item.id));
+    const oversold = raw.filter(
+      (product) => typeof product.stock_quantity === "number" && product.stock_quantity < 0
+    );
+
+    const lost: UnavailableItem[] = [];
+    for (const product of oversold) {
+      const holders = await this.wcFetch<{ id: number }[]>(
+        `orders?status=${OrderStatus.OnHold}&product=${product.id}&per_page=100&_fields=id`
+      );
+      const first = Math.min(...holders.map((holder) => holder.id));
+      if (first !== orderId) {
+        lost.push({ id: product.id, name: product.name, reason: UnavailableReason.Reserved });
+      }
+    }
+    return lost;
+  }
+
+  // Szkic zamówienia (`checkout-draft`) — niewidoczny na liście zamówień i w
+  // panelu klienta, dopóki placeOrder go nie złoży. Każde nowe złożenie
+  // zaczyna od nowego szkicu zamiast poprawiać stary: poprawka przez API
   // dopisałaby drugą linię wysyłki zamiast podmienić pierwszą.
-  async saveDraftOrder({
+  private async saveDraftOrder({
     billing,
     items,
     note,
@@ -222,7 +357,7 @@ class CheckoutService {
     locker,
     locale,
     currency,
-  }: DraftOrderInput): Promise<DraftOrderResult> {
+  }: PlaceOrderInput): Promise<PlaceOrderResult> {
     // Wysyłkę liczymy z cennika dla kraju adresu i sposobu dostawy, nie z kwoty
     // z żądania — a że ta sama kwota musiała być w płatności (metadane
     // w Stripe, patrz canDraftOrderFor), suma zamówienia zgadza się z tym, co
@@ -304,6 +439,10 @@ class CheckoutService {
   // czegokolwiek. Numer zamówienia bierzemy z płatności (przypiął go tam
   // szkic), a stan ze Stripe'a. Strona potwierdzenia pokazuje to od razu,
   // a samo domknięcie zostawia webhookowi — patrz niżej, dlaczego.
+  //
+  // Płatność, która nie przeszła, też ma już swoje zamówienie (złożone przed
+  // zapłatą) — wtedy „nieopłacone", o ile płatność pochodzi od nas (ma klucz
+  // zamówienia).
   describePayment(payment: PaymentRecord): CompletedOrder | null {
     if (!payment.orderId) return null;
     if (payment.status === PaymentStatus.Succeeded) {
@@ -314,6 +453,9 @@ class CheckoutService {
         id: payment.orderId,
         completion: OrderCompletion.AwaitingConfirmation,
       };
+    }
+    if (payment.orderKey) {
+      return { id: payment.orderId, completion: OrderCompletion.Unpaid };
     }
     return null;
   }
@@ -351,14 +493,27 @@ class CheckoutService {
       return null;
     }
 
-    const awaiting =
+    // Złożone zamówienie (on-hold) trzyma swoją pracę od chwili złożenia —
+    // nikt inny nie mógł jej w tym czasie kupić. Szkic i „oczekuje na
+    // płatność" (sprzed 2026-10-08) oraz anulowane pracy nie trzymają, więc
+    // u nich trzeba sprawdzić, czy ktoś nie był szybszy.
+    const holdsStock = order.status === OrderStatus.OnHold;
+    const cancelled = order.status === OrderStatus.Cancelled;
+    const unpaid =
+      holdsStock ||
+      cancelled ||
       order.status === OrderStatus.CheckoutDraft ||
       order.status === OrderStatus.Pending ||
       order.status === OrderStatus.Failed;
-    const onHold = order.status === OrderStatus.OnHold;
 
     if (payment.status === PaymentStatus.Processing) {
-      if (awaiting) {
+      if (cancelled) {
+        await orderService.addPrivateNote(
+          order.id,
+          "Stripe potwierdza płatność za ANULOWANE zamówienie (metoda odroczona). " +
+            "Gdy pieniądze dojdą, zamówienie samo wróci jako opłacone — do sprawdzenia."
+        );
+      } else if (unpaid && !order.awaitingConfirmation) {
         await orderService.markAwaitingConfirmation(order.id, order.status, payment);
         await customerMailService.sendOnHold(order.id);
         if (!order.studioNotified) {
@@ -371,19 +526,27 @@ class CheckoutService {
     // Zapłacone. Zamówienie już w realizacji (albo dalej) nie potrzebuje
     // niczego — to druga z dwóch dróg, które przyszły po to samo.
     let conflictNames: string[] = [];
-    if (awaiting || onHold) {
+    if (unpaid) {
       // Ceramika to pojedyncze sztuki. Jeśli ktoś zapłacił za tę samą pracę
       // wcześniej, zamówienie i tak musi zostać opłacone — pieniądze już są —
       // ale Magda musi to zobaczyć, zanim spakuje paczkę.
-      const conflicts = await this.getSoldOutConflicts(order.items);
+      const conflicts = holdsStock ? [] : await this.getSoldOutConflicts(order.items);
       conflictNames = conflicts.map((conflict) => conflict.name);
-      const remarks = conflicts.length
-        ? [
-            `UWAGA: w chwili zapłaty te prace były już niedostępne: ${conflicts
-              .map((conflict) => conflict.name)
-              .join(", ")}. Płatność została pobrana — do sprawdzenia przed wysyłką.`,
-          ]
-        : [];
+      const remarks = [
+        ...(cancelled
+          ? [
+              "Pieniądze przyszły za zamówienie, które było już anulowane — " +
+                "zamówienie wróciło jako opłacone.",
+            ]
+          : []),
+        ...(conflicts.length
+          ? [
+              `UWAGA: w chwili zapłaty te prace były już niedostępne: ${conflicts
+                .map((conflict) => conflict.name)
+                .join(", ")}. Płatność została pobrana — do sprawdzenia przed wysyłką.`,
+            ]
+          : []),
+      ];
       await orderService.markPaid(order.id, order.status, payment, remarks);
     }
 
@@ -400,6 +563,94 @@ class CheckoutService {
     }
 
     return { id: order.id, completion: OrderCompletion.Paid };
+  }
+
+  // Płatność za złożone zamówienie ze strony zamówienia: „client secret"
+  // płatności dla formularza Stripe'a. Wraca do płatności, którą zamówienie
+  // już ma, albo zakłada nową i zapisuje ją przy zamówieniu — patrz
+  // PaymentService.getOrderIntent. Null, gdy płatności nie da się uruchomić.
+  async getOrderPayment(order: OrderProps): Promise<string | null> {
+    if (!order.payable) return null;
+    try {
+      const current = await orderService.getOrderForPayment(order.id);
+      const currentId = current?.paymentIntentId ?? null;
+      const intent = await paymentService.getOrderIntent(order, currentId);
+      if (!intent) return null;
+
+      if (intent.id !== currentId) {
+        try {
+          await orderService.setPaymentIntent(order.id, intent.id);
+        } catch (error) {
+          // Płatność, o której zamówienie nie wie, nie dałaby się zamknąć przy
+          // anulowaniu — lepiej jej nie pokazywać.
+          await paymentService.releaseIntent(intent.id).catch(() => null);
+          throw error;
+        }
+      }
+      return intent.clientSecret;
+    } catch (error) {
+      console.error(`Order ${order.id}: payment could not be started:`, error);
+      return null;
+    }
+  }
+
+  // Stan zamówienia tuż po powrocie ze Stripe'a. Webhook potrafi dojść kilka
+  // sekund po kliencie, więc to, co mówi Stripe, wygrywa z tym, co
+  // WooCommerce zdążył zapisać. Zapisuje wyłącznie tam, gdzie webhooka nie ma
+  // (lokalnie) — patrz completePayment, „jeden pisarz".
+  async getStateAfterReturn(
+    order: OrderProps,
+    paymentIntentId: string
+  ): Promise<OrderPaymentState> {
+    if (order.paymentState !== OrderPaymentState.Unpaid) return order.paymentState;
+
+    const payment = await paymentService.getPayment(paymentIntentId);
+    if (!payment || payment.orderId !== order.id) return order.paymentState;
+
+    if (!paymentService.isWebhookConfigured()) {
+      await this.completePayment(payment).catch((error) =>
+        console.error(`Order ${order.id}: completion failed:`, error)
+      );
+    }
+    if (payment.status === PaymentStatus.Succeeded) return OrderPaymentState.Paid;
+    if (payment.status === PaymentStatus.Processing) {
+      return OrderPaymentState.AwaitingConfirmation;
+    }
+    return OrderPaymentState.Unpaid;
+  }
+
+  // Anulowanie złożonego, nieopłaconego zamówienia — przez klienta albo po
+  // terminie. Najpierw zamykamy płatność w Stripe: zamknięta nie przyjmie już
+  // pieniędzy, więc nikt nie zapłaci za anulowane. Jeśli zamknąć się jej nie
+  // da, bo pieniądze właśnie przeszły albo są w drodze, zamówienie zostaje —
+  // a gdy przeszły, zapisujemy zapłatę od razu, nie czekając na webhook.
+  // Sztukę do magazynu oddaje WooCommerce sam (patrz OrderService.cancel).
+  async cancelUnpaidOrder(orderId: number, reason: CancelReason): Promise<CancelResult> {
+    const order = await orderService.getOrderForPayment(orderId);
+    if (!order || order.status !== OrderStatus.OnHold || !order.reservedUntil) {
+      return CancelResult.NotCancellable;
+    }
+
+    if (order.paymentIntentId) {
+      const payment = await paymentService.releaseIntent(order.paymentIntentId);
+      if (payment?.status === PaymentStatus.Succeeded) {
+        await this.completePayment(payment);
+        return CancelResult.Paid;
+      }
+      if (payment?.status === PaymentStatus.Processing) {
+        await this.completePayment(payment);
+        return CancelResult.NotCancellable;
+      }
+    }
+
+    await orderService.cancel(
+      orderId,
+      reason === CancelReason.Customer
+        ? "Anulowane przez klienta przed zapłatą. Praca wróciła do sklepu."
+        : "Anulowane automatycznie: brak wpłaty w ciągu 48 h. Praca wróciła do sklepu."
+    );
+    await customerMailService.sendCancelled(orderId, reason);
+    return CancelResult.Cancelled;
   }
 }
 

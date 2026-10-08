@@ -1,7 +1,9 @@
 import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { OrderProps } from "@/contracts/server/order";
+import { OrderPaymentState, OrderProps } from "@/contracts/server/order";
 import { formatPrice } from "@/lib/helpers/currency";
+import { formatDeadline } from "@/lib/helpers/date";
+import { countPieces } from "@/lib/helpers/order";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 const STATUS_TONE: Record<string, string> = {
@@ -52,7 +54,11 @@ export default async function OrderList({ orders }: { orders: OrderProps[] }) {
               className="text-[10px] tracking-widest uppercase"
               style={{ color: STATUS_TONE[order.status] ?? "var(--muted)" }}
             >
-              {t(`orderStatus.${order.status}`)}
+              {/* Bank potwierdza płatność (Klarna) — ten sam stan WooCommerce
+                  co „złożone, czeka na wpłatę", ale klient ma zobaczyć różnicę. */}
+              {order.paymentState === OrderPaymentState.AwaitingConfirmation
+                ? t("orderStatus.awaitingConfirmation")
+                : t(`orderStatus.${order.status}`)}
             </span>
           </div>
 
@@ -79,17 +85,23 @@ export default async function OrderList({ orders }: { orders: OrderProps[] }) {
             </span>
           </div>
 
-          {/* Zamówienie czekające na pieniądze dostaje drogę do ich wpłacenia.
-              Bez tego jedyną drogą było napisanie do Magdy. */}
+          {/* Zamówienie czekające na pieniądze dostaje drogę do ich wpłacenia
+              — na stronę zamówienia, tę samą co w mailu (z terminem
+              rezerwacji i z anulowaniem). */}
           {order.payable && (
             <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-3">
               <p className="text-xs text-[var(--muted)]">
-                {t("orders.awaitingPayment")}
+                {order.reservedUntil
+                  ? t("orders.reservedUntil", {
+                      deadline: formatDeadline(order.reservedUntil, locale),
+                      count: countPieces(order.items),
+                    })
+                  : t("orders.awaitingPayment")}
               </p>
               <Link
                 href={{
-                  pathname: "/account/orders/pay",
-                  query: { order: order.id },
+                  pathname: "/order",
+                  query: { id: order.id, key: order.key },
                 }}
                 className={buttonClass()}
               >

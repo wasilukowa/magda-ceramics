@@ -7,7 +7,7 @@ import { AddToCartButtonProps, ButtonSize } from "@/contracts/shared";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 export default function AddToCartButton({
-  id, slug, name, price, image, inStock, hasPrice,
+  id, slug, name, price, image, inStock, hasPrice, reserved = false,
 }: AddToCartButtonProps) {
   const { items, addItem, openCart } = useCart();
   const t = useTranslations("addToCart");
@@ -39,7 +39,7 @@ export default function AddToCartButton({
         disabled
         className="w-full border border-[var(--color-control-border)] text-xs tracking-widest uppercase py-4 text-[var(--muted)] cursor-not-allowed"
       >
-        {t("outOfStock")}
+        {reserved ? t("reserved") : t("outOfStock")}
       </button>
     );
   }
