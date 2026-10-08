@@ -51,7 +51,7 @@ export const TERMS: LegalDocumentByLocale = {
         "To place an order, select the products, add them to the cart, fill out the delivery form, and choose a payment method."
       ),
       paragraph(
-        "The condition for fulfilling the order is clicking the “Buy and Pay” button and paying for the order within the specified period."
+        "The condition for fulfilling the order is clicking the “Pay & order” button and paying for the order within 48 hours of placing it. An order not paid within this period is cancelled, and the Customer is notified by email. Until payment, the Customer may also cancel the order themselves."
       ),
       paragraph(
         "Prices in the Store are gross prices. They are shown in Polish zloty (PLN) or in euro (EUR), converted at the Store's fixed exchange rate. The Customer pays in the currency they have chosen. Prices do not include delivery costs, which are added during the checkout process."
@@ -191,7 +191,7 @@ export const TERMS: LegalDocumentByLocale = {
         "W celu złożenia zamówienia należy wybrać produkty, dodać je do koszyka, wypełnić formularz dostawy oraz wybrać metodę płatności."
       ),
       paragraph(
-        "Warunkiem realizacji zamówienia jest kliknięcie przycisku „Kupuję i płacę” oraz opłacenie zamówienia w wyznaczonym terminie."
+        "Warunkiem realizacji zamówienia jest kliknięcie przycisku „Zapłać i zamów” oraz opłacenie zamówienia w ciągu 48 godzin od jego złożenia. Zamówienie nieopłacone w tym terminie zostaje anulowane, o czym Klient otrzymuje wiadomość e-mail. Do czasu zapłaty Klient może też sam anulować zamówienie."
       ),
       paragraph(
         "Ceny w Sklepie są cenami brutto. Podawane są w złotych (PLN) albo w euro (EUR), przeliczonych po stałym kursie Sklepu. Klient płaci w walucie, którą wybrał. Ceny nie zawierają kosztów dostawy, które są doliczane w procesie składania zamówienia."
