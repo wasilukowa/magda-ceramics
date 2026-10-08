@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { hasLocale } from "next-intl";
 import {
   CustomerOrderMail,
@@ -5,16 +6,19 @@ import {
   OrderAmounts,
   OrderDelivery,
   OrderForPayment,
+  OrderPaymentState,
   OrderPreferences,
   OrderProps,
   OrderStatus,
   PAYABLE_STATUSES,
   RawOrder,
   RawOrderRefund,
+  ReservationStep,
   SalesOrder,
   StudioOrderMail,
   UnpaidOrder,
 } from "@/contracts/server/order";
+import { PaymentStatus } from "@/contracts/server/payment";
 import { LedgerAmount } from "@/contracts/server/exchangeRate";
 import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
@@ -24,9 +28,17 @@ import { formatDayPl, getWarsawDay, parseWooGmtDate } from "@/lib/helpers/date";
 import { formatPlNumber } from "@/lib/helpers/ledger";
 import { getCountryLabel, getShippingCost } from "@/lib/helpers/shipping";
 
-// Meta, którym zaznaczamy wysłane przypomnienie o zapłacie. Dzięki temu drugi
-// przebieg zadania nie napisze do tej samej osoby po raz drugi.
-export const REMINDER_SENT_META_KEY = "_mc_payment_reminder_sent";
+// Złożone zamówienie trzyma pracę tyle godzin. Przypomnienia o zapłacie idą
+// po 12 i po 24 godzinach od złożenia, a po 48 sklep anuluje zamówienie
+// i praca wraca do sklepu (decyzja Natalii 2026-10-08).
+export const RESERVATION_HOURS = 48;
+export const REMINDER_AFTER_HOURS = [12, 24] as const;
+
+const HOUR_MS = 3_600_000;
+
+// Do kiedy praca czeka, licząc od chwili złożenia zamówienia.
+export const getReservationDeadline = (placedAt: Date): string =>
+  new Date(placedAt.getTime() + RESERVATION_HOURS * HOUR_MS).toISOString();
 
 export const toOrderStatus = (status: string): OrderStatus =>
   Object.values(OrderStatus).includes(status as OrderStatus)
@@ -50,10 +62,22 @@ export const ORDER_META = {
   // Język i waluta z kasy — patrz OrderPreferences.
   locale: "_mc_locale",
   currency: "_mc_currency",
+  // Do kiedy praca czeka zarezerwowana (ISO) — zapisywane przy złożeniu.
+  reservedUntil: "_mc_reserved_until",
+  // Ostatnia płatność w Stripe założona dla zamówienia (kasa albo strona
+  // zamówienia). Jedna naraz — przy anulowaniu zamykamy właśnie ją.
+  paymentIntent: "_mc_payment_intent",
+  // Ile przypomnień o zapłacie już wyszło.
+  reminders: "_mc_payment_reminders",
+  // Stan płatności i jej numer w chwili zapisu (zapisuje OrderService).
+  stripeStatus: "_stripe_payment_status",
+  stripeIntent: "_stripe_payment_intent",
   // Zapłata w euro (zapisuje OrderService przy zapłacie).
   paidCurrency: "_paid_currency",
   paidAmount: "_paid_amount",
   // Które maile do klienta już wyszły — żeby żaden nie poszedł dwa razy.
+  mailPlaced: "_mc_mail_placed",
+  mailCancelled: "_mc_mail_cancelled",
   mailConfirmation: "_mc_mail_confirmation",
   mailOnHold: "_mc_mail_on_hold",
   mailShipped: "_mc_mail_shipped",
@@ -158,6 +182,41 @@ export const getOrderAmounts = (raw: RawOrder, currency: Currency): OrderAmounts
   };
 };
 
+// Stripe powiedział „płatność w toku" i nic się od tamtej pory nie zmieniło —
+// bank potwierdza płatność metodą odroczoną (np. Klarna).
+const isAwaitingConfirmation = (raw: RawOrder): boolean =>
+  toOrderStatus(raw.status) === OrderStatus.OnHold &&
+  getMetaValue(raw, ORDER_META.stripeStatus) === PaymentStatus.Processing;
+
+const getReservedUntil = (raw: RawOrder): string | null => {
+  const value = getMetaValue(raw, ORDER_META.reservedUntil);
+  return value && !Number.isNaN(Date.parse(value)) ? value : null;
+};
+
+export const getPaymentState = (raw: RawOrder): OrderPaymentState => {
+  const status = toOrderStatus(raw.status);
+  if (status === OrderStatus.Processing || status === OrderStatus.Completed) {
+    return OrderPaymentState.Paid;
+  }
+  if (status === OrderStatus.Cancelled) return OrderPaymentState.Cancelled;
+  if (status === OrderStatus.Refunded) return OrderPaymentState.Refunded;
+  return isAwaitingConfirmation(raw)
+    ? OrderPaymentState.AwaitingConfirmation
+    : OrderPaymentState.Unpaid;
+};
+
+// Czy podany klucz to klucz tego zamówienia. Porównanie w stałym czasie —
+// klucz jest jedynym, co chroni stronę zamówienia otwieraną z maila.
+export const isOrderKey = (raw: RawOrder, key: string): boolean => {
+  const expected = Buffer.from(raw.order_key ?? "");
+  const received = Buffer.from(key);
+  return (
+    expected.length > 0 &&
+    expected.length === received.length &&
+    timingSafeEqual(expected, received)
+  );
+};
+
 export const prepareOrderForPayment = (raw: RawOrder): OrderForPayment => ({
   id: raw.id,
   key: raw.order_key ?? "",
@@ -165,6 +224,9 @@ export const prepareOrderForPayment = (raw: RawOrder): OrderForPayment => ({
   items: (raw.line_items ?? []).flatMap((item) =>
     item.product_id ? [{ id: item.product_id, quantity: item.quantity }] : []
   ),
+  awaitingConfirmation: isAwaitingConfirmation(raw),
+  reservedUntil: getReservedUntil(raw),
+  paymentIntentId: getMetaValue(raw, ORDER_META.paymentIntent) || null,
   confirmationSent: Boolean(getMetaValue(raw, ORDER_META.mailConfirmation)),
   studioNotified: Boolean(getMetaValue(raw, ORDER_META.mailStudioNewOrder)),
 });
@@ -175,41 +237,70 @@ export const prepareOrder = (raw: RawOrder): OrderProps => {
     raw,
     getOrderPreferences(raw).currency
   );
+  const paymentState = getPaymentState(raw);
+  const waiting = paymentState === OrderPaymentState.Unpaid;
 
   return {
     id: raw.id,
     number: raw.number,
+    key: raw.order_key ?? "",
     status,
     dateCreated: raw.date_created,
     total,
     currency,
     items,
-    payable: isPayableStatus(status),
+    paymentState,
+    reservedUntil: waiting ? getReservedUntil(raw) : null,
+    payable: waiting && isPayableStatus(status),
   };
 };
 
-export const hasReminderBeenSent = (raw: RawOrder): boolean =>
-  Boolean(
-    raw.meta_data?.find((meta) => meta.key === REMINDER_SENT_META_KEY)?.value
-  );
-
+// Null, gdy zamówienie nie ma adresu albo rezerwacji — takich (sprzed
+// 2026-10-08) zadanie z przypomnieniami nie rusza.
 export const prepareUnpaidOrder = (raw: RawOrder): UnpaidOrder | null => {
   const email = raw.billing?.email;
-  if (!email) return null;
+  const reservedUntil = getReservedUntil(raw);
+  if (!email || !reservedUntil) return null;
 
   const { locale, currency } = getOrderPreferences(raw);
   const amounts = getOrderAmounts(raw, currency);
+  const reminders = Number(getMetaValue(raw, ORDER_META.reminders));
 
   return {
     id: raw.id,
     number: raw.number,
+    key: raw.order_key ?? "",
     total: amounts.total,
     currency,
     email,
     firstName: raw.billing?.first_name ?? "",
     locale,
     items: amounts.items,
+    reservedUntil,
+    remindersSent: Number.isInteger(reminders) && reminders > 0 ? reminders : 0,
+    awaitingConfirmation: isAwaitingConfirmation(raw),
   };
+};
+
+// Co zrobić z nieopłaconym zamówieniem teraz. Po terminie — anulować (także
+// gdy bank „potwierdzał" płatność: o tym, czy pieniądze idą, rozstrzyga
+// wtedy Stripe, patrz CheckoutService.cancelUnpaidOrder). Przed terminem —
+// przypomnieć, jeśli minęło 12 albo 24 h, a przypomnienie jeszcze nie wyszło.
+// Zadanie, które przez kilka godzin nie chodziło, wysyła jedno przypomnienie,
+// nie dwa naraz (patrz getDueReminders).
+export const getReservationStep = (order: UnpaidOrder, now: Date): ReservationStep => {
+  if (now.getTime() >= Date.parse(order.reservedUntil)) return ReservationStep.Expire;
+  if (order.awaitingConfirmation) return ReservationStep.Wait;
+  return getDueReminders(order, now) > order.remindersSent
+    ? ReservationStep.Remind
+    : ReservationStep.Wait;
+};
+
+// Ile przypomnień powinno już wyjść, licząc od chwili złożenia.
+export const getDueReminders = (order: UnpaidOrder, now: Date): number => {
+  const placedAt = Date.parse(order.reservedUntil) - RESERVATION_HOURS * HOUR_MS;
+  const elapsedHours = (now.getTime() - placedAt) / HOUR_MS;
+  return REMINDER_AFTER_HOURS.filter((hours) => elapsedHours >= hours).length;
 };
 
 // Klucze, pod którymi zamówienie w euro trzyma kwotę do ewidencji.
@@ -339,6 +430,9 @@ export const prepareCustomerOrderMail = (raw: RawOrder): CustomerOrderMail | nul
   return {
     id: raw.id,
     number: raw.number,
+    key: raw.order_key ?? "",
+    reservedUntil:
+      getPaymentState(raw) === OrderPaymentState.Unpaid ? getReservedUntil(raw) : null,
     email,
     firstName: raw.billing?.first_name ?? "",
     preferences,
@@ -347,8 +441,10 @@ export const prepareCustomerOrderMail = (raw: RawOrder): CustomerOrderMail | nul
     note: getCustomerOwnNote(raw),
     hasAccount: hasCustomerAccount(raw),
     sent: {
+      placed: Boolean(getMetaValue(raw, ORDER_META.mailPlaced)),
       confirmation: Boolean(getMetaValue(raw, ORDER_META.mailConfirmation)),
       onHold: Boolean(getMetaValue(raw, ORDER_META.mailOnHold)),
+      cancelled: Boolean(getMetaValue(raw, ORDER_META.mailCancelled)),
       shipped: Boolean(getMetaValue(raw, ORDER_META.mailShipped)),
       refundIds: parseIdList(getMetaValue(raw, ORDER_META.mailRefunds)),
     },

@@ -107,6 +107,7 @@
     "priceUnavailable": "Price unavailable",
     "inStock": "In stock",
     "outOfStock": "Sold",
+    "unavailable": "Unavailable",
     "dimensionsTitle": "Dimensions",
     "dimensions": {
       "capacity": "Capacity",
@@ -127,6 +128,7 @@
     "checkout": "Go to cart",
     "close": "Close cart",
     "soldOut": "Sold",
+    "unavailable": "Unavailable",
     "soldOutHint": "Remove the sold pieces from the basket to go to checkout.",
     "removeItem": "Remove from cart: {name}"
   },
@@ -135,7 +137,8 @@
     "inCart": "In cart — view",
     "added": "Added ✓",
     "unavailable": "Price unavailable",
-    "outOfStock": "Sold"
+    "outOfStock": "Sold",
+    "reserved": "Unavailable"
   },
   "contact": {
     "title": "Contact",
@@ -256,12 +259,34 @@
     "thankYou": "Thank you for your order",
     "orderReceived": "Order #{orderId} has been received. A confirmation has been sent to your email address — if you can't see it, please check your spam folder too.",
     "backToShop": "Back to shop",
-    "paymentFailed": "The payment did not go through.",
-    "paymentFailedHint": "Nothing was charged and no order was placed. Your pieces are still in your basket — you can try again, with another payment method if you like.",
     "connectionError": "Connection error while creating the order.",
-    "backToCheckout": "Back to checkout",
+    "checkEmail": "Your order is placed — we have emailed you the details and a link to pay. If you cannot see it, check your spam folder or write to us.",
     "paymentNotVerified": "We could not confirm the payment. If you have been charged, write to us and we will look into it.",
     "orderFailed": "We could not save the order. The payment may have gone through — write to us and we will sort it out."
+  },
+  "order": {
+    "title": "Your order",
+    "number": "Order #{number}",
+    "total": "Total",
+    "reservedUntil": "{count, plural, one {The piece is} other {The pieces are}} reserved for you until {deadline}. If the order is not paid by then, we will cancel it and {count, plural, one {the piece goes} other {the pieces go}} back to the shop.",
+    "retry": "The payment did not go through. Your order is placed — try paying again, with another method if you like.",
+    "payButton": "Pay {total}",
+    "processing": "Processing...",
+    "error": "The payment did not go through. Please try again.",
+    "unavailable": "The payment could not be started. Refresh the page or write to us.",
+    "paid": "This order is paid — thank you! We have emailed you a confirmation and will let you know when it ships.",
+    "awaitingConfirmation": "Your bank is still confirming the payment. Once the money arrives, you will get a confirmation by email.",
+    "cancelled": "This order has been cancelled.",
+    "refunded": "This order has been refunded and is closed.",
+    "backToShop": "Back to shop",
+    "cancel": {
+      "button": "Cancel order",
+      "question": "Cancel the order? {count, plural, one {The piece goes} other {The pieces go}} straight back to the shop and someone else will be able to buy {count, plural, one {it} other {them}}.",
+      "keep": "No, keep it",
+      "confirm": "Yes, cancel",
+      "cancelling": "Cancelling...",
+      "failed": "The order could not be cancelled. Try again in a moment or write to us."
+    }
   },
   "footer": {
     "copyright": "Handmade ceramics",
@@ -375,17 +400,19 @@
       "empty": "You have no orders yet.",
       "number": "Order #{number}",
       "total": "Total",
-      "awaitingPayment": "This order is waiting to be paid. The piece is held for you until someone else pays for it.",
+      "awaitingPayment": "This order is waiting to be paid.",
+      "reservedUntil": "This order is waiting to be paid. {count, plural, one {The piece is} other {The pieces are}} reserved for you until {deadline}.",
       "payNow": "Pay now"
     },
     "orderStatus": {
       "pending": "Pending payment",
       "processing": "Processing",
-      "on-hold": "On hold",
+      "on-hold": "Awaiting payment",
       "completed": "Completed",
       "cancelled": "Cancelled",
       "refunded": "Refunded",
-      "failed": "Failed"
+      "failed": "Failed",
+      "awaitingConfirmation": "Payment being confirmed"
     },
     "profile": {
       "title": "Profile",
@@ -429,11 +456,6 @@
     },
     "pay": {
       "title": "Pay for your order",
-      "button": "Pay {total}",
-      "processing": "Processing...",
-      "error": "The payment did not go through. Please try again.",
-      "unavailable": "The payment could not be started. Refresh the page or write to us.",
-      "alreadyPaid": "This order has already been paid.",
       "paidTitle": "Paid",
       "paid": "Thank you! The payment is confirmed and I am getting your order ready to post.",
       "notConfirmedTitle": "Payment not confirmed",
@@ -442,10 +464,13 @@
       "email": {
         "subject": "Order #{number} is waiting to be paid",
         "heading": "Hello {name}!",
-        "intro": "Your order #{number} ({items}) for {total} is still waiting to be paid. If the payment was interrupted, you can finish it here:",
-        "button": "Finish the payment",
-        "single": "I make every piece in a single copy, so until an order is paid someone else can still buy it.",
-        "ignore": "If you have changed your mind there is nothing to do — the order simply lapses.",
+        "headingNoName": "Hello!",
+        "intro": "Your order #{number} ({items}) for {total} is still waiting to be paid. {count, plural, one {The piece is} other {The pieces are}} reserved for you until {deadline}.",
+        "button": "Pay {total}",
+        "deadline": "If the order is not paid by then, I will cancel it and {count, plural, one {the piece goes} other {the pieces go}} back to the shop.",
+        "cancel": "Changed your mind? Cancel the order — {count, plural, one {the piece goes} other {the pieces go}} straight back to the shop for someone else.",
+        "cancelButton": "Cancel order",
+        "help": "Questions? Just reply to this email.",
         "signature": "Magda"
       },
       "confirming": "Confirming the payment...",
@@ -602,9 +627,17 @@
   "orderEmail": {
     "greeting": "Hello {name}!",
     "greetingNoName": "Hello!",
-    "confirmed": {
-      "subject": "Thank you for your order #{number}",
+    "placed": {
+      "subject": "Order #{number} placed",
       "heading": "Thank you for your order!",
+      "intro": "Your order #{number} is placed and {count, plural, one {the piece is} other {the pieces are}} reserved for you until {deadline}.",
+      "payment": "If your payment has already gone through, you will get a confirmation from me in a moment — there is nothing more to do. If not, you can pay here:",
+      "button": "Pay {total}",
+      "deadline": "If the order is not paid by {deadline}, I will cancel it and {count, plural, one {the piece goes} other {the pieces go}} back to the shop."
+    },
+    "confirmed": {
+      "subject": "Payment received for order #{number}",
+      "heading": "Payment received",
       "intro": "Your payment has arrived and order #{number} is with me. I'll pack it carefully now and email you when the parcel is on its way."
     },
     "on-hold": {
@@ -629,6 +662,14 @@
       "partial": "I've refunded part of the amount for order #{number}: {amount}.",
       "partialNoAmount": "I've refunded part of the amount for order #{number}.",
       "timing": "The money goes back the same way you paid — this usually takes a few business days."
+    },
+    "cancelled": {
+      "subject": "Order #{number} cancelled",
+      "heading": "Order cancelled",
+      "expired": "I did not receive payment for order #{number} within 48 hours, so I have cancelled it. Nothing was charged and {count, plural, one {the piece is} other {the pieces are}} back in the shop.",
+      "customer": "I have cancelled order #{number} as you asked. Nothing was charged and {count, plural, one {the piece is} other {the pieces are}} back in the shop.",
+      "shop": "If you would still like {count, plural, one {it} other {them}}, you can order again — as long as nobody beats you to it:",
+      "shopLink": "Shop"
     },
     "summary": "Your order",
     "shippingLocker": "Shipping — InPost parcel locker",

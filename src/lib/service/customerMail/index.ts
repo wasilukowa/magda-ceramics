@@ -1,6 +1,7 @@
 import "server-only";
 
 import {
+  CancelReason,
   CustomerMailInput,
   CustomerMailKind,
   CustomerOrderMail,
@@ -18,9 +19,10 @@ import {
 import { getRefundAmount } from "./helpers";
 
 // Maile do klienta o jego zamówieniu — w języku i walucie klienta. Zastępują
-// maile WooCommerce (angielskie i w złotych dla wszystkich). Potwierdzenie
-// wysyła domknięcie płatności; resztę (wysłane, notatka Magdy, zwrot) — webhook
-// WooCommerce, bo te rzeczy dzieją się w panelu WordPressa.
+// maile WooCommerce (angielskie i w złotych dla wszystkich). „Złożone" wysyła
+// kasa przy złożeniu, potwierdzenie — domknięcie płatności, „anulowane" —
+// anulowanie nieopłaconego zamówienia; resztę (wysłane, notatka Magdy, zwrot)
+// — webhook WooCommerce, bo te rzeczy dzieją się w panelu WordPressa.
 //
 // Żaden mail nie może zatrzymać tego, co go wywołało: płatność jest zapisana,
 // zanim mail wyjdzie. Nieudany mail zostaje w logu i w notatce dla Magdy.
@@ -75,6 +77,30 @@ class CustomerMailService {
       console.error(`Order ${orderId}: lookup for customer mail failed:`, error);
       return null;
     }
+  }
+
+  // Złożone — zamówienie przyjęte, praca zarezerwowana, link do zapłaty.
+  // Wychodzi ZAWSZE, także gdy klient zapłaci chwilę później (decyzja
+  // Natalii 2026-10-08: dwa maile — „złożone" i „opłacone").
+  async sendPlaced(orderId: number): Promise<void> {
+    const order = await this.loadOrder(orderId);
+    // Bez terminu rezerwacji (np. zapłacone w międzyczasie) mail nie miałby
+    // czego powiedzieć.
+    if (!order || order.sent.placed || !order.reservedUntil) return;
+    await this.deliver(
+      { kind: CustomerMailKind.Placed, order },
+      { key: ORDER_META.mailPlaced, value: this.now() }
+    );
+  }
+
+  // Anulowane przed zapłatą — po terminie albo na prośbę klienta.
+  async sendCancelled(orderId: number, reason: CancelReason): Promise<void> {
+    const order = await this.loadOrder(orderId);
+    if (!order || order.sent.cancelled) return;
+    await this.deliver(
+      { kind: CustomerMailKind.Cancelled, order, cancelReason: reason },
+      { key: ORDER_META.mailCancelled, value: this.now() }
+    );
   }
 
   // Zapłacone — potwierdzenie zamówienia.

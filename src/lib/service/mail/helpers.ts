@@ -3,6 +3,7 @@ import "server-only";
 import { getTranslations } from "next-intl/server";
 import { MailMessage } from "@/contracts/server/mail";
 import {
+  CancelReason,
   CustomerMailInput,
   CustomerMailKind,
   DeliveryKind,
@@ -20,7 +21,8 @@ import {
   SalesReport,
 } from "@/contracts/server/salesReport";
 import { formatCsvAmount, toCsv } from "@/lib/helpers/csv";
-import { formatDayPl, formatMonthPl } from "@/lib/helpers/date";
+import { formatDayPl, formatDeadline, formatMonthPl } from "@/lib/helpers/date";
+import { countPieces } from "@/lib/helpers/order";
 import { formatPlNumber } from "@/lib/helpers/ledger";
 
 // Treść maila z linkiem do zmiany hasła. Wszystkie zdania idą z tłumaczeń
@@ -75,17 +77,37 @@ export const buildPasswordResetMail = async ({
 };
 
 
-// Przypomnienie o niezapłaconym zamówieniu. Ton jest uprzejmy, nie
-// windykacyjny: zamówienie mogło zostać przerwane przez cokolwiek — zerwane
-// łącze, odrzuconą kartę, telefon w połowie płatności. Ważne zdanie jest jedno
-// i mówi prawdę o tej pracowni: każda praca istnieje w jednym egzemplarzu,
-// więc czekanie ma swoją cenę.
+// Strona zamówienia (zapłata, anulowanie) dla kogoś, kto przychodzi z maila —
+// bez logowania, numer i klucz zamówienia w adresie. `cancel` otwiera od razu
+// pytanie „anulować?"; samo wejście w link niczego nie anuluje (programy
+// pocztowe potrafią otwierać linki same, żeby je sprawdzić).
+export const getOrderPageUrl = (
+  locale: string,
+  order: { id: number; key: string },
+  cancel = false
+): string => {
+  const query = new URLSearchParams({ id: order.id.toString(), key: order.key });
+  if (cancel) query.set("cancel", "1");
+  return `${SITE_URL}${getPathname({ locale, href: "/order" })}?${query}`;
+};
+
+// Przyciski w mailach. Zapłata — wyraźna, anulowanie — wyciszone, żeby nikt
+// nie kliknął go zamiast zapłaty.
+const primaryButton = (url: string, label: string): string =>
+  `<a href="${url}" style="display:inline-block;padding:14px 32px;border:1px solid #1a1a1a;background:#1a1a1a;color:#ffffff;text-decoration:none;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">${escapeHtml(label)}</a>`;
+const secondaryButton = (url: string, label: string): string =>
+  `<a href="${url}" style="display:inline-block;padding:12px 28px;border:1px solid #c9c4bb;color:#6b6b6b;text-decoration:none;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">${escapeHtml(label)}</a>`;
+
+// Przypomnienie o niezapłaconym zamówieniu — po 12 i po 24 godzinach od
+// złożenia. Ton jest uprzejmy, nie windykacyjny: płatność mogło przerwać
+// cokolwiek — zerwane łącze, odrzucona karta, telefon w połowie BLIK-a. Mail
+// mówi wprost, do kiedy praca czeka, i daje dwie drogi: zapłacić albo
+// anulować (decyzja Natalii 2026-10-08) — kto się rozmyślił, oddaje pracę
+// innym od razu, a nie po 48 godzinach.
 export const buildUnpaidOrderMail = async ({
   order,
-  url,
 }: {
   order: UnpaidOrder;
-  url: string;
 }): Promise<MailMessage> => {
   const t = await getTranslations({
     locale: order.locale,
@@ -99,17 +121,28 @@ export const buildUnpaidOrderMail = async ({
     .join(", ");
 
   const total = formatPrice(order.total, order.currency);
+  const deadline = formatDeadline(order.reservedUntil, order.locale);
+  const payUrl = getOrderPageUrl(order.locale, order);
+  const cancelUrl = getOrderPageUrl(order.locale, order, true);
+  const heading = order.firstName
+    ? t("heading", { name: order.firstName })
+    : t("headingNoName");
+  const count = countPieces(order.items);
+  const intro = t("intro", { number: order.number, items: lines, total, deadline, count });
 
   const text = [
-    t("heading", { name: order.firstName }),
+    heading,
     "",
-    t("intro", { number: order.number, items: lines, total }),
+    intro,
     "",
-    url,
+    `${t("button", { total })}: ${payUrl}`,
     "",
-    t("single"),
+    t("deadline", { count }),
     "",
-    t("ignore"),
+    t("cancel", { count }),
+    `${t("cancelButton")}: ${cancelUrl}`,
+    "",
+    t("help"),
     "",
     t("signature"),
   ].join("\n");
@@ -118,13 +151,13 @@ export const buildUnpaidOrderMail = async ({
 <div style="margin:0;padding:32px 16px;background:#faf9f7;font-family:Georgia,'Times New Roman',serif;color:#1a1a1a;">
   <div style="max-width:520px;margin:0 auto;">
     <p style="margin:0 0 32px;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:#6b6b6b;">Magda Ceramics</p>
-    <h1 style="margin:0 0 24px;font-size:22px;font-weight:400;letter-spacing:0.02em;">${t("heading", { name: order.firstName })}</h1>
-    <p style="margin:0 0 28px;font-size:15px;line-height:1.7;">${t("intro", { number: order.number, items: lines, total })}</p>
-    <p style="margin:0 0 32px;">
-      <a href="${url}" style="display:inline-block;padding:14px 32px;border:1px solid #1a1a1a;color:#1a1a1a;text-decoration:none;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">${t("button")}</a>
-    </p>
-    <p style="margin:0 0 32px;font-size:13px;line-height:1.7;color:#6b6b6b;">${t("single")}</p>
-    <p style="margin:0 0 32px;font-size:13px;line-height:1.7;color:#6b6b6b;">${t("ignore")}</p>
+    <h1 style="margin:0 0 24px;font-size:22px;font-weight:400;letter-spacing:0.02em;">${escapeHtml(heading)}</h1>
+    <p style="margin:0 0 28px;font-size:15px;line-height:1.7;">${escapeHtml(intro)}</p>
+    <p style="margin:0 0 28px;">${primaryButton(payUrl, t("button", { total }))}</p>
+    <p style="margin:0 0 32px;font-size:13px;line-height:1.7;color:#6b6b6b;">${t("deadline", { count })}</p>
+    <p style="margin:0 0 16px;font-size:13px;line-height:1.7;color:#6b6b6b;">${t("cancel", { count })}</p>
+    <p style="margin:0 0 32px;">${secondaryButton(cancelUrl, t("cancelButton"))}</p>
+    <p style="margin:0 0 32px;font-size:13px;line-height:1.7;color:#6b6b6b;">${t("help")}</p>
     <p style="margin:0;padding-top:24px;border-top:1px solid #e5e2dc;font-size:13px;color:#6b6b6b;">${t("signature")}</p>
   </div>
 </div>`.trim();
@@ -314,6 +347,7 @@ export const buildCustomerOrderMail = async ({
   order,
   note,
   refund,
+  cancelReason,
 }: CustomerMailInput): Promise<MailMessage> => {
   const { locale } = order.preferences;
   const t = await getTranslations({ locale, namespace: "orderEmail" });
@@ -333,11 +367,34 @@ export const buildCustomerOrderMail = async ({
       amount: money(refund.amount),
     });
   })();
-  const intro =
-    kind === CustomerMailKind.Refunded ? refundSentence : t(`${kind}.intro`, { number });
+  const deadline = order.reservedUntil ? formatDeadline(order.reservedUntil, locale) : "";
+  const count = countPieces(amounts.items);
+  const intro = (() => {
+    switch (kind) {
+      case CustomerMailKind.Refunded:
+        return refundSentence;
+      case CustomerMailKind.Placed:
+        return t("placed.intro", { number, deadline, count });
+      case CustomerMailKind.Cancelled:
+        return t(
+          cancelReason === CancelReason.Customer ? "cancelled.customer" : "cancelled.expired",
+          { number, count }
+        );
+      default:
+        return t(`${kind}.intro`, { number });
+    }
+  })();
+
+  // Złożone, nieopłacone: droga do zapłaty i termin, po którym przepada.
+  const isPlaced = kind === CustomerMailKind.Placed;
+  const payUrl = isPlaced ? getOrderPageUrl(locale, order) : "";
+  const payLabel = t("placed.button", { total: money(amounts.total) });
+  const shopUrl = `${SITE_URL}${getPathname({ locale, href: "/shop" })}`;
 
   const showSummary =
-    kind === CustomerMailKind.Confirmed || kind === CustomerMailKind.OnHold;
+    kind === CustomerMailKind.Confirmed ||
+    kind === CustomerMailKind.OnHold ||
+    isPlaced;
   const showDelivery = showSummary || kind === CustomerMailKind.Shipped;
   const showAccount = order.hasAccount && (showSummary || kind === CustomerMailKind.Shipped);
 
@@ -357,6 +414,10 @@ export const buildCustomerOrderMail = async ({
     greeting,
     "",
     intro,
+    ...(isPlaced
+      ? ["", t("placed.payment"), `${payLabel}: ${payUrl}`, "", t("placed.deadline", { deadline, count })]
+      : []),
+    ...(kind === CustomerMailKind.Cancelled ? ["", `${t("cancelled.shop", { count })} ${shopUrl}`] : []),
     ...(kind === CustomerMailKind.Refunded ? ["", t("refunded.timing")] : []),
     ...(kind === CustomerMailKind.Note && note ? ["", note] : []),
     ...(showSummary
@@ -433,6 +494,14 @@ export const buildCustomerOrderMail = async ({
     <h1 style="margin:0 0 24px;font-size:22px;font-weight:400;letter-spacing:0.02em;">${t(`${kind}.heading`)}</h1>
     <p style="margin:0 0 12px;font-size:15px;line-height:1.7;">${escapeHtml(greeting)}</p>
     <p style="margin:0 0 28px;font-size:15px;line-height:1.7;">${escapeHtml(intro)}</p>
+    ${
+      isPlaced
+        ? `<p style="margin:0 0 20px;font-size:15px;line-height:1.7;">${t("placed.payment")}</p>
+    <p style="margin:0 0 20px;">${primaryButton(payUrl, payLabel)}</p>
+    <p style="margin:0 0 32px;font-size:13px;line-height:1.7;${MUTED}">${escapeHtml(t("placed.deadline", { deadline, count }))}</p>`
+        : ""
+    }
+    ${kind === CustomerMailKind.Cancelled ? `<p style="margin:0 0 28px;font-size:13px;line-height:1.7;${MUTED}">${t("cancelled.shop", { count })} ${link(shopUrl, t("cancelled.shopLink"))}</p>` : ""}
     ${kind === CustomerMailKind.Refunded ? `<p style="margin:0 0 28px;font-size:13px;line-height:1.7;${MUTED}">${t("refunded.timing")}</p>` : ""}
     ${noteHtml}
     ${summaryHtml}

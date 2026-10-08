@@ -48,7 +48,11 @@ export async function getWishlistProducts(
   ids: number[],
 ): Promise<ProductProps[] | null> {
   try {
-    return await productService.getProductsByIds(ids);
+    // Praca czekająca na czyjąś wpłatę nie pokazuje się nigdzie — ani wśród
+    // dostępnych, ani w archiwum (decyzja Natalii 2026-10-08). Wraca do
+    // ulubionych sama: jako dostępna albo, po wpłacie, jako sprzedana.
+    const products = await productService.getProductsByIds(ids);
+    return products.filter((product) => !product.reserved);
   } catch (err) {
     console.error("Get wishlist products failed:", err);
     return null;

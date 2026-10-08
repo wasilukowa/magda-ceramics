@@ -5,9 +5,10 @@ import {
   completeOrderRequestSchema,
 } from "@/lib/service/checkout/helpers";
 import { CheckoutError } from "@/contracts/server/checkout";
+import { CheckoutReturn, OrderCompletion } from "@/contracts/server/order";
 
 // Strona potwierdzenia po powrocie ze Stripe'a. Dane zamówienia nie
-// przychodzą stąd — zamówienie istnieje od chwili kliknięcia „Zapłać", a numer
+// przychodzą stąd — zamówienie jest złożone od kliknięcia w kasie, a numer
 // płatności mówi tylko, KTÓRĄ płatność sprawdzić. Opłacenie zamówienia zapisuje
 // webhook, więc nie szkodzi, jeśli klient tu nie wróci albo wróci dwa razy.
 export async function POST(request: Request) {
@@ -17,19 +18,40 @@ export async function POST(request: Request) {
     return checkoutErrorResponse(CheckoutError.PaymentNotVerified);
   }
 
-  const payment = await paymentService.getPayment(parsed.data.paymentIntentId);
+  const { paymentIntentId, clientSecret } = parsed.data;
+  const payment = clientSecret
+    ? await paymentService.getClientPayment(paymentIntentId, clientSecret)
+    : await paymentService.getPayment(paymentIntentId);
   if (!payment) {
     return checkoutErrorResponse(CheckoutError.PaymentNotVerified);
+  }
+
+  const described = checkoutService.describePayment(payment);
+  if (!described) {
+    return checkoutErrorResponse(CheckoutError.PaymentNotVerified);
+  }
+
+  // Płatność nie przeszła, ale zamówienie jest złożone. Klucz zamówienia
+  // (do strony, gdzie klient zapłaci jeszcze raz) dostaje tylko przeglądarka,
+  // która płaciła — patrz getClientPayment.
+  if (described.completion === OrderCompletion.Unpaid) {
+    if (!clientSecret || !payment.orderKey) {
+      return checkoutErrorResponse(CheckoutError.PaymentNotVerified);
+    }
+    const unpaid: CheckoutReturn = {
+      orderId: described.id,
+      completion: described.completion,
+      key: payment.orderKey,
+    };
+    return Response.json(unpaid);
   }
 
   // Z webhookiem to on zapisuje zamówienie — tu tylko mówimy klientowi, jak
   // jest. Dwie drogi piszące naraz zdublowały maile i zdjęły sztukę z magazynu
   // dwa razy (#282). Bez webhooka (lokalnie) zapisujemy stąd, jak dotąd.
   if (paymentService.isWebhookConfigured()) {
-    const order = checkoutService.describePayment(payment);
-    return order
-      ? Response.json({ orderId: order.id, completion: order.completion })
-      : checkoutErrorResponse(CheckoutError.PaymentNotVerified);
+    const result: CheckoutReturn = { orderId: described.id, completion: described.completion };
+    return Response.json(result);
   }
 
   let order;
@@ -45,5 +67,6 @@ export async function POST(request: Request) {
     return checkoutErrorResponse(CheckoutError.PaymentNotVerified);
   }
 
-  return Response.json({ orderId: order.id, completion: order.completion });
+  const result: CheckoutReturn = { orderId: order.id, completion: order.completion };
+  return Response.json(result);
 }

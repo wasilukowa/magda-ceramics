@@ -107,6 +107,7 @@
     "priceUnavailable": "Cena niedostępna",
     "inStock": "Dostępny",
     "outOfStock": "Sprzedane",
+    "unavailable": "Niedostępne",
     "dimensionsTitle": "Wymiary",
     "dimensions": {
       "capacity": "Pojemność",
@@ -127,6 +128,7 @@
     "checkout": "Przejdź do koszyka",
     "close": "Zamknij koszyk",
     "soldOut": "Sprzedane",
+    "unavailable": "Niedostępne",
     "soldOutHint": "Usuń sprzedane prace z koszyka, żeby przejść do zamówienia.",
     "removeItem": "Usuń z koszyka: {name}"
   },
@@ -135,7 +137,8 @@
     "inCart": "W koszyku — podejrzyj",
     "added": "Dodano ✓",
     "unavailable": "Cena niedostępna",
-    "outOfStock": "Sprzedane"
+    "outOfStock": "Sprzedane",
+    "reserved": "Niedostępne"
   },
   "contact": {
     "title": "Kontakt",
@@ -256,12 +259,34 @@
     "thankYou": "Dziękujemy za zamówienie",
     "orderReceived": "Zamówienie #{orderId} zostało przyjęte. Potwierdzenie wysłaliśmy na Twój adres e-mail — jeśli go nie widzisz, zajrzyj także do spamu.",
     "backToShop": "Wróć do sklepu",
-    "paymentFailed": "Płatność nie doszła do skutku.",
-    "paymentFailedHint": "Nic nie zostało pobrane i zamówienie nie zostało złożone. Prace są nadal w Twoim koszyku — możesz spróbować jeszcze raz, także inną metodą płatności.",
     "connectionError": "Błąd połączenia podczas tworzenia zamówienia.",
-    "backToCheckout": "Wróć do kasy",
+    "checkEmail": "Zamówienie jest złożone — szczegóły i link do zapłaty wysłaliśmy mailem. Jeśli go nie widzisz, zajrzyj do spamu albo napisz do nas.",
     "paymentNotVerified": "Nie udało się potwierdzić płatności. Jeśli pieniądze zostały pobrane, napisz do nas — sprawdzimy to.",
     "orderFailed": "Nie udało się zapisać zamówienia. Płatność mogła zostać pobrana — napisz do nas, a wszystko wyjaśnimy."
+  },
+  "order": {
+    "title": "Twoje zamówienie",
+    "number": "Zamówienie #{number}",
+    "total": "Razem",
+    "reservedUntil": "{count, plural, one {Praca czeka zarezerwowana} other {Prace czekają zarezerwowane}} dla Ciebie do {deadline}. Jeśli do tego czasu zamówienie nie zostanie opłacone, anulujemy je, a {count, plural, one {praca wróci} other {prace wrócą}} do sklepu.",
+    "retry": "Płatność nie przeszła. Zamówienie jest złożone — spróbuj zapłacić jeszcze raz, także inną metodą.",
+    "payButton": "Zapłać {total}",
+    "processing": "Przetwarzanie...",
+    "error": "Płatność się nie udała. Spróbuj ponownie.",
+    "unavailable": "Nie udało się uruchomić płatności. Odśwież stronę albo napisz do nas.",
+    "paid": "To zamówienie jest opłacone — dziękujemy! Potwierdzenie wysłaliśmy mailem, a o wysyłce damy znać.",
+    "awaitingConfirmation": "Bank jeszcze potwierdza płatność. Gdy pieniądze dojdą, dostaniesz potwierdzenie mailem.",
+    "cancelled": "To zamówienie zostało anulowane.",
+    "refunded": "Pieniądze za to zamówienie zostały zwrócone — zamówienie jest zamknięte.",
+    "backToShop": "Wróć do sklepu",
+    "cancel": {
+      "button": "Anuluj zamówienie",
+      "question": "Na pewno anulować zamówienie? {count, plural, one {Praca od razu wróci do sklepu i będzie mógł ją kupić} other {Prace od razu wrócą do sklepu i będzie mógł je kupić}} ktoś inny.",
+      "keep": "Nie, zostaw",
+      "confirm": "Tak, anuluj",
+      "cancelling": "Anulowanie...",
+      "failed": "Nie udało się anulować zamówienia. Spróbuj za chwilę albo napisz do nas."
+    }
   },
   "footer": {
     "copyright": "Ceramika ręcznie robiona",
@@ -375,17 +400,19 @@
       "empty": "Nie masz jeszcze żadnych zamówień.",
       "number": "Zamówienie #{number}",
       "total": "Razem",
-      "awaitingPayment": "To zamówienie czeka na zapłatę. Praca jest zarezerwowana dla Ciebie, dopóki nie zostanie opłacona przez kogoś innego.",
+      "awaitingPayment": "To zamówienie czeka na zapłatę.",
+      "reservedUntil": "To zamówienie czeka na zapłatę. {count, plural, one {Praca jest zarezerwowana} other {Prace są zarezerwowane}} dla Ciebie do {deadline}.",
       "payNow": "Zapłać"
     },
     "orderStatus": {
       "pending": "Oczekuje na płatność",
       "processing": "W realizacji",
-      "on-hold": "Wstrzymane",
+      "on-hold": "Czeka na zapłatę",
       "completed": "Zrealizowane",
       "cancelled": "Anulowane",
       "refunded": "Zwrócone",
-      "failed": "Nieudane"
+      "failed": "Nieudane",
+      "awaitingConfirmation": "Bank potwierdza płatność"
     },
     "profile": {
       "title": "Profil",
@@ -429,11 +456,6 @@
     },
     "pay": {
       "title": "Zapłać za zamówienie",
-      "button": "Zapłać {total}",
-      "processing": "Przetwarzanie...",
-      "error": "Płatność się nie udała. Spróbuj ponownie.",
-      "unavailable": "Nie udało się uruchomić płatności. Odśwież stronę albo napisz do nas.",
-      "alreadyPaid": "To zamówienie jest już opłacone.",
       "paidTitle": "Zapłacono",
       "paid": "Dziękujemy! Płatność została potwierdzona i szykuję zamówienie do wysyłki.",
       "notConfirmedTitle": "Płatność niepotwierdzona",
@@ -442,10 +464,13 @@
       "email": {
         "subject": "Zamówienie #{number} czeka na zapłatę",
         "heading": "Cześć {name}!",
-        "intro": "Twoje zamówienie #{number} ({items}) na kwotę {total} czeka na zapłatę. Jeśli płatność się przerwała, możesz dokończyć ją tutaj:",
-        "button": "Dokończ płatność",
-        "single": "Każdą pracę robię w jednym egzemplarzu, więc dopóki zamówienie nie jest opłacone, ktoś inny może ją kupić.",
-        "ignore": "Jeśli rozmyśliłaś/eś się — nic nie musisz robić, zamówienie po prostu wygaśnie.",
+        "headingNoName": "Cześć!",
+        "intro": "Twoje zamówienie #{number} ({items}) na kwotę {total} wciąż czeka na zapłatę. {count, plural, one {Praca jest zarezerwowana} other {Prace są zarezerwowane}} dla Ciebie do {deadline}.",
+        "button": "Zapłać {total}",
+        "deadline": "Jeśli do tego czasu zamówienie nie zostanie opłacone, anuluję je, a {count, plural, one {praca wróci} other {prace wrócą}} do sklepu.",
+        "cancel": "Rozmyśliłaś/eś się? Anuluj zamówienie — {count, plural, one {praca od razu wróci do sklepu i poczeka} other {prace od razu wrócą do sklepu i poczekają}} na kogoś innego.",
+        "cancelButton": "Anuluj zamówienie",
+        "help": "Masz pytania? Po prostu odpowiedz na tego maila.",
         "signature": "Magda"
       },
       "confirming": "Potwierdzamy płatność...",
@@ -630,9 +655,17 @@
   "orderEmail": {
     "greeting": "Cześć {name}!",
     "greetingNoName": "Cześć!",
-    "confirmed": {
-      "subject": "Dziękuję za zamówienie #{number}",
+    "placed": {
+      "subject": "Zamówienie #{number} złożone",
       "heading": "Dziękuję za zamówienie!",
+      "intro": "Twoje zamówienie #{number} jest złożone, a {count, plural, one {praca czeka zarezerwowana} other {prace czekają zarezerwowane}} dla Ciebie do {deadline}.",
+      "payment": "Jeśli płatność już przeszła, za chwilę dostaniesz ode mnie potwierdzenie — wtedy nic więcej nie musisz robić. Jeśli nie, zapłacisz tutaj:",
+      "button": "Zapłać {total}",
+      "deadline": "Jeśli zamówienie nie zostanie opłacone do {deadline}, anuluję je, a {count, plural, one {praca wróci} other {prace wrócą}} do sklepu."
+    },
+    "confirmed": {
+      "subject": "Płatność za zamówienie #{number} przyjęta",
+      "heading": "Płatność przyjęta",
       "intro": "Płatność doszła, a Twoje zamówienie #{number} jest już u mnie. Teraz starannie je zapakuję — dam Ci znać mailem, gdy paczka wyruszy."
     },
     "on-hold": {
@@ -657,6 +690,14 @@
       "partial": "Zwróciłam część kwoty za zamówienie #{number}: {amount}.",
       "partialNoAmount": "Zwróciłam część kwoty za zamówienie #{number}.",
       "timing": "Pieniądze wrócą tą samą drogą, którą płaciłaś/eś — zwykle trwa to kilka dni roboczych."
+    },
+    "cancelled": {
+      "subject": "Zamówienie #{number} anulowane",
+      "heading": "Zamówienie anulowane",
+      "expired": "Nie dostałam płatności za zamówienie #{number} w ciągu 48 godzin, więc je anulowałam. Nic nie zostało pobrane, a {count, plural, one {praca wróciła} other {prace wróciły}} do sklepu.",
+      "customer": "Anulowałam zamówienie #{number}, tak jak prosiłaś/eś. Nic nie zostało pobrane, a {count, plural, one {praca wróciła} other {prace wróciły}} do sklepu.",
+      "shop": "Jeśli nadal masz na {count, plural, one {nią} other {nie}} ochotę, możesz zamówić {count, plural, one {ją} other {je}} jeszcze raz — o ile nikt Cię nie uprzedzi:",
+      "shopLink": "Sklep"
     },
     "summary": "Twoje zamówienie",
     "shippingLocker": "Wysyłka — Paczkomat InPost",

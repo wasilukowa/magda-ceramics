@@ -22,6 +22,8 @@ export type CartStore = {
   total: number;
   // Prace sprzedane albo wycofane, odkąd trafiły do koszyka.
   soldOutIds: number[];
+  // Te z nich, które tylko czekają zarezerwowane na czyjąś wpłatę.
+  reservedIds: number[];
   addItem: (item: Omit<CartItem, "quantity">) => void;
   removeItem: (id: number) => void;
   clearCart: () => void;

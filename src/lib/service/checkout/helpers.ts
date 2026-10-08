@@ -72,14 +72,18 @@ export const paymentIntentRequestSchema = z.object({
 export const availabilityRequestSchema = z.object({ items: cartSchema });
 
 // Numer płatności z adresu, na który Stripe odsyła klienta. Mówi tylko,
-// KTÓRĄ płatność sprawdzić — co z nią, rozstrzyga Stripe.
+// KTÓRĄ płatność sprawdzić — co z nią, rozstrzyga Stripe. „Client secret"
+// (też z adresu powrotu) dowodzi, że pyta przeglądarka, która płaciła —
+// tylko jej oddajemy klucz zamówienia po nieudanej płatności.
 export const completeOrderRequestSchema = z.object({
   paymentIntentId: z.string().trim().min(1).max(255),
+  clientSecret: z.string().trim().min(1).max(255).optional(),
 });
 
-// Dane zamówienia wysyłane tuż przed płatnością. Waluty ani kwoty tu nie ma —
-// jedno i drugie siedzi w płatności, wycenionej wcześniej na serwerze.
-export const draftOrderRequestSchema = z
+// Dane zamówienia wysyłane przy składaniu, tuż przed płatnością. Waluty ani
+// kwoty tu nie ma — jedno i drugie siedzi w płatności, wycenionej wcześniej
+// na serwerze.
+export const placeOrderRequestSchema = z
   .object({
     billing: billingSchema,
     items: cartSchema,
@@ -122,7 +126,7 @@ export const getCartFingerprint = (items: OrderItem[]): string =>
     .join(",");
 
 // Pozycje, których nie da się sprzedać: usunięte z WooCommerce, pozbawione
-// ceny albo już sprzedane.
+// ceny, zarezerwowane w czyimś złożonym zamówieniu albo już sprzedane.
 export const getUnavailableItems = (
   items: OrderItem[],
   products: ProductProps[]
@@ -144,7 +148,11 @@ export const getUnavailableItems = (
 
     if (!product.inStock) {
       return [
-        { id: item.id, name: product.name, reason: UnavailableReason.SoldOut },
+        {
+          id: item.id,
+          name: product.name,
+          reason: product.reserved ? UnavailableReason.Reserved : UnavailableReason.SoldOut,
+        },
       ];
     }
 

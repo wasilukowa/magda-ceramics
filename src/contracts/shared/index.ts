@@ -114,6 +114,8 @@ export type AddToCartButtonProps = {
   image: string;
   inStock: boolean;
   hasPrice: boolean;
+  // Czeka na czyjąś wpłatę — „niedostępne" zamiast „sprzedane".
+  reserved?: boolean;
 };
 
 // Why the category page has nothing to show: the slug matches no category at

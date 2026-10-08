@@ -36,3 +36,35 @@ const PL_MONTH = new Intl.DateTimeFormat("pl-PL", {
 export const formatMonthPl = (month: string): string =>
   PL_MONTH.format(new Date(`${month}-01T12:00:00Z`));
 
+
+// Termin, do którego praca czeka na zapłatę, tak jak czyta go klient:
+// „10 października, godz. 15:30" (po polsku bez dnia tygodnia — w zdaniu
+// „do …" musiałby stać w dopełniaczu, a tego Intl nie umie) albo „Saturday
+// 10 October at 15:30 CEST". Zawsze czasem polskim — pracownia jest
+// w Polsce, a klient z zagranicy dostaje przy godzinie skrót strefy, żeby nie
+// zgadywał.
+export const formatDeadline = (iso: string, locale: string): string => {
+  const date = new Date(iso);
+  if (locale !== "pl") {
+    return new Intl.DateTimeFormat("en-GB", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Europe/Warsaw",
+      timeZoneName: "short",
+    }).format(date);
+  }
+  const day = new Intl.DateTimeFormat("pl-PL", {
+    day: "numeric",
+    month: "long",
+    timeZone: "Europe/Warsaw",
+  }).format(date);
+  const time = new Intl.DateTimeFormat("pl-PL", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Warsaw",
+  }).format(date);
+  return `${day}, godz. ${time}`;
+};

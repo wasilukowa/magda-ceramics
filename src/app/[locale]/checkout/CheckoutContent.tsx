@@ -3,10 +3,17 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useStripe, useElements } from "@stripe/react-stripe-js";
+import { useRouter } from "@/i18n/navigation";
+import { useCart } from "@/hooks/useCart";
 import { CartItem, Address } from "@/contracts/server/cart";
 import { ButtonSize, ButtonVariant, Currency } from "@/contracts/shared";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
-import { CheckoutStep, UnavailableItem } from "@/contracts/server/checkout";
+import {
+  CheckoutError,
+  CheckoutErrorResponse,
+  CheckoutStep,
+  UnavailableItem,
+} from "@/contracts/server/checkout";
 import { getOrderItems, getSoldOutItems } from "@/lib/helpers/checkout";
 import { cn } from "@/lib/utils";
 import { isPhoneNumber } from "@/utility";
@@ -59,6 +66,8 @@ export default function CheckoutContent({
 }: Props) {
   const stripe = useStripe();
   const elements = useElements();
+  const router = useRouter();
+  const { clearCart } = useCart();
   const t = useTranslations("checkout");
   const locale = useLocale();
   const [step, setStep] = useState<CheckoutStep>(CheckoutStep.Address);
@@ -145,11 +154,13 @@ export default function CheckoutContent({
             country: address.country,
           };
 
-    // Zamówienie zapisuje się na serwerze PRZED obciążeniem karty i zostaje
-    // przypięte do płatności w Stripe. Dzięki temu nie ginie, gdy klient po
-    // zapłacie nie wróci do tej karty — BLIK i przelewy na telefonie otwierają
-    // aplikację banku i potrafią wrócić gdzie indziej.
-    const draft = await fetch("/api/checkout/order", {
+    // Zamówienie SKŁADA SIĘ na serwerze PRZED obciążeniem karty (decyzja
+    // Natalii 2026-10-08): od tej chwili istnieje, klient dostaje maila,
+    // a praca czeka na niego 48 h. Zamówienie jest przypięte do płatności
+    // w Stripe, więc nie ginie, gdy klient po zapłacie nie wróci do tej karty
+    // — BLIK i przelewy na telefonie otwierają aplikację banku i potrafią
+    // wrócić gdzie indziej.
+    const placed = await fetch("/api/checkout/order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -172,10 +183,17 @@ export default function CheckoutContent({
         locale,
       }),
     })
-      .then((r) => r.ok)
-      .catch(() => false);
+      .then(async (r) =>
+        (await r.json()) as CheckoutErrorResponse & { orderId?: number; key?: string }
+      )
+      .catch(() => null);
 
-    if (!draft) {
+    if (placed?.error === CheckoutError.Unavailable && placed.unavailable?.length) {
+      onSoldOut(placed.unavailable);
+      setLoading(false);
+      return;
+    }
+    if (!placed?.orderId || !placed.key) {
       setError(t("connectionError"));
       setLoading(false);
       return;
@@ -197,9 +215,17 @@ export default function CheckoutContent({
       },
     });
 
+    // Tu wracamy tylko wtedy, gdy płatność się NIE udała (przy powodzeniu
+    // przeglądarka jest już na stronie potwierdzenia). Zamówienie jest jednak
+    // złożone, a prace zarezerwowane dla tego klienta — w koszyku nie mają już
+    // czego szukać. Druga próba odbywa się na stronie zamówienia, tej samej,
+    // do której prowadzi link z maila.
     if (stripeError) {
-      setError(stripeError.message ?? "A payment error occurred.");
-      setLoading(false);
+      clearCart();
+      router.replace({
+        pathname: "/order",
+        query: { id: placed.orderId, key: placed.key, retry: "1" },
+      });
     }
   }
 

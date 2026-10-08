@@ -6,6 +6,7 @@ import {
   ProductDimension,
   ProductDimensionKey,
 } from "@/contracts/server/product";
+import { RawReservingOrder } from "@/contracts/server/order";
 
 // Pola ACF wracają z WooCommerce jako tekst, a liczbę ułamkową wpisuje się w
 // polskim panelu z przecinkiem („4,5"). parseFloat urwałby na nim wartość do 4,
@@ -61,9 +62,33 @@ export function prepareProduct(raw: RawProduct): ProductProps {
       .map((c) => ({ id: c.id, name: c.name, slug: c.slug })),
     dimensions: getPreparedDimensions(raw),
     inStock: raw.stock_status === "instock",
+    // Rezerwację zna dopiero lista zamówień — patrz withReservations.
+    reserved: false,
     createdAt: raw.date_created,
   };
 }
+
+// Prace w złożonych, nieopłaconych zamówieniach (status on-hold). WooCommerce
+// zdjął je z magazynu, więc wyglądają jak sprzedane — a sprzedane nie są.
+export const getReservedProductIds = (orders: RawReservingOrder[]): Set<number> =>
+  new Set(
+    orders.flatMap((order) =>
+      (order.line_items ?? []).flatMap((item) => (item.product_id ? [item.product_id] : []))
+    )
+  );
+
+// Oznacza zarezerwowane. Tylko te, których nie ma na stanie: praca, która
+// wróciła do sklepu (np. Magda ręcznie zmieniła zamówienie), jest po prostu
+// dostępna.
+export const withReservations = (
+  products: ProductProps[],
+  reservedIds: Set<number>
+): ProductProps[] =>
+  products.map((product) =>
+    !product.inStock && reservedIds.has(product.id)
+      ? { ...product, reserved: true }
+      : product
+  );
 
 export function prepareCategory(raw: RawCategory): CategoryProps {
   return {
