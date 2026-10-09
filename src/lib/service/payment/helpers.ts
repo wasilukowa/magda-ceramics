@@ -16,6 +16,36 @@ export const PAYMENT_META = {
   orderKey: "orderKey",
 } as const;
 
+// Metoda płatności w panelu WooCommerce („Płatność przez …”). Zanim klient
+// zapłaci, nie wiadomo jeszcze, czym zapłaci — stąd samo „Stripe”. Potem
+// nazwa metody ze Stripe'a; Apple Pay i Google Pay to w Stripe karta
+// z portfelem, więc rozpoznaje je pole `wallet`. Metoda spoza listy zostaje
+// pod swoją nazwą ze Stripe'a.
+export const UNKNOWN_PAYMENT_METHOD_LABEL = "Stripe";
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  card: "Karta",
+  blik: "BLIK",
+  klarna: "Klarna",
+  link: "Link",
+  p24: "Przelewy24",
+};
+
+const CARD_WALLET_LABELS: Record<string, string> = {
+  apple_pay: "Apple Pay",
+  google_pay: "Google Pay",
+  link: "Link",
+};
+
+export const getPaymentMethodLabel = (method: Stripe.PaymentMethod): string => {
+  const wallet = method.type === "card" ? method.card?.wallet?.type : undefined;
+  return (
+    (wallet && CARD_WALLET_LABELS[wallet]) ||
+    PAYMENT_METHOD_LABELS[method.type] ||
+    method.type
+  );
+};
+
 const getPaidCurrency = (value: string): Currency | null =>
   value === Currency.PLN || value === Currency.EUR ? value : null;
 
@@ -91,12 +121,3 @@ export const isReusableFor = (
     intent.status === "requires_action") &&
   intent.amount === amount &&
   intent.currency === currency;
-
-// Czy ta płatność jest za to konkretne zamówienie. Numer zamówienia zapisuje
-// w metadanych sam serwis przy tworzeniu płatności, więc nie da się nim
-// domknąć cudzego zamówienia.
-export const isPaymentForOrder = (
-  payment: PaymentRecord,
-  orderId: number
-): boolean =>
-  payment.status === PaymentStatus.Succeeded && payment.orderId === orderId;

@@ -310,7 +310,8 @@ class OrderService {
     orderId: number,
     status: OrderStatus,
     payment: PaymentRecord,
-    remarks: string[] = []
+    remarks: string[] = [],
+    methodLabel: string | null = null
   ): Promise<void> {
     const [ledger] = await Promise.all([
       getLedgerAmount(payment),
@@ -322,6 +323,7 @@ class OrderService {
       method: "PUT",
       body: JSON.stringify({
         ...(viaStatus ? { status: OrderStatus.Processing } : { set_paid: true }),
+        ...(methodLabel ? { payment_method_title: methodLabel } : {}),
         transaction_id: payment.id,
         meta_data: [...getPaymentMeta(payment), ...getLedgerMeta(ledger)],
       }),
@@ -338,13 +340,15 @@ class OrderService {
   async markAwaitingConfirmation(
     orderId: number,
     status: OrderStatus,
-    payment: PaymentRecord
+    payment: PaymentRecord,
+    methodLabel: string | null = null
   ): Promise<void> {
     await this.leaveDraft(orderId, status);
     await this.wcFetch(`orders/${orderId}`, {
       method: "PUT",
       body: JSON.stringify({
         status: OrderStatus.OnHold,
+        ...(methodLabel ? { payment_method_title: methodLabel } : {}),
         meta_data: getPaymentMeta(payment),
       }),
     });

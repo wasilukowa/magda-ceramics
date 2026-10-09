@@ -39,10 +39,6 @@ export const routing = defineRouting({
       en: "/account/orders/pay",
       pl: "/konto/zamowienia/zaplac",
     },
-    "/account/orders/paid": {
-      en: "/account/orders/paid",
-      pl: "/konto/zamowienia/oplacone",
-    },
     "/account/details": { en: "/account/details", pl: "/konto/dane" },
     "/wishlist": { en: "/wishlist", pl: "/ulubione" },
   },

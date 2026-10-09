@@ -456,11 +456,6 @@
     },
     "pay": {
       "title": "Pay for your order",
-      "paidTitle": "Paid",
-      "paid": "Thank you! The payment is confirmed and I am getting your order ready to post.",
-      "notConfirmedTitle": "Payment not confirmed",
-      "notConfirmed": "We could not confirm this payment. If you have been charged, write to us and we will look into it.",
-      "backToOrders": "← Back to orders",
       "email": {
         "subject": "Order #{number} is waiting to be paid",
         "heading": "Hello {name}!",
@@ -472,9 +467,7 @@
         "cancelButton": "Cancel order",
         "help": "Questions? Just reply to this email.",
         "signature": "Magda"
-      },
-      "confirming": "Confirming the payment...",
-      "paidNotRecorded": "Thank you, your payment went through. I will update the order by hand — there is nothing more for you to do."
+      }
     }
   },
   "wishlist": {
