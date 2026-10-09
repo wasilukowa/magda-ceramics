@@ -65,6 +65,11 @@ const ONE_YEAR = 60 * 60 * 24 * 365;
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // Next 16.4 każe wybrać jawnie. `false` = linki wczytują strony z
+  // wyprzedzeniem tak jak dotąd. Przejście na `true` to osobna migracja
+  // (node_modules/next/dist/docs/01-app/02-guides/adopting-partial-prefetching.md),
+  // obowiązkowa w Next 17.
+  partialPrefetching: false,
 
   // Własne profile cache'u — bo wbudowane wygasają za szybko na awarie
   // WordPressa. `expire` to czas, po którym strona bez odwiedzin NIE pokaże
