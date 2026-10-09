@@ -6,7 +6,12 @@ import { PricedCart } from "@/contracts/server/checkout";
 import { OrderProps } from "@/contracts/server/order";
 import { PaymentRecord } from "@/contracts/server/payment";
 import { PlacedOrder } from "@/contracts/server/order";
-import { isReusableFor, PAYMENT_META, preparePayment } from "./helpers";
+import {
+  getPaymentMethodLabel,
+  isReusableFor,
+  PAYMENT_META,
+  preparePayment,
+} from "./helpers";
 
 // Jedyne miejsce, które rozmawia ze Stripe'em. Trasy API dostają stąd gotowy
 // PaymentRecord — nie surowy obiekt Stripe'a i tym bardziej nie to, co
@@ -127,6 +132,22 @@ class PaymentService {
       );
     } catch (error) {
       console.error("Stripe payment lookup failed:", error);
+      return null;
+    }
+  }
+
+  // Czym klient zapłacił — dla panelu WooCommerce. Null przy każdym błędzie,
+  // także gdy klucz nie ma uprawnienia do odczytu metod płatności: zapłata
+  // zapisze się wtedy bez nazwy metody, ale się zapisze.
+  async getMethodLabel(paymentIntentId: string): Promise<string | null> {
+    try {
+      const intent = await this.stripe.paymentIntents.retrieve(paymentIntentId, {
+        expand: ["payment_method"],
+      });
+      const method = intent.payment_method;
+      return method && typeof method !== "string" ? getPaymentMethodLabel(method) : null;
+    } catch (error) {
+      console.error("Stripe payment method lookup failed:", error);
       return null;
     }
   }

@@ -36,6 +36,7 @@ import {
 } from "@/lib/service/product/helpers";
 import { orderService } from "@/lib/service/order";
 import { paymentService } from "@/lib/service/payment";
+import { UNKNOWN_PAYMENT_METHOD_LABEL } from "@/lib/service/payment/helpers";
 import { customerMailService } from "@/lib/service/customerMail";
 import { studioMailService } from "@/lib/service/studioMail";
 import {
@@ -403,7 +404,7 @@ class CheckoutService {
           status: OrderStatus.CheckoutDraft,
           ...(customerId ? { customer_id: customerId } : {}),
           payment_method: "stripe",
-          payment_method_title: "Card / Apple Pay / Google Pay",
+          payment_method_title: UNKNOWN_PAYMENT_METHOD_LABEL,
           billing,
           shipping,
           line_items: items.map((item) => ({
@@ -506,6 +507,10 @@ class CheckoutService {
       order.status === OrderStatus.Pending ||
       order.status === OrderStatus.Failed;
 
+    // Czym zapłacono — tylko gdy jest co zapisać. Bez tej nazwy zamówienie
+    // i tak się domknie (patrz paymentService.getMethodLabel).
+    const methodLabel = unpaid ? await paymentService.getMethodLabel(payment.id) : null;
+
     if (payment.status === PaymentStatus.Processing) {
       if (cancelled) {
         await orderService.addPrivateNote(
@@ -514,7 +519,12 @@ class CheckoutService {
             "Gdy pieniądze dojdą, zamówienie samo wróci jako opłacone — do sprawdzenia."
         );
       } else if (unpaid && !order.awaitingConfirmation) {
-        await orderService.markAwaitingConfirmation(order.id, order.status, payment);
+        await orderService.markAwaitingConfirmation(
+          order.id,
+          order.status,
+          payment,
+          methodLabel
+        );
         await customerMailService.sendOnHold(order.id);
         if (!order.studioNotified) {
           await studioMailService.sendNewOrder(order.id, { awaitingConfirmation: true });
@@ -547,7 +557,7 @@ class CheckoutService {
             ]
           : []),
       ];
-      await orderService.markPaid(order.id, order.status, payment, remarks);
+      await orderService.markPaid(order.id, order.status, payment, remarks, methodLabel);
     }
 
     // Potwierdzenie dla klienta — także wtedy, gdy zamówienie było już
