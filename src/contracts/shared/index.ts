@@ -133,6 +133,18 @@ export type EmptyCategoryProps = {
   categories: CategoryTileProps[];
 };
 
+// Jeden kafelek kategorii ze zdjęciem — na stronie głównej i wśród podpowiedzi
+// na stronie pustej kategorii. Nazwę liczy strona (serwer albo klient mają
+// różne tłumacze), `sizes` zależy od siatki, w której kafelek stoi.
+export type CategoryTileViewProps = {
+  category: CategoryTileProps;
+  label: string;
+  sizes: string;
+  // Druga linijka pod nazwą, np. liczba prac. Strona główna jej nie pokazuje.
+  detail?: string;
+  className?: string;
+};
+
 // Menu, footer and homepage tiles all render the same WooCommerce categories,
 // fetched once by the locale layout.
 export type CategoryNavigationProps = {

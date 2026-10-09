@@ -214,25 +214,38 @@ class ProductService {
     }
   }
 
-  // Categories worth suggesting when a page has nothing to show: the ones that
-  // actually hold products, minus the one the customer is already on. Each gets
-  // a thumbnail — the category picture, or the first product photo as fallback.
+  // Kafelki kategorii ze zdjęciem: strona główna (P10) i podpowiedzi na
+  // stronie pustej kategorii. Tylko kategorie, w których jest coś do kupienia
+  // (jak w menu), bez tej, na której klient już jest. Zdjęcie to obrazek
+  // kategorii z WooCommerce, a bez niego zdjęcie najnowszej dostępnej pracy
+  // z tej kategorii — więc kafelek zmienia się sam, kiedy praca się sprzeda.
+  // Licznik też liczy tylko dostępne: ten z WooCommerce zlicza sprzedane.
+  // Wszystko z cache'u katalogu, bez osobnego zapytania do WordPressa na
+  // każdą kategorię. Awaria kończy się brakiem kafelków, nie błędem strony.
   async getCategoryTiles(excludeSlug?: string): Promise<CategoryTileProps[]> {
-    const categories = await this.getNavigationCategories();
-    const candidates = categories.filter(
-      (category) => category.slug !== excludeSlug
-    );
+    try {
+      const [categories, available] = await Promise.all([
+        this.getCategories(),
+        this.getAvailableProducts(),
+      ]);
 
-    return Promise.all(
-      candidates.map(async (category) => {
-        if (category.image) return category;
-
-        const [product] = await wcFetch<RawProduct[]>(
-          `products?${PUBLISHED_ONLY}&category=${category.id}&per_page=1`
+      return categories.flatMap((category) => {
+        if (category.slug === excludeSlug) return [];
+        const products = available.filter((product) =>
+          product.categories.some((c) => c.id === category.id)
         );
-        return { ...category, image: product ? prepareProduct(product).images[0] ?? null : null };
-      })
-    );
+        if (products.length === 0) return [];
+        return [
+          {
+            ...category,
+            count: products.length,
+            image: category.image ?? products[0].images[0] ?? null,
+          },
+        ];
+      });
+    } catch {
+      return [];
+    }
   }
 
   async getProductBySlug(slug: string): Promise<ProductProps | null> {
