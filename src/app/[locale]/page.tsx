@@ -77,8 +77,8 @@ const DEFAULT_CATEGORY_ICON = (
 );
 
 // Strona główna zostaje przy opisie całego sklepu — to ten sam tekst, bo to ta
-// sama treść. Własny ma za to `canonical`, żeby /pl/ i / nie konkurowały ze sobą
-// w wynikach wyszukiwania.
+// sama treść. Własny ma za to `canonical`, żeby /pl i /en nie konkurowały ze
+// sobą w wynikach wyszukiwania.
 export async function generateMetadata({
   params,
 }: {

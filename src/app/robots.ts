@@ -8,7 +8,7 @@ import { StaticRoute } from "@/content/types";
 // zamówienia z maila, konto klienta, logowanie, ulubione i zaślepka sprzed
 // premiery. Adresy liczymy
 // dla obu języków, więc polska „/pl/konto" jest wykluczona tak samo jak
-// angielska „/account" — bez przepisywania ich ręcznie.
+// angielska „/en/account" — bez przepisywania ich ręcznie.
 const PRIVATE_ROUTES: StaticRoute[] = [
   "/checkout",
   "/checkout/success",

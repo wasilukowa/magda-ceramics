@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useStripe, useElements } from "@stripe/react-stripe-js";
-import { useRouter } from "@/i18n/navigation";
+import { getPathname, useRouter } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
 import { CartItem, Address } from "@/contracts/server/cart";
 import { ButtonSize, ButtonVariant, Currency } from "@/contracts/shared";
@@ -199,11 +199,10 @@ export default function CheckoutContent({
       return;
     }
 
-    const localePrefix = locale === "en" ? "" : `/${locale}`;
     const { error: stripeError } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}${localePrefix}/checkout/success`,
+        return_url: `${window.location.origin}${getPathname({ locale, href: "/checkout/success" })}`,
         payment_method_data: {
           billing_details: {
             name: `${address.firstName} ${address.lastName}`,
