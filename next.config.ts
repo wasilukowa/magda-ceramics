@@ -25,6 +25,9 @@ const lanHosts = Object.values(os.networkInterfaces())
 //
 // Zewnętrzni goście strony, i tylko oni:
 // · Stripe — skrypt, ramki z polem karty i 3-D Secure, zapytania do API.
+// · Link (szybka płatność Stripe'a) — okienko z kodem dla rozpoznanego
+//   klienta i jego pliki z link.com. Lista domen z przewodnika Stripe'a:
+//   https://docs.stripe.com/security/guide (sekcja Link) — N26.
 // · InPost — mapa paczkomatów: skrypt i arkusz z geowidget.inpost-group.com,
 //   a sama mapa w ramce z geowidget-app.inpost-group.com (bez frame-src okno
 //   „Wybierz paczkomat” jest puste — sprawdzone 2026-09-24).
@@ -32,15 +35,16 @@ const isDev = process.env.NODE_ENV === "development";
 
 const STRIPE = ["https://js.stripe.com", "https://*.stripe.com"];
 const INPOST = ["https://geowidget.inpost-group.com", "https://*.inpost-group.com"];
+const LINK = ["https://link.com", "https://*.link.com"];
 
 const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} ${[...STRIPE, ...INPOST].join(" ")}`,
   `style-src 'self' 'unsafe-inline' ${INPOST.join(" ")}`,
-  `img-src 'self' data: blob: https://wp.magdaceramics.com ${[...STRIPE, ...INPOST].join(" ")}`,
+  `img-src 'self' data: blob: https://wp.magdaceramics.com ${[...STRIPE, ...INPOST].join(" ")} https://*.link.com`,
   `font-src 'self' data: ${INPOST.join(" ")}`,
-  `connect-src 'self' ${[...STRIPE, ...INPOST].join(" ")}`,
-  `frame-src ${[...STRIPE, ...INPOST].join(" ")}`,
+  `connect-src 'self' ${[...STRIPE, ...LINK, ...INPOST].join(" ")}`,
+  `frame-src ${[...STRIPE, ...LINK, ...INPOST].join(" ")}`,
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
