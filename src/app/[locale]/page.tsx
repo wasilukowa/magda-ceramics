@@ -37,8 +37,8 @@ export default async function Home({
   const { locale } = await params;
   const [t, categories, featured] = await Promise.all([
     getTranslations({ locale }),
-    productService.getCategoryTiles(),
-    productService.getFeaturedProducts(),
+    productService.getCategoryTiles(undefined, locale),
+    productService.getFeaturedProducts(locale),
   ]);
 
   return (

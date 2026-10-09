@@ -29,7 +29,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; category: string }>;
 }) {
   const { locale, category } = await params;
-  const categories = await productService.getCategories();
+  const categories = await productService.getCategories(locale);
   const cat = categories.find((c) => c.slug === category);
 
   if (!cat) {
@@ -67,7 +67,7 @@ export default async function CategoryPage({
 }) {
   const { locale, category } = await params;
   const t = await getTranslations({ locale });
-  const categories = await productService.getCategories();
+  const categories = await productService.getCategories(locale);
   const cat = categories.find((c) => c.slug === category);
   // Never call getProducts() without an id here — without a category filter the
   // service returns the whole catalogue, which used to make unknown slugs look
@@ -80,7 +80,7 @@ export default async function CategoryPage({
       <EmptyCategory
         reason={cat ? EmptyCategoryReason.NoProducts : EmptyCategoryReason.Unknown}
         categoryLabel={cat ? getCategoryLabel(t, cat) : getSlugLabel(category)}
-        categories={await productService.getCategoryTiles(category)}
+        categories={await productService.getCategoryTiles(category, locale)}
       />
     );
   }

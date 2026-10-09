@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useWishlist } from "@/hooks/useWishlist";
 import { getWishlistProducts } from "@/server-actions/wishlist";
@@ -11,6 +11,7 @@ import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 export default function WishlistGrid() {
   const t = useTranslations("wishlist");
+  const locale = useLocale();
   const { ids, dropMissing } = useWishlist();
   // Trzy stany, nie dwa: „jeszcze nie pytaliśmy", „mamy odpowiedź" i „zapytanie
   // padło". Wcześniej awaria WooCommerce była nie do odróżnienia od pustej
@@ -22,7 +23,7 @@ export default function WishlistGrid() {
     if (ids.length === 0) return;
 
     let active = true;
-    getWishlistProducts(ids).then((items) => {
+    getWishlistProducts(ids, locale).then((items) => {
       if (!active) return;
       setFailed(items === null);
       if (items === null) return;
@@ -38,7 +39,7 @@ export default function WishlistGrid() {
     return () => {
       active = false;
     };
-  }, [ids, dropMissing]);
+  }, [ids, dropMissing, locale]);
 
   const loaded = ids.length === 0 || products !== null || failed;
 

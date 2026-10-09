@@ -1,10 +1,13 @@
 import { z } from "zod";
+import { routing } from "@/i18n/routing";
 import { checkoutService } from "@/lib/service/checkout";
 
 // Numery produktów z koszyka. Trzydzieści to ten sam sufit, co w kasie —
 // pracownia sprzedaje pojedyncze sztuki, nikt uczciwy się o niego nie obije.
 const requestSchema = z.object({
   ids: z.array(z.int().positive()).min(1).max(30),
+  // Język strony — po angielsku nazwy wracają przetłumaczone (N25).
+  locale: z.enum(routing.locales).optional(),
 });
 
 // Koszyk pyta o świeże ceny i dostępność, gdy klient go otwiera. To odczyt,
@@ -19,5 +22,7 @@ export async function POST(request: Request) {
   }
 
   const unique = Array.from(new Set(parsed.data.ids));
-  return Response.json({ items: await checkoutService.getCartState(unique) });
+  return Response.json({
+    items: await checkoutService.getCartState(unique, parsed.data.locale),
+  });
 }

@@ -26,7 +26,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const product = await productService.getProductBySlug(slug);
+  const product = await productService.getProductBySlug(slug, locale);
   // Nieistniejący produkt rysuje widok 404 zamiast wołać `notFound()` — powód
   // w `[locale]/[...rest]/page.tsx`. Skoro status zostaje 200, wyszukiwarkę
   // trzyma z dala `robots`.
@@ -67,7 +67,7 @@ export default async function ProductPage({
 }) {
   const { locale, slug } = await params;
   const [product, t, tRoot, format] = await Promise.all([
-    productService.getProductBySlug(slug),
+    productService.getProductBySlug(slug, locale),
     getTranslations({ locale, namespace: "product" }),
     getTranslations({ locale }),
     getFormatter({ locale }),

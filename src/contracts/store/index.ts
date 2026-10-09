@@ -1,4 +1,4 @@
-import { CartItem } from "@/contracts/server/cart";
+import { AddToCartInput, CartItem } from "@/contracts/server/cart";
 import {
   CookieCategory,
   ConsentChoices,
@@ -24,7 +24,7 @@ export type CartStore = {
   soldOutIds: number[];
   // Te z nich, które tylko czekają zarezerwowane na czyjąś wpłatę.
   reservedIds: number[];
-  addItem: (item: Omit<CartItem, "quantity">) => void;
+  addItem: (item: AddToCartInput) => void;
   removeItem: (id: number) => void;
   clearCart: () => void;
   // Dociąga z WooCommerce aktualne ceny i dostępność. Nie ma tu

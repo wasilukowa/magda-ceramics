@@ -44,14 +44,17 @@ export async function saveWishlist(
 // `null` znaczy „nie udało się zapytać", a nie „nic nie ma" — te dwie rzeczy
 // wyglądały wcześniej identycznie i strona pokazywała „Twoja lista ulubionych
 // jest pusta" wtedy, gdy WooCommerce po prostu nie odpowiedział na czas.
+// `locale` — język strony, z której pytamy: po angielsku nazwy i opisy wracają
+// przetłumaczone (N25).
 export async function getWishlistProducts(
   ids: number[],
+  locale?: string,
 ): Promise<ProductProps[] | null> {
   try {
     // Praca czekająca na czyjąś wpłatę nie pokazuje się nigdzie — ani wśród
     // dostępnych, ani w archiwum (decyzja Natalii 2026-10-08). Wraca do
     // ulubionych sama: jako dostępna albo, po wpłacie, jako sprzedana.
-    const products = await productService.getProductsByIds(ids);
+    const products = await productService.getProductsByIds(ids, locale);
     return products.filter((product) => !product.reserved);
   } catch (err) {
     console.error("Get wishlist products failed:", err);

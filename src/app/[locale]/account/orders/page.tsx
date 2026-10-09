@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getCurrentCustomer } from "@/lib/auth/dal";
 import { orderService } from "@/lib/service/order";
 import OrderList from "@/components/account/OrderList";
@@ -10,8 +10,8 @@ export async function generateMetadata() {
 
 export default async function OrdersPage() {
   const t = await getTranslations("account");
-  const customer = await getCurrentCustomer();
-  const orders = customer ? await orderService.getCustomerOrders(customer.id) : [];
+  const [customer, locale] = await Promise.all([getCurrentCustomer(), getLocale()]);
+  const orders = customer ? await orderService.getCustomerOrders(customer.id, locale) : [];
 
   return (
     <div className="flex flex-col gap-8">

@@ -112,7 +112,7 @@ export default async function LocaleLayout({
 
   // Kategorie idą z cache'u („use cache" w serwisie produktów), więc czekanie
   // na nie NIE odbiera stronie statyczności. Pobrane raz, dla menu i stopki.
-  const categories = await productService.getNavigationCategories();
+  const categories = await productService.getNavigationCategories(locale);
 
   // Na sesję i zgodę layout świadomie NIE czeka. Obie siedzą w ciasteczkach,
   // czyli w danych żądania — a gdyby layout je odczytał, każda podstrona

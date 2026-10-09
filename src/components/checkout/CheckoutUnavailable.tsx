@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useCart } from "@/hooks/useCart";
 import { UnavailableItem } from "@/contracts/server/checkout";
 import { getUnavailableReasonKey } from "@/lib/helpers/checkout";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
@@ -17,6 +18,11 @@ type Props = {
 // zamówić resztę koszyka.
 export default function CheckoutUnavailable({ items, onRemove }: Props) {
   const t = useTranslations("checkout");
+  // Nazwa z koszyka, bo ta jest już w języku strony; serwer podaje ją
+  // z WooCommerce, po polsku (N25).
+  const { items: cartItems } = useCart();
+  const nameOf = (item: UnavailableItem) =>
+    cartItems.find((cartItem) => cartItem.id === item.id)?.name ?? item.name;
 
   return (
     <div className="border border-[var(--border)] p-6 space-y-5">
@@ -30,7 +36,7 @@ export default function CheckoutUnavailable({ items, onRemove }: Props) {
       <ul className="space-y-1">
         {items.map((item) => (
           <li key={item.id} className="text-sm">
-            {item.name}{" "}
+            {nameOf(item)}{" "}
             <span className="text-[var(--muted)]">
               ({t(getUnavailableReasonKey(item.reason))})
             </span>
