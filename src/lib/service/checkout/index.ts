@@ -32,6 +32,7 @@ import { Currency } from "@/contracts/shared";
 import {
   getReservedProductIds,
   prepareProduct,
+  PUBLISHED_ONLY,
   withReservations,
 } from "@/lib/service/product/helpers";
 import { orderService } from "@/lib/service/order";
@@ -91,7 +92,7 @@ class CheckoutService {
   // praca jest jeszcze do kupienia.
   private async getLiveRawProducts(ids: number[]): Promise<RawProduct[]> {
     return this.wcFetch<RawProduct[]>(
-      `products?include=${ids.join(",")}&per_page=${ids.length}`
+      `products?${PUBLISHED_ONLY}&include=${ids.join(",")}&per_page=${ids.length}`
     );
   }
 

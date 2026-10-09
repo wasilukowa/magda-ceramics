@@ -47,6 +47,13 @@ function getPreparedDimensions(raw: RawProduct): ProductDimension[] {
 // klientowi (getCategories() odsiewa ją tak samo).
 export const UNCATEGORIZED_SLUG = "uncategorized";
 
+// Klucz sklepu widzi w WooCommerce także szkice, prywatne i oczekujące na
+// przegląd — bez stanu w zapytaniu API oddaje WSZYSTKIE (poza koszem). Szkic
+// z ceną trafiał więc do sklepu, archiwum i mapy strony, zanim Magda go
+// opublikowała (N32, znalezione 2026-10-09 na TEST 1). Każde zapytanie
+// o produkty niesie ten warunek.
+export const PUBLISHED_ONLY = "status=publish";
+
 export function prepareProduct(raw: RawProduct): ProductProps {
   return {
     id: raw.id,

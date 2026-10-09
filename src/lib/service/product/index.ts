@@ -12,6 +12,7 @@ import {
   getReservedProductIds,
   prepareProduct,
   prepareCategory,
+  PUBLISHED_ONLY,
   UNCATEGORIZED_SLUG,
   withReservations,
 } from "./helpers";
@@ -132,8 +133,10 @@ class ProductService {
   // patrz wcFetchAll. Sklepowi to nie wystarcza (patrz getAvailableProducts),
   // ale archiwum stoi właśnie na tym, co z tej listy odpadło.
   async getProducts(categoryId?: number): Promise<ProductProps[]> {
-    const query = categoryId ? `?category=${categoryId}` : "";
-    return preparePricedProducts(await wcFetchAll<RawProduct>(`products${query}`));
+    const query = categoryId ? `&category=${categoryId}` : "";
+    return preparePricedProducts(
+      await wcFetchAll<RawProduct>(`products?${PUBLISHED_ONLY}${query}`)
+    );
   }
 
   // To, co naprawdę da się kupić — i tylko to trafia do sklepu. Sprzedane
@@ -192,7 +195,9 @@ class ProductService {
   async getFeaturedProducts(minimum = 4): Promise<ProductProps[]> {
     try {
       const [featured, newest] = await Promise.all([
-        wcFetch<RawProduct[]>(`products?featured=true&per_page=${FEATURED_POOL}`)
+        wcFetch<RawProduct[]>(
+          `products?${PUBLISHED_ONLY}&featured=true&per_page=${FEATURED_POOL}`
+        )
           .then(preparePricedProducts)
           .then((products) => products.filter((p) => p.inStock)),
         this.getAvailableProducts(),
@@ -223,7 +228,7 @@ class ProductService {
         if (category.image) return category;
 
         const [product] = await wcFetch<RawProduct[]>(
-          `products?category=${category.id}&per_page=1`
+          `products?${PUBLISHED_ONLY}&category=${category.id}&per_page=1`
         );
         return { ...category, image: product ? prepareProduct(product).images[0] ?? null : null };
       })
@@ -232,7 +237,7 @@ class ProductService {
 
   async getProductBySlug(slug: string): Promise<ProductProps | null> {
     const [results, reservedIds] = await Promise.all([
-      wcFetch<RawProduct[]>(`products?slug=${slug}`),
+      wcFetch<RawProduct[]>(`products?${PUBLISHED_ONLY}&slug=${slug}`),
       this.getReservedIds(),
     ]);
     return results[0]
@@ -243,7 +248,9 @@ class ProductService {
   async getProductsByIds(ids: number[]): Promise<ProductProps[]> {
     if (ids.length === 0) return [];
     const [raw, reservedIds] = await Promise.all([
-      wcFetch<RawProduct[]>(`products?include=${ids.join(",")}&per_page=${ids.length}`),
+      wcFetch<RawProduct[]>(
+        `products?${PUBLISHED_ONLY}&include=${ids.join(",")}&per_page=${ids.length}`
+      ),
       this.getReservedIds(),
     ]);
     return withReservations(raw.map(prepareProduct), reservedIds);
