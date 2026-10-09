@@ -456,11 +456,6 @@
     },
     "pay": {
       "title": "Zapłać za zamówienie",
-      "paidTitle": "Zapłacono",
-      "paid": "Dziękujemy! Płatność została potwierdzona i szykuję zamówienie do wysyłki.",
-      "notConfirmedTitle": "Płatność niepotwierdzona",
-      "notConfirmed": "Nie udało się potwierdzić tej płatności. Jeśli pieniądze zostały pobrane, napisz do nas — sprawdzimy to.",
-      "backToOrders": "← Wróć do zamówień",
       "email": {
         "subject": "Zamówienie #{number} czeka na zapłatę",
         "heading": "Cześć {name}!",
@@ -472,9 +467,7 @@
         "cancelButton": "Anuluj zamówienie",
         "help": "Masz pytania? Po prostu odpowiedz na tego maila.",
         "signature": "Magda"
-      },
-      "confirming": "Potwierdzamy płatność...",
-      "paidNotRecorded": "Dziękujemy, płatność została przyjęta. Zamówienie w panelu zaktualizuję ręcznie — nic więcej nie musisz robić."
+      }
     }
   },
   "wishlist": {

@@ -248,16 +248,6 @@ export enum CancelResult {
   NotCancellable = "not-cancellable",
 }
 
-// Czym kończy się domknięcie zapłaty za istniejące zamówienie.
-export enum OrderConfirmResult {
-  // Stripe potwierdził płatność (albo zamówienie było już opłacone).
-  Paid = "paid",
-  // Zapłacono, ale WooCommerce nie przyjął adnotacji — pieniądze są, wpis
-  // trzeba poprawić ręcznie. Klientowi mówimy, że zapłacił, bo zapłacił.
-  PaidNotRecorded = "paid-not-recorded",
-  NotConfirmed = "not-confirmed",
-}
-
 // Czym kończy się domknięcie płatności z kasy — obojętne, czy domyka je strona
 // potwierdzenia, czy webhook Stripe'a.
 export enum OrderCompletion {
