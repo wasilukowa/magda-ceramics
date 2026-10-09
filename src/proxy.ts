@@ -4,6 +4,7 @@
 import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
+import { hasLocalePrefix, localeOfUnprefixedPath } from "./lib/helpers/localePath";
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -38,6 +39,20 @@ export default function proxy(request: NextRequest) {
   }
 
   if (SEARCH_ENGINE_FILES.includes(pathname)) return NextResponse.next();
+
+  // LEGACY — adresy bez prefiksu języka, sprzed J4. Do tej zmiany angielski
+  // chodził bez prefiksu, więc wszystko, co po tamtym czasie zostało (linki
+  // w wysłanych już mailach, zakładki, powrót ze Stripe'a z płatności zaczętej
+  // przed wdrożeniem), wygląda jak „/about” albo „/order?…”. Język takiego
+  // adresu ustalamy z niego samego (localeOfUnprefixedPath) i przenosimy go na
+  // stałe pod właściwy prefiks. Oddany next-intl zostałby przypisany językowi
+  // z ciasteczka — czyli dokładnie błąd J4. Strona główna „/” zostaje dla
+  // next-intl: tam wybór języka wg ciasteczka i przeglądarki jest zamierzony.
+  if (pathname !== "/" && !hasLocalePrefix(pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${localeOfUnprefixedPath(pathname)}${pathname}`;
+    return NextResponse.redirect(url, 308);
+  }
 
   return intlMiddleware(request);
 }

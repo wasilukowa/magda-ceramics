@@ -8,9 +8,9 @@ import { productService } from "@/lib/service/product";
 const absolute = (path: string) => new URL(path, SITE_URL).toString();
 
 // Każdy adres trafia do mapy raz, z odsyłaczami do swojej drugiej wersji
-// językowej. Adres główny wpisu jest w języku domyślnym (angielski, bez
-// prefiksu); polski siedzi w `alternates`, dokładnie tak, jak zaleca
-// dokumentacja next-intl.
+// językowej. Adres główny wpisu jest w języku domyślnym (angielski, „/en/…”);
+// polski siedzi w `alternates`, dokładnie tak, jak zaleca dokumentacja
+// next-intl.
 function entry(href: AppRoute): MetadataRoute.Sitemap[number] {
   const languages = Object.fromEntries(
     routing.locales.map((locale) => [locale, absolute(getPathname({ locale, href }))])

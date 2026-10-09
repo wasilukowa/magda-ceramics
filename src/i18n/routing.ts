@@ -3,7 +3,13 @@ import { defineRouting } from "next-intl/routing";
 export const routing = defineRouting({
   locales: ["en", "pl"],
   defaultLocale: "en",
-  localePrefix: "as-needed",
+  // Prefiks przy OBU językach (J4). Przy „as-needed” angielski chodził bez
+  // prefiksu, więc goły adres był niejednoznaczny: ciasteczko NEXT_LOCALE
+  // przerzucało angielski link na polską wersję („/about” → „/pl/o-mnie”).
+  // Teraz język siedzi w każdym adresie, a ciasteczko i przeglądarka
+  // decydują wyłącznie na stronie głównej „/”. Stare angielskie adresy bez
+  // prefiksu przekierowuje proxy (patrz LEGACY w proxy.ts).
+  localePrefix: "always",
   pathnames: {
     "/": "/",
     "/shop": { en: "/shop", pl: "/sklep" },
