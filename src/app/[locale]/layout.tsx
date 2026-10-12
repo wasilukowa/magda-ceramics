@@ -12,6 +12,7 @@ import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import "../globals.css";
 import Navbar from "@/components/Navbar";
+import InlineScript from "@/components/InlineScript";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/lib/store/providers/CartProvider";
 import { CurrencyProvider } from "@/lib/store/providers/CurrencyProvider";
@@ -170,7 +171,7 @@ export default async function LocaleLayout({
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <InlineScript html={THEME_INIT_SCRIPT} />
       </head>
       <body className="bg-[var(--background)]" style={{ overflowAnchor: "none" }}>
         {/* `formats` i `now` też muszą być podane, bo inaczej next-intl idzie

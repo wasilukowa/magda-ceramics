@@ -174,3 +174,7 @@ export type ThemedImageProps = Omit<NextImageProps, "src"> & {
   src: string;
   darkSrc: string;
 };
+
+export type InlineScriptProps = {
+  html: string;
+};
