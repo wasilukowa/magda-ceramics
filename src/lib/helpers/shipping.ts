@@ -5,6 +5,8 @@ import {
 } from "@/content/data";
 import {
   DeliveryMethod,
+  InPostPoint,
+  RawInPostPoint,
   ShippingOption,
   ShippingZone,
   ShippingZoneSummary,
@@ -135,4 +137,32 @@ export const getCountryLabel = (countryCode: string, locale: string): string => 
   } catch {
     return fallback;
   }
+};
+
+// ‼️ The International widget prefixes point names with the country:
+// `PL_POP-WAW722`, `FR_FR021607`. The domestic one never did, and the bare code
+// is what InPost itself prints and what Magda types into epaka when she buys a
+// label — so the prefix comes off here, at the edge, and the rest of the app
+// (order note, `_inpost_locker_id`, the shipping line title) keeps seeing the
+// code it always saw. No Polish code contains an underscore, so the pattern
+// cannot eat part of a real one.
+const stripCountryPrefix = (name: string, country?: string) => {
+  if (country && name.startsWith(`${country}_`)) {
+    return name.slice(country.length + 1);
+  }
+  return name.replace(/^[A-Z]{2}_/, "");
+};
+
+// Punkt wybrany na mapie InPostu w kształcie sklepu. Null, gdy mapa nie
+// oddała nazwy punktu.
+export const getInPostPoint = (raw: RawInPostPoint): InPostPoint | null => {
+  if (!raw?.name) return null;
+  return {
+    code: stripCountryPrefix(raw.name, raw.country),
+    // Sama ulica: druga linia InPostu to kod i miasto, które mają własne
+    // pola — sklejone powtarzały się w adresie zamówienia i w mailach.
+    description: raw.address?.line1 ?? "",
+    city: raw.address_details?.city ?? "",
+    postCode: raw.address_details?.post_code ?? "",
+  };
 };
