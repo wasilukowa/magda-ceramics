@@ -27,7 +27,7 @@ export async function generateMetadata({
 async function ArchiveGrid({ locale }: { locale: string }) {
   const [t, products] = await Promise.all([
     getTranslations({ locale, namespace: "archive" }),
-    productService.getArchivedProducts(),
+    productService.getArchivedProducts(locale),
   ]);
 
   if (products.length === 0) {

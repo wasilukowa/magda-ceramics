@@ -60,7 +60,7 @@ async function OrderContent({
   const orderId = Number(id);
   if (!Number.isInteger(orderId) || orderId <= 0 || !key) notFound();
 
-  const order = await orderService.getOrderByKey(orderId, key);
+  const order = await orderService.getOrderByKey(orderId, key, locale);
   if (!order) notFound();
 
   const t = await getTranslations({ locale, namespace: "order" });

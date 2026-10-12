@@ -85,6 +85,10 @@ export type ProductProps = {
   reserved: boolean;
   // Data dodania w WooCommerce — po niej idzie domyślne sortowanie „najnowsze".
   createdAt: string;
+  // Ręczne tłumaczenie z pól ACF „Nazwa EN” i „Opis EN”. Wpisane wygrywa
+  // z automatem (N25); null, gdy pole jest puste.
+  englishName: string | null;
+  englishDescription: string | null;
 };
 
 export type CategoryProps = {

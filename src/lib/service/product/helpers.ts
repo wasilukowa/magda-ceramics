@@ -42,6 +42,21 @@ function getPreparedDimensions(raw: RawProduct): ProductDimension[] {
   });
 }
 
+// Pola ACF z ręcznym tłumaczeniem (N25): „Nazwa EN” i „Opis EN”. Klucze
+// takie, jakie nadała im Natalia w WordPressie (sprawdzone 2026-10-12),
+// z myślnikiem jak przy wymiarach i z tym samym zapasem na podkreślenie.
+const ENGLISH_NAME_FIELD = "nazwa-en";
+const ENGLISH_DESCRIPTION_FIELD = "opis-en";
+
+function getMetaText(raw: RawProduct, metaKey: string): string | null {
+  const alias = metaKey.replace("-", "_");
+  const value = raw.meta_data?.find(
+    (meta) => meta.key === metaKey || meta.key === alias
+  )?.value;
+  const text = typeof value === "string" ? value.trim() : "";
+  return text === "" ? null : text;
+}
+
 // WooCommerce zawsze przypisuje produkt bez kategorii do „Uncategorized".
 // To nazwa techniczna, po angielsku i nieprzetłumaczalna — nie pokazujemy jej
 // klientowi (getCategories() odsiewa ją tak samo).
@@ -72,6 +87,8 @@ export function prepareProduct(raw: RawProduct): ProductProps {
     // Rezerwację zna dopiero lista zamówień — patrz withReservations.
     reserved: false,
     createdAt: raw.date_created,
+    englishName: getMetaText(raw, ENGLISH_NAME_FIELD),
+    englishDescription: getMetaText(raw, ENGLISH_DESCRIPTION_FIELD),
   };
 }
 

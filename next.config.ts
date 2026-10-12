@@ -92,6 +92,16 @@ const nextConfig: NextConfig = {
     catalog: { stale: 300, revalidate: 60, expire: ONE_YEAR },
     // Rzeczy zmieniające się raz na dobę (rok w stopce).
     daily: { stale: 300, revalidate: 60 * 60 * 24, expire: ONE_YEAR },
+    // Tłumaczenia produktów (N25). Kluczem jest polski tekst, więc zmiana
+    // w WordPressie i tak daje nowe tłumaczenie — odświeżanie co miesiąc to
+    // tylko zapas, gdyby model wyraźnie się poprawił.
+    translation: { stale: 300, revalidate: 60 * 60 * 24 * 30, expire: ONE_YEAR },
+    // Nieudane tłumaczenie: polski tekst na pięć minut, potem kolejna próba.
+    // Nie krócej — wpis z `expire` poniżej pięciu minut Next wyjmuje ze
+    // statycznej strony i robi z niej stronę liczoną przy każdym wejściu.
+    // `expire` jak przy katalogu: krótszy skróciłby ważność całej strony
+    // i odebrał jej zapas na awarię WordPressa (patrz komentarz wyżej).
+    translationRetry: { stale: 300, revalidate: 300, expire: ONE_YEAR },
   },
 
   async headers() {

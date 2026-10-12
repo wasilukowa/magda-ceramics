@@ -23,7 +23,7 @@ export default async function ProductListing({
 
   const [t, products] = await Promise.all([
     getTranslations({ locale, namespace: "shop" }),
-    productService.getAvailableProducts(categoryId),
+    productService.getAvailableProducts(categoryId, locale),
   ]);
 
   const visible = sortProducts(products, chosenSort, locale);

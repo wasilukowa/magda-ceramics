@@ -19,7 +19,8 @@ const isCartItem = (value: unknown): value is CartItem => {
     Number.isFinite(parseFloat(item.price)) &&
     isString(item.image) &&
     isCorrectNumber(item.quantity) &&
-    item.quantity > 0
+    item.quantity > 0 &&
+    (item.locale === undefined || isString(item.locale))
   );
 };
 
@@ -44,7 +45,8 @@ export const parseStoredCart = (raw: string): CartItem[] => {
 // pustą listę — koszyk zostaje wtedy taki, jaki był, bo lepiej pokazać
 // wczorajszą cenę niż pusty koszyk przez czkawkę serwera.
 export const fetchCartState = async (
-  ids: number[]
+  ids: number[],
+  locale: string
 ): Promise<CartItemState[]> => {
   if (ids.length === 0) return [];
 
@@ -52,7 +54,7 @@ export const fetchCartState = async (
     const res = await fetch("/api/cart/state", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids }),
+      body: JSON.stringify({ ids, locale }),
     });
     if (!res.ok) return [];
 

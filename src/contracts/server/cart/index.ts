@@ -5,9 +5,12 @@ export type CartItem = {
   price: string;
   image: string;
   quantity: number;
+  // Język, w którym zapisana jest nazwa (N25). Koszyk sprzed tej zmiany go
+  // nie ma — wtedy nazwa odświeża się przy pierwszym wejściu.
+  locale?: string;
 };
 
-export type AddToCartInput = Omit<CartItem, "quantity">;
+export type AddToCartInput = Omit<CartItem, "quantity" | "locale">;
 
 // Jak pozycja koszyka wygląda TERAZ w WooCommerce. Koszyk w przeglądarce
 // pamięta cenę i nazwę z chwili dodania — po kilku dniach jedno i drugie może

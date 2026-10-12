@@ -4,6 +4,7 @@ import { HttpError, isNotFoundError, serverFetch } from "@/lib/api";
 import {
   CustomerOrderMail,
   OrderForPayment,
+  OrderLineItem,
   OrderProps,
   OrderStatus,
   RawOrder,
@@ -19,6 +20,8 @@ import { EXCHANGE_RATE_PLN_PER_EUR } from "@/lib/helpers/currency";
 import { getWarsawDay } from "@/lib/helpers/date";
 import { formatPlNumber, getLedgerAmountPln } from "@/lib/helpers/ledger";
 import { exchangeRateService } from "@/lib/service/exchangeRate";
+import { productService } from "@/lib/service/product";
+import { isTranslatedLocale } from "@/lib/service/translation/helpers";
 import {
   getLedgerMeta,
   getLedgerRemark,
@@ -122,11 +125,41 @@ class OrderService {
     return res.json() as Promise<T>;
   }
 
-  async getCustomerOrders(customerId: number): Promise<OrderProps[]> {
+  // Nazwy pozycji w języku klienta (N25). WooCommerce zapisuje w zamówieniu
+  // polską nazwę z chwili zakupu — i tak zostaje dla pracowni. Klient
+  // w wersji angielskiej widzi nazwę z obecnego produktu, tę samą co na jego
+  // stronie (ręczne „Nazwa EN” albo tłumaczenie). Produkt usunięty ze sklepu
+  // albo awaria zostawiają nazwę z zamówienia.
+  private async localizeItems(
+    items: OrderLineItem[],
+    locale?: string
+  ): Promise<OrderLineItem[]> {
+    if (!isTranslatedLocale(locale)) return items;
+
+    const ids = [...new Set(items.flatMap((item) => (item.productId ? [item.productId] : [])))];
+    try {
+      const products = await productService.getProductsByIds(ids, locale);
+      const names = new Map(products.map((product) => [product.id, product.name]));
+      return items.map((item) => ({
+        ...item,
+        name: (item.productId && names.get(item.productId)) || item.name,
+      }));
+    } catch (error) {
+      console.error("Order item names translation failed:", error);
+      return items;
+    }
+  }
+
+  private async localizeOrder(order: OrderProps, locale?: string): Promise<OrderProps> {
+    return { ...order, items: await this.localizeItems(order.items, locale) };
+  }
+
+  async getCustomerOrders(customerId: number, locale?: string): Promise<OrderProps[]> {
     const raw = await this.wcFetch<RawOrder[]>(
       `orders?customer=${customerId}&per_page=50&orderby=date&order=desc`
     );
-    return raw.filter((order) => !isCheckoutDraft(order)).map(prepareOrder);
+    const orders = raw.filter((order) => !isCheckoutDraft(order)).map(prepareOrder);
+    return Promise.all(orders.map((order) => this.localizeOrder(order, locale)));
   }
 
   // Jedno zamówienie, ale WYŁĄCZNIE gdy należy do tego klienta. Numer
@@ -151,11 +184,15 @@ class OrderService {
   // Jedno zamówienie dla kogoś, kto ma do niego link z maila: numer i klucz
   // zamówienia zamiast logowania. Null, gdy zamówienia nie ma, klucz się nie
   // zgadza albo to wciąż szkic z kasy; awaria WordPressa leci dalej.
-  async getOrderByKey(orderId: number, key: string): Promise<OrderProps | null> {
+  async getOrderByKey(
+    orderId: number,
+    key: string,
+    locale?: string
+  ): Promise<OrderProps | null> {
     try {
       const raw = await this.wcFetch<RawOrder>(`orders/${orderId}`);
       if (!isOrderKey(raw, key) || isCheckoutDraft(raw)) return null;
-      return prepareOrder(raw);
+      return await this.localizeOrder(prepareOrder(raw), locale);
     } catch (error) {
       if (isNotFoundError(error)) return null;
       throw error;
@@ -170,9 +207,17 @@ class OrderService {
     const raw = await this.wcFetch<RawOrder[]>(
       `orders?status=${OrderStatus.OnHold}&per_page=100&orderby=date&order=asc`
     );
-    return raw
+    const orders = raw
       .map(prepareUnpaidOrder)
       .filter((order): order is UnpaidOrder => order !== null);
+
+    // Przypomnienie idzie w języku klienta, więc i nazwy. Po kolei — patrz
+    // ReservationService: serwer WP nie znosi tłoku.
+    const localized: UnpaidOrder[] = [];
+    for (const order of orders) {
+      localized.push({ ...order, items: await this.localizeItems(order.items, order.locale) });
+    }
+    return localized;
   }
 
   // Opłacone zamówienia do zestawienia sprzedaży: wszystkie zmienione od
@@ -363,7 +408,11 @@ class OrderService {
   // adresu e-mail; awaria WordPressa leci dalej.
   async getCustomerOrderMail(orderId: number): Promise<CustomerOrderMail | null> {
     try {
-      return prepareCustomerOrderMail(await this.wcFetch<RawOrder>(`orders/${orderId}`));
+      const mail = prepareCustomerOrderMail(await this.wcFetch<RawOrder>(`orders/${orderId}`));
+      if (!mail) return null;
+      // Mail do klienta idzie w jego języku — nazwy pozycji też (N25).
+      const items = await this.localizeItems(mail.amounts.items, mail.preferences.locale);
+      return { ...mail, amounts: { ...mail.amounts, items } };
     } catch (error) {
       if (isNotFoundError(error)) return null;
       throw error;

@@ -36,6 +36,7 @@ import {
   withReservations,
 } from "@/lib/service/product/helpers";
 import { orderService } from "@/lib/service/order";
+import { translationService } from "@/lib/service/translation";
 import { paymentService } from "@/lib/service/payment";
 import { UNKNOWN_PAYMENT_METHOD_LABEL } from "@/lib/service/payment/helpers";
 import { customerMailService } from "@/lib/service/customerMail";
@@ -144,12 +145,15 @@ class CheckoutService {
   // Stan pozycji koszyka na teraz: aktualna nazwa, aktualna cena i to, czy
   // pracę wciąż da się kupić. Koszyk w przeglądarce pamięta wartości z chwili
   // dodania — po tygodniu potrafią się rozjechać z rzeczywistością.
-  async getCartState(ids: number[]): Promise<CartItemState[]> {
+  async getCartState(ids: number[], locale?: string): Promise<CartItemState[]> {
     if (ids.length === 0) return [];
 
     let products: ProductProps[];
     try {
-      products = await this.getLiveProducts(ids);
+      products = await translationService.localizeProducts(
+        await this.getLiveProducts(ids),
+        locale
+      );
     } catch (error) {
       console.error("Cart state lookup failed:", error);
       return [];

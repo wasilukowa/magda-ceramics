@@ -16,6 +16,7 @@ import {
   UNCATEGORIZED_SLUG,
   withReservations,
 } from "./helpers";
+import { translationService } from "@/lib/service/translation";
 
 const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
 const WC_KEY = process.env.WC_CONSUMER_KEY;
@@ -97,13 +98,17 @@ class ProductService {
     return ProductService.instance;
   }
 
-  async getCategories(): Promise<CategoryProps[]> {
+  // `locale` przy metodach tego serwisu: w wersji angielskiej nazwy i opisy
+  // wracają przetłumaczone (N25, patrz TranslationService). Bez języka —
+  // tak, jak je wpisała Magda, po polsku; tak pytają kasa i mapa witryny.
+  async getCategories(locale?: string): Promise<CategoryProps[]> {
     const raw = await wcFetchAll<RawCategory>(
       "products/categories?hide_empty=false"
     );
-    return raw
+    const categories = raw
       .filter((c) => c.slug !== UNCATEGORIZED_SLUG)
       .map(prepareCategory);
+    return translationService.localizeCategories(categories, locale);
   }
 
   // Categories for the site navigation (menu, footer, homepage tiles): only the
@@ -114,7 +119,7 @@ class ProductService {
   // sklep ich nie pokazuje, kategoria wyprzedana do zera prowadziłaby z menu
   // na pustą stronę. Obie listy idą z tego samego cache'u, więc to nie jest
   // dodatkowy ruch do WordPressa.
-  async getNavigationCategories(): Promise<CategoryProps[]> {
+  async getNavigationCategories(locale?: string): Promise<CategoryProps[]> {
     try {
       const [categories, available] = await Promise.all([
         this.getCategories(),
@@ -123,7 +128,10 @@ class ProductService {
       const zajete = new Set(
         available.flatMap((product) => product.categories.map((c) => c.id))
       );
-      return categories.filter((category) => zajete.has(category.id));
+      return translationService.localizeCategories(
+        categories.filter((category) => zajete.has(category.id)),
+        locale
+      );
     } catch {
       return [];
     }
@@ -132,18 +140,25 @@ class ProductService {
   // Cały katalog (albo cała kategoria), RAZEM ze sprzedanymi — bez sufitu,
   // patrz wcFetchAll. Sklepowi to nie wystarcza (patrz getAvailableProducts),
   // ale archiwum stoi właśnie na tym, co z tej listy odpadło.
-  async getProducts(categoryId?: number): Promise<ProductProps[]> {
+  async getProducts(categoryId?: number, locale?: string): Promise<ProductProps[]> {
     const query = categoryId ? `&category=${categoryId}` : "";
-    return preparePricedProducts(
+    const products = preparePricedProducts(
       await wcFetchAll<RawProduct>(`products?${PUBLISHED_ONLY}${query}`)
     );
+    return translationService.localizeProducts(products, locale);
   }
 
   // To, co naprawdę da się kupić — i tylko to trafia do sklepu. Sprzedane
   // prace mają swoje miejsce w archiwum i nie mieszają się już z ofertą.
-  async getAvailableProducts(categoryId?: number): Promise<ProductProps[]> {
+  async getAvailableProducts(
+    categoryId?: number,
+    locale?: string
+  ): Promise<ProductProps[]> {
     const products = await this.getProducts(categoryId);
-    return products.filter((product) => product.inStock);
+    return translationService.localizeProducts(
+      products.filter((product) => product.inStock),
+      locale
+    );
   }
 
   // Prace czekające na czyjąś wpłatę (patrz withReservations). Z tego samego
@@ -168,14 +183,15 @@ class ProductService {
   // dopiero po wpłacie (decyzja Natalii 2026-10-08). Awaria WooCommerce kończy
   // się pustym archiwum, a nie błędem strony; to galeria, nie sprzedaż, więc
   // nie ma o co kruszyć kopii.
-  async getArchivedProducts(): Promise<ProductProps[]> {
+  async getArchivedProducts(locale?: string): Promise<ProductProps[]> {
     try {
       const [products, reservedIds] = await Promise.all([
         this.getProducts(),
         this.getReservedIds(),
       ]);
-      return products.filter(
-        (product) => !product.inStock && !reservedIds.has(product.id)
+      return translationService.localizeProducts(
+        products.filter((product) => !product.inStock && !reservedIds.has(product.id)),
+        locale
       );
     } catch {
       return [];
@@ -192,7 +208,7 @@ class ProductService {
   //
   // Zapasowe zapytanie jest tym samym, które wysyła sklep, więc Next liczy je
   // raz. Awaria WooCommerce kończy się pustą sekcją, nie błędem strony głównej.
-  async getFeaturedProducts(minimum = 4): Promise<ProductProps[]> {
+  async getFeaturedProducts(locale?: string, minimum = 4): Promise<ProductProps[]> {
     try {
       const [featured, newest] = await Promise.all([
         wcFetch<RawProduct[]>(
@@ -208,44 +224,64 @@ class ProductService {
         if (chosen.length >= minimum) break;
         if (!chosen.some((c) => c.id === product.id)) chosen.push(product);
       }
-      return chosen;
+      return translationService.localizeProducts(chosen, locale);
     } catch {
       return [];
     }
   }
 
-  // Categories worth suggesting when a page has nothing to show: the ones that
-  // actually hold products, minus the one the customer is already on. Each gets
-  // a thumbnail — the category picture, or the first product photo as fallback.
-  async getCategoryTiles(excludeSlug?: string): Promise<CategoryTileProps[]> {
-    const categories = await this.getNavigationCategories();
-    const candidates = categories.filter(
-      (category) => category.slug !== excludeSlug
-    );
+  // Kafelki kategorii ze zdjęciem: strona główna (P10) i podpowiedzi na
+  // stronie pustej kategorii. Tylko kategorie, w których jest coś do kupienia
+  // (jak w menu), bez tej, na której klient już jest. Zdjęcie to obrazek
+  // kategorii z WooCommerce, a bez niego zdjęcie najnowszej dostępnej pracy
+  // z tej kategorii — więc kafelek zmienia się sam, kiedy praca się sprzeda.
+  // Licznik też liczy tylko dostępne: ten z WooCommerce zlicza sprzedane.
+  // Wszystko z cache'u katalogu, bez osobnego zapytania do WordPressa na
+  // każdą kategorię. Awaria kończy się brakiem kafelków, nie błędem strony.
+  async getCategoryTiles(
+    excludeSlug?: string,
+    locale?: string
+  ): Promise<CategoryTileProps[]> {
+    try {
+      const [categories, available] = await Promise.all([
+        this.getCategories(),
+        this.getAvailableProducts(),
+      ]);
 
-    return Promise.all(
-      candidates.map(async (category) => {
-        if (category.image) return category;
-
-        const [product] = await wcFetch<RawProduct[]>(
-          `products?${PUBLISHED_ONLY}&category=${category.id}&per_page=1`
+      const tiles = categories.flatMap((category) => {
+        if (category.slug === excludeSlug) return [];
+        const products = available.filter((product) =>
+          product.categories.some((c) => c.id === category.id)
         );
-        return { ...category, image: product ? prepareProduct(product).images[0] ?? null : null };
-      })
-    );
+        if (products.length === 0) return [];
+        return [
+          {
+            ...category,
+            count: products.length,
+            image: category.image ?? products[0].images[0] ?? null,
+          },
+        ];
+      });
+      return translationService.localizeCategories(tiles, locale);
+    } catch {
+      return [];
+    }
   }
 
-  async getProductBySlug(slug: string): Promise<ProductProps | null> {
+  async getProductBySlug(slug: string, locale?: string): Promise<ProductProps | null> {
     const [results, reservedIds] = await Promise.all([
       wcFetch<RawProduct[]>(`products?${PUBLISHED_ONLY}&slug=${slug}`),
       this.getReservedIds(),
     ]);
-    return results[0]
-      ? withReservations([prepareProduct(results[0])], reservedIds)[0]
-      : null;
+    if (!results[0]) return null;
+    const [product] = await translationService.localizeProducts(
+      withReservations([prepareProduct(results[0])], reservedIds),
+      locale
+    );
+    return product;
   }
 
-  async getProductsByIds(ids: number[]): Promise<ProductProps[]> {
+  async getProductsByIds(ids: number[], locale?: string): Promise<ProductProps[]> {
     if (ids.length === 0) return [];
     const [raw, reservedIds] = await Promise.all([
       wcFetch<RawProduct[]>(
@@ -253,7 +289,10 @@ class ProductService {
       ),
       this.getReservedIds(),
     ]);
-    return withReservations(raw.map(prepareProduct), reservedIds);
+    return translationService.localizeProducts(
+      withReservations(raw.map(prepareProduct), reservedIds),
+      locale
+    );
   }
 }
 

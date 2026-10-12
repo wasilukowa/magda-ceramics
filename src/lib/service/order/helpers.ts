@@ -149,6 +149,7 @@ export const getOrderAmounts = (raw: RawOrder, currency: Currency): OrderAmounts
       currency,
       items: lines.map((item) => ({
         id: item.id,
+        productId: item.product_id ?? null,
         name: item.name,
         quantity: item.quantity,
         total: toAmount(item.total),
@@ -162,6 +163,7 @@ export const getOrderAmounts = (raw: RawOrder, currency: Currency): OrderAmounts
     const quantity = item.quantity || 1;
     return {
       id: item.id,
+      productId: item.product_id ?? null,
       name: item.name,
       quantity: item.quantity,
       total: convertPlnToEur(toAmount(item.total) / quantity) * quantity,

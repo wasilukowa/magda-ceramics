@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
+import CategoryTile from "@/components/CategoryTile";
 import {
   ButtonVariant,
   EmptyCategoryProps,
@@ -15,6 +15,11 @@ import { ButtonArrow, buttonClass } from "@/components/ui/button";
 // How long the customer gets to read the message and pick a tile before the
 // full catalogue takes over.
 const REDIRECT_SECONDS = 8;
+
+// Siatka 2 / 3 / 4 kolumny w kontenerze max-w-4xl z px-6 i odstępem 24 px.
+// Zaokrąglone w górę, żeby przeglądarka nie wzięła pliku mniejszego niż kafelek.
+const TILE_SIZES =
+  "(min-width: 1024px) 200px, (min-width: 768px) calc(33.33vw - 32px), calc(50vw - 36px)";
 
 export default function EmptyCategory({
   reason,
@@ -84,32 +89,13 @@ export default function EmptyCategory({
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
             {categories.map((category) => (
-              <Link
+              <CategoryTile
                 key={category.slug}
-                href={{
-                  pathname: "/shop/[category]",
-                  params: { category: category.slug },
-                }}
-                className="group"
-              >
-                <div className="aspect-square bg-[var(--color-ceramic)] overflow-hidden mb-3">
-                  {category.image ? (
-                    <Image
-                      src={category.image.src}
-                      alt={category.image.alt || getCategoryLabel(tRoot, category)}
-                      width={400}
-                      height={400}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : null}
-                </div>
-                <p className="text-xs tracking-widest uppercase text-[var(--foreground)]">
-                  {getCategoryLabel(tRoot, category)}
-                </p>
-                <p className="text-sm text-[var(--muted)] mt-1">
-                  {t("items", { count: category.count })}
-                </p>
-              </Link>
+                category={category}
+                label={getCategoryLabel(tRoot, category)}
+                detail={t("items", { count: category.count })}
+                sizes={TILE_SIZES}
+              />
             ))}
           </div>
         </div>

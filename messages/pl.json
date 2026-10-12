@@ -509,7 +509,7 @@
     "categories": {
       "necessary": {
         "label": "Niezbędne",
-        "description": "Utrzymanie sesji logowania, zawartości koszyka, procesu zamówienia i płatności, a także preferencji, które ustawiasz samodzielnie (waluta, wygląd strony, lista ulubionych). Bez nich sklep nie działa, dlatego nie wymagają zgody (art. 399 ust. 3 Prawa komunikacji elektronicznej)."
+        "description": "Utrzymanie sesji logowania, zawartości koszyka, procesu zamówienia i płatności, a także preferencji, które ustawiasz samodzielnie (waluta, język, wygląd strony, lista ulubionych). Bez nich sklep nie działa, dlatego nie wymagają zgody (art. 399 ust. 3 Prawa komunikacji elektronicznej)."
       },
       "analytics": {
         "label": "Analityczne",

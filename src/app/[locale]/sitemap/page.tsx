@@ -70,8 +70,8 @@ export default async function SiteMapPage({
 
   try {
     [categories, products] = await Promise.all([
-      productService.getCategories(),
-      productService.getProducts(),
+      productService.getCategories(locale),
+      productService.getProducts(undefined, locale),
     ]);
   } catch {
     katalogDostepny = false;

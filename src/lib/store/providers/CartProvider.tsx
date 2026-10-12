@@ -4,9 +4,12 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   useSyncExternalStore,
 } from "react";
+import { useLocale } from "next-intl";
+import { AddToCartInput } from "@/contracts/server/cart";
 import { CartStore, CartItem } from "@/contracts/store";
 import { createLocalStorageStore } from "@/lib/store/localStorageStore";
 import { fetchCartState, parseStoredCart } from "@/lib/helpers/cart";
@@ -31,6 +34,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     cartStore.getSnapshot,
     cartStore.getServerSnapshot
   );
+  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   // Prace, które zdążyły się sprzedać albo zniknęły ze sklepu, odkąd trafiły
   // do koszyka. NIE usuwamy ich same z siebie — rzecz znikająca z koszyka bez
@@ -40,13 +44,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // „niedostępne", nie „sprzedane", bo mogą jeszcze wrócić do sklepu.
   const [reservedIds, setReservedIds] = useState<number[]>([]);
 
-  const addItem = useCallback((product: Omit<CartItem, "quantity">) => {
+  const addItem = useCallback((product: AddToCartInput) => {
     const current = cartStore.read();
     // Każda praca istnieje w jednym egzemplarzu, więc drugie kliknięcie nie
     // dokłada sztuki — koszyk po prostu już ją ma.
     if (current.some((i) => i.id === product.id)) return;
-    cartStore.write([...current, { ...product, quantity: 1 }]);
-  }, []);
+    cartStore.write([...current, { ...product, quantity: 1, locale }]);
+  }, [locale]);
 
   const removeItem = useCallback((id: number) => {
     cartStore.write(cartStore.read().filter((i) => i.id !== id));
@@ -68,7 +72,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const state = await fetchCartState(current.map((item) => item.id));
+    const state = await fetchCartState(current.map((item) => item.id), locale);
     if (state.length === 0) return;
 
     const byId = new Map(state.map((entry) => [entry.id, entry]));
@@ -81,22 +85,53 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
 
     // Nazwa i cena wracają z serwera, żeby koszyk pokazywał to samo, co kasa
-    // policzy przy płatności. Zapis idzie tylko wtedy, gdy coś się naprawdę
-    // zmieniło — inaczej każde otwarcie koszyka budziłoby wszystkie karty.
+    // policzy przy płatności — nazwa w języku strony (N25). Przy pracy, której
+    // nie da się już kupić, zmieniamy tylko język nazwy, cena zostaje ta,
+    // za którą klient ją wkładał. Zapis idzie tylko wtedy, gdy coś się
+    // naprawdę zmieniło — inaczej każde otwarcie koszyka budziłoby wszystkie
+    // karty.
     const refreshed = current.map((item) => {
       const fresh = byId.get(item.id);
-      if (!fresh || !fresh.purchasable) return item;
+      if (!fresh || !fresh.name) return item;
+      if (!fresh.purchasable) return { ...item, name: fresh.name, locale };
       return {
         ...item,
         name: fresh.name,
         price: fresh.price,
+        locale,
       };
     });
 
     if (JSON.stringify(refreshed) !== JSON.stringify(current)) {
       cartStore.write(refreshed);
     }
-  }, []);
+  }, [locale]);
+
+  // Nazwy z koszyka idą za językiem strony: po przełączeniu PL/EN (albo przy
+  // koszyku sprzed N25, bez zapisanego języka) podmieniamy je raz. Bez różnicy
+  // języka nie pytamy serwera — inaczej każde wejście na stronę z pełnym
+  // koszykiem szłoby do WooCommerce. Tylko nazwy: ceny i to, co się sprzedało,
+  // sprawdza `refresh` przy otwarciu koszyka.
+  const syncNames = useCallback(async () => {
+    const current = cartStore.read();
+    if (!current.some((item) => item.locale !== locale)) return;
+
+    const state = await fetchCartState(current.map((item) => item.id), locale);
+    if (state.length === 0) return;
+
+    const names = new Map(state.map((entry) => [entry.id, entry.name]));
+    // Pamięć czytana jeszcze raz: w trakcie zapytania ktoś mógł coś dołożyć.
+    const latest = cartStore.read();
+    const renamed = latest.map((item) => {
+      const name = names.get(item.id);
+      return name ? { ...item, name, locale } : item;
+    });
+    if (JSON.stringify(renamed) !== JSON.stringify(latest)) cartStore.write(renamed);
+  }, [locale]);
+
+  useEffect(() => {
+    void syncNames();
+  }, [syncNames]);
 
   const openCart = useCallback(() => {
     setIsOpen(true);

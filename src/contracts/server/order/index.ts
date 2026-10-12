@@ -20,6 +20,9 @@ export enum OrderStatus {
 // Pozycja zamówienia z kwotą w walucie klienta (patrz OrderAmounts).
 export type OrderLineItem = {
   id: number;
+  // Produkt w WooCommerce — po nim nazwa dostaje tłumaczenie (N25). Null, gdy
+  // pozycja nie wskazuje produktu.
+  productId: number | null;
   name: string;
   quantity: number;
   total: number;

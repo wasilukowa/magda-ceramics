@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useWishlist } from "@/hooks/useWishlist";
 import { getWishlistProducts } from "@/server-actions/wishlist";
@@ -23,6 +23,7 @@ import { ButtonArrow, buttonClass } from "@/components/ui/button";
 export default function WishlistCarousel() {
   const { ids } = useWishlist();
   const t = useTranslations("home");
+  const locale = useLocale();
   const [products, setProducts] = useState<ProductProps[]>([]);
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export default function WishlistCarousel() {
     if (ids.length === 0) return;
 
     let active = true;
-    getWishlistProducts(ids).then((items) => {
+    getWishlistProducts(ids, locale).then((items) => {
       if (!active) return;
       // `null` znaczy „nie udało się zapytać" — wtedy po prostu nic nie
       // pokazujemy, zamiast straszyć błędem na stronie głównej.
@@ -42,7 +43,7 @@ export default function WishlistCarousel() {
     return () => {
       active = false;
     };
-  }, [ids]);
+  }, [ids, locale]);
 
   // Pokazujemy tylko to, co nadal jest na liście — usunięcie serca w innym
   // miejscu strony ma znikać stąd od razu, bez czekania na ponowne pobranie.

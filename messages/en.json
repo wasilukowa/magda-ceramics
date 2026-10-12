@@ -509,7 +509,7 @@
     "categories": {
       "necessary": {
         "label": "Necessary",
-        "description": "Keeping you logged in, holding your cart, running checkout and payment, and remembering preferences you set yourself (currency, appearance, wishlist). The store cannot work without these, so they need no consent (Art. 399(3) of the Polish Electronic Communications Law)."
+        "description": "Keeping you logged in, holding your cart, running checkout and payment, and remembering preferences you set yourself (currency, language, appearance, wishlist). The store cannot work without these, so they need no consent (Art. 399(3) of the Polish Electronic Communications Law)."
       },
       "analytics": {
         "label": "Analytics",

@@ -12,6 +12,7 @@ import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import "../globals.css";
 import Navbar from "@/components/Navbar";
+import InlineScript from "@/components/InlineScript";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/lib/store/providers/CartProvider";
 import { CurrencyProvider } from "@/lib/store/providers/CurrencyProvider";
@@ -112,7 +113,7 @@ export default async function LocaleLayout({
 
   // Kategorie idą z cache'u („use cache" w serwisie produktów), więc czekanie
   // na nie NIE odbiera stronie statyczności. Pobrane raz, dla menu i stopki.
-  const categories = await productService.getNavigationCategories();
+  const categories = await productService.getNavigationCategories(locale);
 
   // Na sesję i zgodę layout świadomie NIE czeka. Obie siedzą w ciasteczkach,
   // czyli w danych żądania — a gdyby layout je odczytał, każda podstrona
@@ -149,7 +150,13 @@ export default async function LocaleLayout({
     // W `globals.css` to NIE ZADZIAŁA: kompilator (Lightning CSS) wycina tę
     // właściwość jako nieobsługiwaną przez część docelowych przeglądarek —
     // sprawdzone, w zbudowanym arkuszu nie ma jej ani razu. Styl wpisany
-    // w element omija kompilację. Przewijanym elementem jest `html`, nie `body`.
+    // w element omija kompilację.
+    //
+    // ‼️ Musi stać na `html` I na `body`. Przewijanym elementem jest `html`, ale
+    // Chrome bierze kotwicę z treści strony, a samo `html` jej nie wyłącza:
+    // ZMIERZONE 2026-10-12 na /pl/sklep w trybie ciemnym — z blokadą tylko na
+    // `html` korekta wróciła 1:1 (300→212 przy 182→94 px) i nagłówek skakał
+    // w kółko; z blokadą także na `body` pozycja stała na 300.
     //
     // Bezpieczne: wszystkie zdjęcia mają podane wymiary, więc nic się tu nie
     // doładowuje z opóźnieniem — a przed tym kotwiczenie normalnie chroni.
@@ -164,9 +171,9 @@ export default async function LocaleLayout({
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <InlineScript html={THEME_INIT_SCRIPT} />
       </head>
-      <body className="bg-[var(--background)]">
+      <body className="bg-[var(--background)]" style={{ overflowAnchor: "none" }}>
         {/* `formats` i `now` też muszą być podane, bo inaczej next-intl idzie
             po nie do konfiguracji żądania. Własnych formatów nie mamy (stąd
             pusty obiekt), a `now` służy tylko formatowaniu w stylu „3 dni
