@@ -272,7 +272,6 @@ export default function CheckoutContent({
               address={address}
               locker={chosenLocker}
               deliveryLabel={deliveryLabel}
-              pieces={pieces}
               total={grandTotal}
               currency={currency}
               onBack={() => goToStep(CheckoutStep.Shipping)}

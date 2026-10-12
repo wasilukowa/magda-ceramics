@@ -539,9 +539,9 @@ class CheckoutService {
     }
   }
 
-  // Złożone zamówienie w kształcie dla kroku „Płatność": numer, termin
-  // rezerwacji i płatność dla formularza (getOrderPayment — po poprawce
-  // z inną kwotą płatność jest wymieniana na nową). Gdy WooCommerce nie odda
+  // Złożone zamówienie w kształcie dla kroku „Płatność": numer i płatność
+  // dla formularza (getOrderPayment — po poprawce z inną kwotą płatność jest
+  // wymieniana na nową). Gdy WooCommerce nie odda
   // zamówienia zaraz po złożeniu, krok „Płatność" pokaże drogę do strony
   // zamówienia — samo zamówienie jest złożone.
   async getPlacedCheckout(placed: PlacedOrder): Promise<PlacedCheckout> {
@@ -556,7 +556,6 @@ class CheckoutService {
       orderId: placed.id,
       key: placed.key,
       number: order?.number ?? placed.id.toString(),
-      reservedUntil: order?.reservedUntil ?? null,
       clientSecret: order ? await this.getOrderPayment(order) : null,
     };
   }

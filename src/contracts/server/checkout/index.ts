@@ -113,8 +113,6 @@ export type PlacedCheckout = {
   orderId: number;
   key: string;
   number: string;
-  // Do kiedy praca czeka na wpłatę (ISO).
-  reservedUntil: string | null;
   // Płatność w Stripe dla formularza w kroku „Płatność". Null, gdy nie dała
   // się uruchomić — zamówienie i tak jest złożone, a zapłacić można później
   // ze strony zamówienia.

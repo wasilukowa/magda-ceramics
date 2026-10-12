@@ -10,7 +10,6 @@ import { PlacedCheckout } from "@/contracts/server/checkout";
 import { InPostPoint } from "@/contracts/server/shipping";
 import { ButtonSize, Currency } from "@/contracts/shared";
 import { formatPrice } from "@/lib/helpers/currency";
-import { formatDeadline } from "@/lib/helpers/date";
 import { getCountryLabel } from "@/lib/helpers/shipping";
 import { getStripeFonts } from "@/lib/helpers/stripeAppearance";
 import { useStripeAppearance } from "@/hooks/useStripeAppearance";
@@ -25,7 +24,6 @@ type Props = {
   // Paczkomat, jeśli zamówienie idzie do paczkomatu; null przy kurierze.
   locker: InPostPoint | null;
   deliveryLabel: string;
-  pieces: number;
   total: number;
   currency: Currency;
   onBack: () => void;
@@ -66,7 +64,6 @@ function PaymentForm({
   address,
   locker,
   deliveryLabel,
-  pieces,
   total,
   currency,
   onBack,
@@ -131,13 +128,7 @@ function PaymentForm({
     <form onSubmit={handleSubmit} noValidate>
       <div className="space-y-8">
         <p className="text-sm leading-relaxed">
-          {checkout.reservedUntil
-            ? t("orderPlaced", {
-                number: checkout.number,
-                count: pieces,
-                deadline: formatDeadline(checkout.reservedUntil, locale),
-              })
-            : t("orderPlacedShort", { number: checkout.number })}
+          {t("orderPlaced", { number: checkout.number })}
         </p>
 
         <div className="space-y-3">
