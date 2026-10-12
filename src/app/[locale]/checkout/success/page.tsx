@@ -5,10 +5,11 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useCart } from "@/hooks/useCart";
-import { CheckoutErrorResponse } from "@/contracts/server/checkout";
+import { CheckoutErrorResponse, CheckoutStep } from "@/contracts/server/checkout";
 import { CheckoutReturn, OrderCompletion } from "@/contracts/server/order";
-import { getOrderErrorKey } from "@/lib/helpers/checkout";
+import { forgetPlacedOrder, getOrderErrorKey } from "@/lib/helpers/checkout";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
+import CheckoutStepper from "@/components/checkout/CheckoutStepper";
 
 type OrderState =
   | { status: "loading" }
@@ -20,6 +21,7 @@ function SuccessContent() {
   const router = useRouter();
   const { clearCart } = useCart();
   const t = useTranslations("success");
+  const tCheckout = useTranslations("checkout");
   const [state, setState] = useState<OrderState>({ status: "loading" });
 
   // Stripe odsyła tu klienta z numerem płatności, jej „client secret"
@@ -60,6 +62,8 @@ function SuccessContent() {
           });
           return;
         }
+        // Zapłacone — kasa nie musi już podsuwać drogi do tego zamówienia.
+        forgetPlacedOrder();
         setState({ status: "success", orderId: data.orderId });
       })
       .catch(() => {
@@ -100,8 +104,18 @@ function SuccessContent() {
     );
   }
 
+  // Ostatni krok kasy — pasek tylko do oglądania, wszystkie kroki zaliczone.
   return (
     <div className="max-w-xl mx-auto px-6 py-24 text-center space-y-6">
+      <CheckoutStepper
+        steps={[
+          tCheckout("stepContact"),
+          tCheckout("stepShipping"),
+          tCheckout("stepPayment"),
+          tCheckout("stepSummary"),
+        ]}
+        current={CheckoutStep.Summary}
+      />
       <p className="text-xs tracking-widest uppercase text-[var(--muted)]">
         {t("thankYou")}
       </p>

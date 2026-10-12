@@ -3,19 +3,21 @@ import { OrderItem } from "@/contracts/server/cart";
 import { ProductProps } from "@/contracts/server/product";
 import {
   CheckoutError,
+  DeliveryDetails,
+  DeliveryFields,
   UnavailableItem,
   UnavailableReason,
 } from "@/contracts/server/checkout";
 import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
-import { isCheckoutCountry } from "@/lib/helpers/shipping";
+import { getShippingCostInZloty, isCheckoutCountry } from "@/lib/helpers/shipping";
+import { LOCKER_NOTE_PREFIX } from "@/lib/service/order/helpers";
 import { routing } from "@/i18n/routing";
 import { isPhoneNumber } from "@/utility";
 
 // Sufity na to, co przyjmujemy z przeglądarki. Pracownia sprzedaje pojedyncze
 // prace, więc nikt uczciwy się o nie nie obije, a żądanie z tysiącem pozycji
-// nie zdąży zmęczyć WooCommerce. Limit pozycji pilnuje przy okazji, żeby zapis
-// koszyka zmieścił się w 500 znakach metadanych Stripe'a.
+// nie zdąży zmęczyć WooCommerce.
 const MAX_CART_LINES = 30;
 const MAX_LINE_QUANTITY = 20;
 const MAX_FIELD_LENGTH = 120;
@@ -60,17 +62,6 @@ const lockerSchema = z.object({
   postCode: text(20),
 });
 
-export const paymentIntentRequestSchema = z.object({
-  items: cartSchema,
-  country: countrySchema,
-  currency: z.enum(Currency),
-  // Od niego zależy cena wysyłki (paczkomat bywa tańszy od kuriera). Karta
-  // otwarta przed wdrożeniem go nie wysyła — wtedy kurier.
-  deliveryMethod: z.enum(DeliveryMethod).optional().default(DeliveryMethod.Courier),
-});
-
-export const availabilityRequestSchema = z.object({ items: cartSchema });
-
 // Numer płatności z adresu, na który Stripe odsyła klienta. Mówi tylko,
 // KTÓRĄ płatność sprawdzić — co z nią, rozstrzyga Stripe. „Client secret"
 // (też z adresu powrotu) dowodzi, że pyta przeglądarka, która płaciła —
@@ -80,32 +71,50 @@ export const completeOrderRequestSchema = z.object({
   clientSecret: z.string().trim().min(1).max(255).optional(),
 });
 
-// Dane zamówienia wysyłane przy składaniu, tuż przed płatnością. Waluty ani
-// kwoty tu nie ma — jedno i drugie siedzi w płatności, wycenionej wcześniej
-// na serwerze.
+const deliveryFields = {
+  billing: billingSchema,
+  note: z.string().trim().max(MAX_NOTE_LENGTH).optional().default(""),
+  deliveryMethod: z.enum(DeliveryMethod).optional(),
+  locker: lockerSchema.nullish(),
+};
+
+// Do paczkomatu telefon jest obowiązkowy: InPost wysyła na niego SMS
+// z kodem odbioru. Kasa pilnuje tego sama, to jest zabezpieczenie na
+// żądanie złożone z pominięciem formularza.
+const hasLockerPhone = ({
+  deliveryMethod,
+  locker,
+  billing,
+}: {
+  deliveryMethod?: DeliveryMethod;
+  locker?: unknown;
+  billing: { phone: string };
+}): boolean =>
+  deliveryMethod !== DeliveryMethod.Locker || !locker || isPhoneNumber(billing.phone);
+
+// „Złóż zamówienie". Waluta przychodzi z kasy, ale kwoty nie ma — tę liczy
+// WooCommerce z numerów produktów, a wysyłkę serwer z cennika.
 export const placeOrderRequestSchema = z
   .object({
-    billing: billingSchema,
+    ...deliveryFields,
     items: cartSchema,
-    paymentIntentId: z.string().trim().min(1).max(255),
-    note: z.string().trim().max(MAX_NOTE_LENGTH).optional().default(""),
-    deliveryMethod: z.enum(DeliveryMethod).optional(),
-    locker: lockerSchema.nullish(),
+    currency: z.enum(Currency),
+    checkoutId: z.uuid(),
     // Język strony, na której klient zamawia — w nim dostanie maile. Opcjonalny,
     // bo karta otwarta przed wdrożeniem go nie wysyła; wtedy język idzie
     // z kraju adresu.
     locale: z.enum(routing.locales).optional(),
   })
-  // Do paczkomatu telefon jest obowiązkowy: InPost wysyła na niego SMS
-  // z kodem odbioru. Kasa pilnuje tego sama, to jest zabezpieczenie na
-  // żądanie złożone z pominięciem formularza.
-  .refine(
-    ({ deliveryMethod, locker, billing }) =>
-      deliveryMethod !== DeliveryMethod.Locker ||
-      !locker ||
-      isPhoneNumber(billing.phone),
-    { path: ["billing", "phone"] }
-  );
+  .refine(hasLockerPhone, { path: ["billing", "phone"] });
+
+// „Zapisz zmiany" — poprawka złożonego, nieopłaconego zamówienia.
+export const updateOrderRequestSchema = z
+  .object({
+    ...deliveryFields,
+    orderId: z.int().positive(),
+    key: z.string().trim().min(1).max(64),
+  })
+  .refine(hasLockerPhone, { path: ["billing", "phone"] });
 
 // Pusty koszyk zasługuje na własny komunikat („Twój koszyk jest pusty"), a nie
 // na to samo „nieprawidłowe żądanie" co bzdurne dane.
@@ -115,15 +124,6 @@ export const getRequestError = (body: unknown): CheckoutError => {
     ? CheckoutError.EmptyCart
     : CheckoutError.InvalidCart;
 };
-
-// Kanoniczny zapis koszyka: „12:1,45:2". Posortowany po numerze produktu, żeby
-// ten sam koszyk zawsze dawał ten sam ciąg — bez tego o przyjęciu zamówienia
-// decydowałaby kolejność pozycji w żądaniu.
-export const getCartFingerprint = (items: OrderItem[]): string =>
-  [...items]
-    .sort((a, b) => a.id - b.id)
-    .map((item) => `${item.id}:${item.quantity}`)
-    .join(",");
 
 // Pozycje, których nie da się sprzedać: usunięte z WooCommerce, pozbawione
 // ceny, zarezerwowane w czyimś złożonym zamówieniu albo już sprzedane.
@@ -162,7 +162,8 @@ export const getUnavailableItems = (
 
 // Status odpowiedzi dobrany tak, żeby było widać, czyj to problem: 400 —
 // żądanie nie trzyma się formularza, 402 — płatności nie da się potwierdzić,
-// 409 — praca w międzyczasie zniknęła, 429 — za dużo prób z jednego miejsca,
+// 409 — praca w międzyczasie zniknęła albo zamówienia nie da się już
+// poprawić, 429 — za dużo prób z jednego miejsca,
 // 503 — to WooCommerce nie odpowiada.
 const STATUS_BY_ERROR: Record<CheckoutError, number> = {
   [CheckoutError.EmptyCart]: 400,
@@ -172,6 +173,7 @@ const STATUS_BY_ERROR: Record<CheckoutError, number> = {
   [CheckoutError.PaymentNotVerified]: 402,
   [CheckoutError.OrderFailed]: 500,
   [CheckoutError.TooManyAttempts]: 429,
+  [CheckoutError.OrderNotEditable]: 409,
 };
 
 // Jedna odmowa dla wszystkich tras kasy: kod błędu (nie zdanie — tłumaczy je
@@ -184,3 +186,54 @@ export const checkoutErrorResponse = (
     unavailable.length ? { error, unavailable } : { error },
     { status: STATUS_BY_ERROR[error] }
   );
+
+// Adres, wysyłka i uwagi w kształcie zamówienia WooCommerce — przy składaniu
+// i przy poprawce. Wysyłkę liczymy z cennika dla kraju adresu i sposobu
+// dostawy, nie z kwoty z żądania. Sposób dostawy przychodzi tu już
+// rozstrzygnięty (resolveDeliveryMethod).
+//
+// Zamówienie do paczkomatu (Polska i kraje InPost International) idzie na
+// adres paczkomatu, a linia wysyłki niesie jego kod, żeby pracownia
+// wiedziała, dokąd nadać. W uwagach klienta ląduje tylko to, co może
+// przeczytać w swoim mailu: jego własna uwaga i wybrany paczkomat. Uwagi dla
+// Magdy idą osobno, jako notatki prywatne — patrz OrderService.
+export const getDeliveryFields = ({
+  billing,
+  note,
+  deliveryMethod,
+  locker,
+}: DeliveryDetails): DeliveryFields => {
+  const isLocker = deliveryMethod === DeliveryMethod.Locker && !!locker;
+  const shipping = isLocker
+    ? {
+        ...billing,
+        company: `Paczkomat ${locker.code}`,
+        address_1: locker.description || locker.code,
+        address_2: "",
+        city: locker.city,
+        postcode: locker.postCode,
+      }
+    : billing;
+
+  const noteParts: string[] = [];
+  if (note) noteParts.push(note);
+  if (isLocker) {
+    noteParts.push(
+      `${LOCKER_NOTE_PREFIX}${locker.code}${
+        locker.description ? ` (${locker.description})` : ""
+      }`
+    );
+  }
+
+  return {
+    billing,
+    shipping,
+    shippingLine: {
+      method_id: "flat_rate",
+      method_title: isLocker ? `Paczkomat InPost ${locker.code}` : "Shipping",
+      total: getShippingCostInZloty(billing.country, deliveryMethod).toFixed(2),
+    },
+    customerNote: noteParts.join("\n"),
+    lockerCode: isLocker ? locker.code : null,
+  };
+};

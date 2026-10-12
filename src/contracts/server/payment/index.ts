@@ -23,17 +23,10 @@ export type PaymentRecord = {
   currency: Currency | null;
   // Zapłacona kwota w jednostkach głównych (zł / €).
   paidTotal: number;
-  // Zapis koszyka i kraj zapamiętane w chwili tworzenia płatności — patrz
-  // PricedCart.fingerprint.
-  cart: string;
-  country: string;
-  // Wysyłka wliczona w płatność, w groszach / eurocentach. Null dla płatności,
-  // której kasa nie wyceniała (np. „Zapłać" z panelu klienta).
-  shippingAmount: number | null;
-  // Zamówienie przypisane do tej płatności. Numer zapisuje albo kasa (gdy
-  // zamówienie powstało z płatności), albo panel klienta (gdy płatność powstała
-  // DLA zamówienia, które już było) — dlatego numer bywa bez klucza, a sam
-  // klucz nigdy bez numeru.
+  // Zamówienie przypisane do tej płatności. Płatność powstaje zawsze DLA
+  // złożonego zamówienia (kasa po „Złóż zamówienie" albo strona zamówienia)
+  // i dostaje jego numer i klucz. Płatności sprzed 2026-10-12 bywają bez
+  // klucza (panel klienta) — sam klucz nigdy nie jest bez numeru.
   orderId: number | null;
   orderKey: string | null;
 };

@@ -1,13 +1,16 @@
-import { BillingAddress, OrderItem } from "@/contracts/server/cart";
+import { BillingAddress, CartItem, OrderItem } from "@/contracts/server/cart";
 import { PlacedOrder } from "@/contracts/server/order";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
 
-// Ordered steps of the multi-step checkout, mirrored by CheckoutStepper.
+// Kroki kasy, w kolejności z CheckoutStepper (decyzja Natalii 2026-10-12).
+// Zamówienie powstaje na końcu kroku „Wysyłka" („Złóż zamówienie"), płatność
+// jest osobnym krokiem po nim, a „Podsumowanie" to strona po zapłacie.
 export enum CheckoutStep {
-  Address,
+  Contact,
+  Shipping,
   Payment,
-  Overview,
+  Summary,
 }
 
 // Dlaczego pozycji z koszyka nie da się kupić. „Sprzedane" to zwykły przypadek
@@ -27,31 +30,6 @@ export type UnavailableItem = {
   reason: UnavailableReason;
 };
 
-// Wycena jednej pozycji — zawsze w najmniejszej jednostce waluty (grosze /
-// eurocenty), bo taką jednostką liczy Stripe i tylko na liczbach całkowitych
-// suma nie potrafi się rozjechać o grosz.
-export type PricedLine = {
-  id: number;
-  quantity: number;
-  unitAmount: number;
-  amount: number;
-};
-
-// Koszyk wyceniony na serwerze, z cen wziętych z WooCommerce. To jedyna wycena,
-// której wolno ufać — ta z przeglądarki jest tylko podglądem dla klienta.
-export type PricedCart = {
-  currency: Currency;
-  lines: PricedLine[];
-  productsAmount: number;
-  shippingAmount: number;
-  total: number;
-  // Kanoniczny zapis zawartości koszyka („12:1,45:2") zapisywany przy płatności
-  // w Stripe. Przy składaniu zamówienia porównujemy go z tym, co przysyła
-  // przeglądarka — dzięki temu wiadomo, że klient zapłacił dokładnie za te
-  // prace, a nie za inne.
-  fingerprint: string;
-};
-
 // Powody, dla których kasa odmawia. Kody, nie zdania — tłumaczenie należy do
 // widoku, nie do trasy API.
 export enum CheckoutError {
@@ -62,6 +40,9 @@ export enum CheckoutError {
   PaymentNotVerified = "payment-not-verified",
   OrderFailed = "order-failed",
   TooManyAttempts = "too-many-attempts",
+  // Złożonego zamówienia nie da się już poprawić: opłacone, płatność w toku,
+  // anulowane albo klucz się nie zgadza.
+  OrderNotEditable = "order-not-editable",
 }
 
 export type CheckoutFailure = {
@@ -69,8 +50,6 @@ export type CheckoutFailure = {
   error: CheckoutError;
   unavailable: UnavailableItem[];
 };
-
-export type CartPricingResult = { ok: true; cart: PricedCart } | CheckoutFailure;
 
 export type AvailabilityResult = { ok: true } | CheckoutFailure;
 
@@ -81,22 +60,82 @@ export type CheckoutErrorResponse = {
   unavailable?: UnavailableItem[];
 };
 
-// Wszystko, czego potrzeba, żeby złożyć zamówienie w WooCommerce, zanim
-// klient zapłaci. O tym, czy zapłacono, rozstrzyga dopiero domknięcie
-// płatności — patrz CheckoutService.completePayment.
-export type PlaceOrderInput = {
+// Dane dostawy z kroku „Wysyłka" — przy składaniu i przy poprawce złożonego
+// zamówienia („Wstecz" z kroku „Płatność", decyzja Natalii 2026-10-12).
+export type DeliveryDetails = {
   billing: BillingAddress;
-  items: OrderItem[];
   note: string;
-  // Zalogowany klient — z sesji, nigdy z żądania. Dzięki temu zamówienie
-  // pojawia się potem w jego „Moich zamówieniach".
-  customerId: number | null;
   // Już rozstrzygnięty (resolveDeliveryMethod): paczkomat zawsze z punktem.
   deliveryMethod: DeliveryMethod;
   locker?: InPostPoint | null;
+};
+
+// Zamówienie WooCommerce od strony dostawy — patrz getDeliveryFields.
+export type DeliveryFields = {
+  billing: BillingAddress;
+  shipping: BillingAddress & { company?: string };
+  shippingLine: { method_id: string; method_title: string; total: string };
+  customerNote: string;
+  // Kod paczkomatu albo null przy kurierze.
+  lockerCode: string | null;
+};
+
+// Wszystko, czego potrzeba, żeby złożyć zamówienie w WooCommerce, zanim
+// klient zapłaci. O tym, czy zapłacono, rozstrzyga dopiero domknięcie
+// płatności — patrz CheckoutService.completePayment.
+export type PlaceOrderInput = DeliveryDetails & {
+  items: OrderItem[];
+  // Zalogowany klient — z sesji, nigdy z żądania. Dzięki temu zamówienie
+  // pojawia się potem w jego „Moich zamówieniach".
+  customerId: number | null;
   // Język i waluta z kasy — patrz OrderPreferences.
   locale?: string;
   currency: Currency;
+  // Numer tej wizyty w kasie, nadany przez przeglądarkę. To samo „Złóż
+  // zamówienie" drugi raz (ponowione żądanie po zerwanym połączeniu) oddaje
+  // zamówienie już złożone, zamiast zakładać drugie.
+  checkoutId: string;
 };
 
 export type PlaceOrderResult = { ok: true; order: PlacedOrder } | CheckoutFailure;
+
+// Poprawka złożonego, jeszcze nieopłaconego zamówienia. Numer i klucz
+// zamówienia przyszły z jego złożenia — klucz jest dowodem, że poprawia ten,
+// kto składał.
+export type UpdateOrderInput = DeliveryDetails & {
+  orderId: number;
+  key: string;
+};
+
+// Zamówienie złożone w kasie i gotowe do zapłaty — odpowiedź na „Złóż
+// zamówienie" i „Zapisz zmiany".
+export type PlacedCheckout = {
+  orderId: number;
+  key: string;
+  number: string;
+  // Do kiedy praca czeka na wpłatę (ISO).
+  reservedUntil: string | null;
+  // Płatność w Stripe dla formularza w kroku „Płatność". Null, gdy nie dała
+  // się uruchomić — zamówienie i tak jest złożone, a zapłacić można później
+  // ze strony zamówienia.
+  clientSecret: string | null;
+};
+
+// Ostatnio złożone zamówienie zapamiętane w karcie przeglądarki — patrz
+// rememberPlacedOrder.
+export type StoredPlacedOrder = {
+  id: number;
+  key: string;
+  number: string;
+};
+
+// Kasa po „Złóż zamówienie" (strona kasy trzyma to w stanie).
+export type CheckoutPlacement = {
+  checkout: PlacedCheckout;
+  // Koszyk i waluta z chwili złożenia. Koszyk jest już pusty (prace są
+  // w zamówieniu), a zmiana waluty w nagłówku nie zmienia złożonego zamówienia.
+  items: CartItem[];
+  currency: Currency;
+  // Odcisk danych z ostatniego zapisu — patrz getDeliverySnapshot.
+  details: string;
+};

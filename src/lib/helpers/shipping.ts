@@ -56,23 +56,8 @@ export const resolveDeliveryMethod = (
     ? DeliveryMethod.Locker
     : DeliveryMethod.Courier;
 
-// Sposób dostawy, od którego zależy cena — z nim kasa wycenia płatność. Tam,
-// gdzie paczkomat kosztuje tyle co kurier (Polska), przełączenie nie zmienia
-// kwoty, więc płatności nie trzeba zakładać od nowa (nowa płatność przeładowuje
-// formularz i zamknęłaby klientowi otwartą mapę paczkomatów).
-export const getPricedDeliveryMethod = (
-  countryCode: string,
-  method: DeliveryMethod
-): DeliveryMethod => {
-  const { locker, courier } = SHIPPING_RATES[getShippingZone(countryCode)];
-  return locker && !isSameRate(locker, courier)
-    ? resolveDeliveryMethod(countryCode, method, true)
-    : DeliveryMethod.Courier;
-};
-
-// Shipping cost in the chosen currency's smallest unit (grosze / euro cents),
-// for Stripe.
-export const getShippingAmount = (
+// Shipping cost in the chosen currency's smallest unit (grosze / euro cents).
+const getShippingAmount = (
   countryCode: string,
   currency: Currency,
   method: DeliveryMethod

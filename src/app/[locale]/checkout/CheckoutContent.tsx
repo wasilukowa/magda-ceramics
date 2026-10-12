@@ -1,326 +1,295 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { useStripe, useElements } from "@stripe/react-stripe-js";
-import { getPathname, useRouter } from "@/i18n/navigation";
-import { useCart } from "@/hooks/useCart";
 import { CartItem, Address } from "@/contracts/server/cart";
-import { ButtonSize, ButtonVariant, Currency } from "@/contracts/shared";
+import { Currency } from "@/contracts/shared";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import {
   CheckoutError,
-  CheckoutErrorResponse,
+  CheckoutPlacement,
   CheckoutStep,
+  PlacedCheckout,
   UnavailableItem,
 } from "@/contracts/server/checkout";
-import { getOrderItems, getSoldOutItems } from "@/lib/helpers/checkout";
+import {
+  getBillingAddress,
+  getCheckoutErrorKey,
+  getDeliverySnapshot,
+  getOrderItems,
+  sendCheckoutOrder,
+} from "@/lib/helpers/checkout";
 import { cn } from "@/lib/utils";
-import { isPhoneNumber } from "@/utility";
+import { isEmailAddress, isPhoneNumber, isPlacedCheckout } from "@/utility";
 import CheckoutStepper from "@/components/checkout/CheckoutStepper";
+import CheckoutActions from "@/components/checkout/CheckoutActions";
+import ContactFields from "@/components/checkout/ContactFields";
+import ShippingFields from "@/components/checkout/ShippingFields";
+import PaymentStep from "@/components/checkout/PaymentStep";
 import OrderSummary from "@/components/checkout/OrderSummary";
-import CheckoutForm from "./CheckoutForm";
-import { ButtonArrow, buttonClass } from "@/components/ui/button";
 
 type Props = {
   items: CartItem[];
   currency: Currency;
   address: Address;
   onFieldChange: (field: keyof Address, value: string) => void;
-  shippingCost: number;
-  grandTotal: number;
   hasLocker: boolean;
   deliveryMethod: DeliveryMethod;
   onDeliveryMethodChange: (method: DeliveryMethod) => void;
   locker: InPostPoint | null;
   onLockerSelect: (point: InPostPoint) => void;
   deliveryLabel: string;
+  shippingCost: number;
+  grandTotal: number;
+  // Null, dopóki klient nie kliknie „Złóż zamówienie".
+  placement: CheckoutPlacement | null;
+  onPlaced: (checkout: PlacedCheckout, details: string) => void;
   // Prace sprzedane w międzyczasie — kasa pokazuje je zamiast formularza.
   onSoldOut: (items: UnavailableItem[]) => void;
-  // Płatność w Stripe, do której kasa przypina zamówienie przed zapłatą.
-  paymentIntentId: string;
+  // „Wstecz" z pierwszego kroku.
+  onLeave: () => void;
 };
 
-const primaryButtonClass = buttonClass({ size: ButtonSize.Block });
+const STEP_HEADING_CLASS = "text-xs tracking-widest uppercase mb-5";
 
-const secondaryButtonClass = buttonClass({
-  variant: ButtonVariant.Secondary,
-  size: ButtonSize.Block,
-});
-
+// Kroki kasy (decyzja Natalii 2026-10-12): Dane kontaktowe → Wysyłka
+// („Złóż zamówienie") → Płatność („Zapłać") → Podsumowanie (strona po
+// zapłacie). Zamówienie powstaje na końcu kroku „Wysyłka", jawnie, przed
+// płatnością. „Wstecz" z płatności pozwala poprawić to samo zamówienie —
+// przycisk zmienia się wtedy na „Zapisz zmiany".
 export default function CheckoutContent({
   items,
   currency,
   address,
   onFieldChange,
-  shippingCost,
-  grandTotal,
   hasLocker,
   deliveryMethod,
   onDeliveryMethodChange,
   locker,
   onLockerSelect,
   deliveryLabel,
+  shippingCost,
+  grandTotal,
+  placement,
+  onPlaced,
   onSoldOut,
-  paymentIntentId,
+  onLeave,
 }: Props) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const router = useRouter();
-  const { clearCart } = useCart();
   const t = useTranslations("checkout");
   const locale = useLocale();
-  const [step, setStep] = useState<CheckoutStep>(CheckoutStep.Address);
+  const [step, setStep] = useState<CheckoutStep>(CheckoutStep.Contact);
+  // Czy klient doszedł już do wyboru dostawy — od tej chwili podsumowanie
+  // pokazuje koszt wysyłki i sumę, a pasek kroków pozwala tam wrócić.
+  const [shippingReached, setShippingReached] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Numer tej wizyty w kasie — nadawany przy pierwszym „Złóż zamówienie", nie
+  // przy rysowaniu strony (prerender nie znosi losowych wartości).
+  const checkoutId = useRef<string | null>(null);
 
+  const chosenLocker = hasLocker && deliveryMethod === DeliveryMethod.Locker ? locker : null;
   const usingLocker = hasLocker && deliveryMethod === DeliveryMethod.Locker;
+  const details = getDeliverySnapshot(address, deliveryMethod, chosenLocker);
+  const dirty = placement !== null && details !== placement.details;
+  const pieces = items.reduce((sum, item) => sum + item.quantity, 0);
 
-  // Every required field for the chosen delivery method is filled in. Drives
-  // both the "continue" button's enabled state and step-1 validation.
+  const isContactComplete =
+    !!address.firstName.trim() && !!address.lastName.trim() && isEmailAddress(address.email);
   // Do paczkomatu telefon jest obowiązkowy — InPost wysyła na niego SMS
   // z kodem odbioru (decyzja Natalii 2026-10-07). Przy kurierze zostaje
   // nieobowiązkowy.
-  const isAddressComplete =
-    !!address.firstName &&
-    !!address.lastName &&
-    !!address.email &&
-    (usingLocker
-      ? !!locker && isPhoneNumber(address.phone)
-      : !!address.street && !!address.postcode && !!address.city);
+  const isShippingComplete = usingLocker
+    ? !!locker && isPhoneNumber(address.phone)
+    : !!address.street.trim() && !!address.postcode.trim() && !!address.city.trim();
 
+  // Najdalszy krok, na który wolno przejść paskiem kroków. „Płatność" dopiero
+  // po złożeniu zamówienia i tylko bez niezapisanych zmian.
+  const reachable = placement
+    ? dirty
+      ? CheckoutStep.Shipping
+      : CheckoutStep.Payment
+    : shippingReached
+      ? CheckoutStep.Shipping
+      : CheckoutStep.Contact;
+
+  // Nowy krok zaczyna się od góry — przyciski stoją pod formularzem, więc bez
+  // tego klient zostawał na dole strony, przy stopce.
   function goToStep(target: CheckoutStep) {
     setError(null);
     setStep(target);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function handleAddressNext() {
-    if (!isAddressComplete) {
+  function handleContactNext() {
+    if (!isContactComplete) {
+      setError(
+        address.email.trim() && !isEmailAddress(address.email)
+          ? t("emailInvalid")
+          : t("fillRequired")
+      );
+      return;
+    }
+    setShippingReached(true);
+    goToStep(CheckoutStep.Shipping);
+  }
+
+  async function handleShippingNext() {
+    if (!isContactComplete) {
+      goToStep(CheckoutStep.Contact);
+      return;
+    }
+    if (!isShippingComplete) {
       setError(usingLocker && !locker ? t("lockerRequired") : t("fillRequired"));
       return;
     }
-    goToStep(CheckoutStep.Payment);
-  }
-
-  // Ask Stripe to validate the payment details before the overview so the
-  // customer fixes card errors before the final confirmation.
-  async function handlePaymentNext() {
-    if (!stripe || !elements) return;
-    setError(null);
-    const { error: submitError } = await elements.submit();
-    if (submitError) {
-      setError(submitError.message ?? t("connectionError"));
-      return;
-    }
-    goToStep(CheckoutStep.Overview);
-  }
-
-  async function handlePay() {
-    if (!stripe || !elements) return;
-
-    if (usingLocker && !locker) {
-      setError(t("lockerRequired"));
+    if (placement && !dirty) {
+      goToStep(CheckoutStep.Payment);
       return;
     }
 
     setLoading(true);
     setError(null);
 
-    // Ceramika to pojedyncze sztuki, a wypełnianie adresu potrafi zająć
-    // kilkanaście minut. Ostatnie spojrzenie na magazyn tuż przed obciążeniem
-    // karty — żeby dwie osoby nie zapłaciły za tę samą pracę.
-    const soldOut = await getSoldOutItems(items);
-    if (soldOut.length) {
-      onSoldOut(soldOut);
-      setLoading(false);
+    const delivery = {
+      billing: getBillingAddress(address, chosenLocker),
+      note: address.note,
+      deliveryMethod,
+      locker: chosenLocker,
+    };
+    checkoutId.current ??= crypto.randomUUID();
+
+    const result = placement
+      ? await sendCheckoutOrder("PATCH", {
+          ...delivery,
+          orderId: placement.checkout.orderId,
+          key: placement.checkout.key,
+        })
+      : await sendCheckoutOrder("POST", {
+          ...delivery,
+          items: getOrderItems(items),
+          locale,
+          currency,
+          checkoutId: checkoutId.current,
+        });
+
+    setLoading(false);
+
+    if (isPlacedCheckout(result)) {
+      onPlaced(result, details);
+      goToStep(CheckoutStep.Payment);
       return;
     }
-
-    // For locker delivery the address fields are blank; fall back to the
-    // locker's own address so Stripe and WooCommerce have a valid destination.
-    const shippingAddress =
-      usingLocker && locker
-        ? {
-            line1: locker.description || locker.code,
-            city: locker.city,
-            postal_code: locker.postCode,
-            country: address.country,
-          }
-        : {
-            line1: address.street,
-            line2: address.street2,
-            city: address.city,
-            postal_code: address.postcode,
-            country: address.country,
-          };
-
-    // Zamówienie SKŁADA SIĘ na serwerze PRZED obciążeniem karty (decyzja
-    // Natalii 2026-10-08): od tej chwili istnieje, klient dostaje maila,
-    // a praca czeka na niego 48 h. Zamówienie jest przypięte do płatności
-    // w Stripe, więc nie ginie, gdy klient po zapłacie nie wróci do tej karty
-    // — BLIK i przelewy na telefonie otwierają aplikację banku i potrafią
-    // wrócić gdzie indziej.
-    const placed = await fetch("/api/checkout/order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        billing: {
-          first_name: address.firstName,
-          last_name: address.lastName,
-          email: address.email,
-          phone: address.phone,
-          address_1: shippingAddress.line1,
-          address_2: usingLocker ? "" : address.street2,
-          city: shippingAddress.city,
-          postcode: shippingAddress.postal_code,
-          country: shippingAddress.country,
-        },
-        items: getOrderItems(items),
-        note: address.note,
-        paymentIntentId,
-        deliveryMethod,
-        locker: usingLocker ? locker : null,
-        locale,
-      }),
-    })
-      .then(async (r) =>
-        (await r.json()) as CheckoutErrorResponse & { orderId?: number; key?: string }
-      )
-      .catch(() => null);
-
-    if (placed?.error === CheckoutError.Unavailable && placed.unavailable?.length) {
-      onSoldOut(placed.unavailable);
-      setLoading(false);
+    if (result.error === CheckoutError.Unavailable && result.unavailable?.length) {
+      onSoldOut(result.unavailable);
       return;
     }
-    if (!placed?.orderId || !placed.key) {
-      setError(t("connectionError"));
-      setLoading(false);
-      return;
-    }
-
-    const { error: stripeError } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}${getPathname({ locale, href: "/checkout/success" })}`,
-        payment_method_data: {
-          billing_details: {
-            name: `${address.firstName} ${address.lastName}`,
-            email: address.email,
-            phone: address.phone,
-            address: shippingAddress,
-          },
-        },
-      },
-    });
-
-    // Tu wracamy tylko wtedy, gdy płatność się NIE udała (przy powodzeniu
-    // przeglądarka jest już na stronie potwierdzenia). Zamówienie jest jednak
-    // złożone, a prace zarezerwowane dla tego klienta — w koszyku nie mają już
-    // czego szukać. Druga próba odbywa się na stronie zamówienia, tej samej,
-    // do której prowadzi link z maila.
-    if (stripeError) {
-      clearCart();
-      router.replace({
-        pathname: "/order",
-        query: { id: placed.orderId, key: placed.key, retry: "1" },
-      });
-    }
+    setError(t(getCheckoutErrorKey(result.error)));
   }
 
-  // The primary button is a form submit so Enter advances the current step too.
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (step === CheckoutStep.Address) handleAddressNext();
-    else if (step === CheckoutStep.Payment) handlePaymentNext();
-    else handlePay();
+  // Główny przycisk kroku to submit, więc Enter w polu też przechodzi dalej.
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    if (step === CheckoutStep.Contact) handleContactNext();
+    else void handleShippingNext();
   }
 
-  const stepLabels = [t("stepAddress"), t("stepPayment"), t("stepOverview")];
+  const stepLabels = [
+    t("stepContact"),
+    t("stepShipping"),
+    t("stepPayment"),
+    t("stepSummary"),
+  ];
 
-  const isOverview = step === CheckoutStep.Overview;
-  const primaryLabel = isOverview
-    ? loading
-      ? t("processing")
-      : t("payButton")
-    : t("continue");
-  const primaryDisabled =
-    step === CheckoutStep.Address
-      ? !isAddressComplete
-      : !stripe || (isOverview && loading);
+  const onShipping = step === CheckoutStep.Shipping;
+  const placesOrder = onShipping && (!placement || dirty);
+  const primaryLabel = !onShipping
+    ? t("continue")
+    : !placement
+      ? t("placeOrder")
+      : dirty
+        ? t("saveChanges")
+        : t("continue");
+  const hint = !onShipping
+    ? undefined
+    : !placement
+      ? t("placeOrderHint", { count: pieces })
+      : dirty
+        ? t("saveChangesHint", { number: placement.checkout.number })
+        : undefined;
 
-  const footer = (
-    <div className="space-y-4">
-      {error && <p className="text-sm text-[var(--color-error)]">{error}</p>}
-
-      <div
-        className={cn(
-          step !== CheckoutStep.Address && "grid grid-cols-2 gap-4"
-        )}
-      >
-        {step !== CheckoutStep.Address && (
-          <button
-            type="button"
-            onClick={() =>
-              goToStep(
-                isOverview ? CheckoutStep.Payment : CheckoutStep.Address
-              )
-            }
-            className={secondaryButtonClass}
-          >
-            {t("back")}
-          </button>
-        )}
-        <button
-          type="submit"
-          disabled={primaryDisabled}
-          className={primaryButtonClass}
-        >
-          {primaryLabel}
-          {!loading && <ButtonArrow />}
-        </button>
-      </div>
-
-      {isOverview && (
-        <p className="text-xs text-[var(--muted)] text-center">
-          {t("stripeNote")}
-        </p>
-      )}
-    </div>
-  );
+  const showTotals = shippingReached || placement !== null;
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-        <div>
-          <CheckoutStepper
-            steps={stepLabels}
-            current={step}
-            onSelect={(index) => goToStep(index as CheckoutStep)}
-          />
-          <CheckoutForm
-            step={step}
-            address={address}
-            onFieldChange={onFieldChange}
-            hasLocker={hasLocker}
-            deliveryMethod={deliveryMethod}
-            onDeliveryMethodChange={onDeliveryMethodChange}
-            locker={locker}
-            onLockerSelect={onLockerSelect}
-            deliveryLabel={deliveryLabel}
-            onEditAddress={() => goToStep(CheckoutStep.Address)}
-          />
-        </div>
-
-        <OrderSummary
-          items={items}
-          currency={currency}
-          shippingCost={shippingCost}
-          grandTotal={grandTotal}
-          deliveryLabel={deliveryLabel}
-          footer={footer}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+      <div>
+        <CheckoutStepper
+          steps={stepLabels}
+          current={step}
+          reachable={reachable}
+          onSelect={(index) => goToStep(index as CheckoutStep)}
         />
+
+        {/* Kroki 1 i 2 są ukrywane, nie odmontowywane — mapa paczkomatów
+            zachowuje wtedy swój stan przy chodzeniu tam i z powrotem. */}
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+          className={cn(step === CheckoutStep.Payment && "hidden")}
+        >
+          <div className={cn(step !== CheckoutStep.Contact && "hidden")}>
+            <p className={STEP_HEADING_CLASS}>{t("contactDetails")}</p>
+            <ContactFields address={address} onFieldChange={onFieldChange} />
+          </div>
+
+          <div className={cn(!onShipping && "hidden")}>
+            <p className={STEP_HEADING_CLASS}>{t("shippingAddress")}</p>
+            <ShippingFields
+              address={address}
+              onFieldChange={onFieldChange}
+              currency={currency}
+              hasLocker={hasLocker}
+              deliveryMethod={deliveryMethod}
+              onDeliveryMethodChange={onDeliveryMethodChange}
+              locker={locker}
+              onLockerSelect={onLockerSelect}
+            />
+          </div>
+
+          <CheckoutActions
+            onBack={onShipping ? () => goToStep(CheckoutStep.Contact) : onLeave}
+            primaryLabel={primaryLabel}
+            accent={placesOrder}
+            loading={loading}
+            error={error}
+            hint={hint}
+          />
+        </form>
+
+        {placement && (
+          <div className={cn(step !== CheckoutStep.Payment && "hidden")}>
+            <PaymentStep
+              checkout={placement.checkout}
+              address={address}
+              locker={chosenLocker}
+              deliveryLabel={deliveryLabel}
+              pieces={pieces}
+              total={grandTotal}
+              currency={currency}
+              onBack={() => goToStep(CheckoutStep.Shipping)}
+              onEditContact={() => goToStep(CheckoutStep.Contact)}
+              onEditShipping={() => goToStep(CheckoutStep.Shipping)}
+            />
+          </div>
+        )}
       </div>
-    </form>
+
+      <OrderSummary
+        items={items}
+        currency={currency}
+        shippingCost={showTotals ? shippingCost : null}
+        grandTotal={showTotals ? grandTotal : null}
+        deliveryLabel={deliveryLabel}
+      />
+    </div>
   );
 }

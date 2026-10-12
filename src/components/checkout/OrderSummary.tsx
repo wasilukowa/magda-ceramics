@@ -6,25 +6,27 @@ import { getUnitPrice, formatPrice } from "@/lib/helpers/currency";
 type Props = {
   items: CartItem[];
   currency: Currency;
-  shippingCost: number;
-  grandTotal: number;
+  // Null, dopóki klient nie doszedł do wyboru dostawy (krok „Dane
+  // kontaktowe") — wtedy zamiast kwoty stoi „–" z dopiskiem, a „Razem" też
+  // „–" (decyzja Natalii 2026-10-12).
+  shippingCost: number | null;
+  grandTotal: number | null;
   // Human label for the chosen delivery (e.g. "Paczkomat InPost" / "Kurier"),
   // shown under the shipping line.
   deliveryLabel: string;
-  // Optional call-to-action area (step navigation / pay button) rendered at the
-  // bottom of the panel.
-  footer?: React.ReactNode;
 };
 
+const PENDING = "–";
+
 // Floating order summary. Sticks just below the (sticky) navbar while the rest
-// of the checkout scrolls, and carries the primary call-to-action.
+// of the checkout scrolls. Bez przycisków — akcje kroków stoją pod kolumną
+// z krokami („Dalej" w podsumowaniu był mylący, decyzja Natalii 2026-10-12).
 export default function OrderSummary({
   items,
   currency,
   shippingCost,
   grandTotal,
   deliveryLabel,
-  footer,
 }: Props) {
   const t = useTranslations("checkout");
 
@@ -52,14 +54,14 @@ export default function OrderSummary({
       </div>
 
       <div className="border-t border-[var(--border)] pt-4 space-y-3">
-        <div className="flex justify-between items-start text-sm">
+        <div className="flex justify-between items-start gap-4 text-sm">
           <span>
             <span className="text-[var(--muted)]">{t("shipping")}</span>
             <span className="block text-xs text-[var(--muted)] mt-0.5">
-              {deliveryLabel}
+              {shippingCost === null ? t("shippingPending") : deliveryLabel}
             </span>
           </span>
-          <span>{formatPrice(shippingCost, currency)}</span>
+          <span>{shippingCost === null ? PENDING : formatPrice(shippingCost, currency)}</span>
         </div>
 
         <div className="flex justify-between items-baseline border-t border-[var(--border)] pt-3">
@@ -67,12 +69,10 @@ export default function OrderSummary({
             {t("total")}
           </span>
           <span className="text-lg font-semibold">
-            {formatPrice(grandTotal, currency)}
+            {grandTotal === null ? PENDING : formatPrice(grandTotal, currency)}
           </span>
         </div>
       </div>
-
-      {footer && <div className="mt-6">{footer}</div>}
     </div>
   );
 }

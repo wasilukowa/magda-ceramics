@@ -2,10 +2,8 @@ import "server-only";
 
 import { timingSafeEqual } from "node:crypto";
 import Stripe from "stripe";
-import { PricedCart } from "@/contracts/server/checkout";
 import { OrderProps } from "@/contracts/server/order";
 import { PaymentRecord } from "@/contracts/server/payment";
-import { PlacedOrder } from "@/contracts/server/order";
 import {
   getPaymentMethodLabel,
   isReusableFor,
@@ -31,26 +29,8 @@ class PaymentService {
     return PaymentService.instance;
   }
 
-  // Kwota bierze się wyłącznie z wyceny policzonej na serwerze. Koszyk i kraj
-  // idą do metadanych, bo tylko po nich zamówienie pozna później, za co
-  // dokładnie klient zapłacił.
-  async createIntent(cart: PricedCart, country: string): Promise<string | null> {
-    const intent = await this.stripe.paymentIntents.create({
-      amount: cart.total,
-      currency: cart.currency,
-      automatic_payment_methods: { enabled: true },
-      metadata: {
-        [PAYMENT_META.cart]: cart.fingerprint,
-        [PAYMENT_META.country]: country,
-        [PAYMENT_META.shipping]: cart.shippingAmount.toString(),
-      },
-    });
-
-    return intent.client_secret;
-  }
-
-  // Płatność za zamówienie, które już leży w WooCommerce — ze strony
-  // zamówienia (link z maila, panel klienta). Jeśli poprzednia płatność tego
+  // Płatność za zamówienie, które już leży w WooCommerce — z kasy zaraz po
+  // „Złóż zamówienie" i ze strony zamówienia (link z maila, panel klienta). Jeśli poprzednia płatność tego
   // zamówienia wciąż czeka na klienta i opiewa na tę samą kwotę, wracamy do
   // niej: jedno zamówienie, jedna płatność, więc anulowanie ma co zamknąć,
   // a dwie otwarte karty nie pobiorą pieniędzy dwa razy. Inaczej poprzednią
@@ -175,20 +155,6 @@ class PaymentService {
       console.error("Stripe payment lookup failed:", error);
       return null;
     }
-  }
-
-  // Przypięcie szkicu zamówienia do płatności, zanim klient zapłaci. Od tej
-  // chwili płatność sama wie, które zamówienie domknąć — nie potrzeba do tego
-  // przeglądarki klienta. Stripe dokłada podane klucze do istniejących
-  // metadanych, więc zapis koszyka i kraju zostają na miejscu. Błąd leci dalej:
-  // płatność bez przypiętego zamówienia to dokładnie ta dziura, którą to łata.
-  async attachOrder(paymentIntentId: string, order: PlacedOrder): Promise<void> {
-    await this.stripe.paymentIntents.update(paymentIntentId, {
-      metadata: {
-        [PAYMENT_META.orderId]: order.id.toString(),
-        [PAYMENT_META.orderKey]: order.key,
-      },
-    });
   }
 
   isWebhookConfigured(): boolean {

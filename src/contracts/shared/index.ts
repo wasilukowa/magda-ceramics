@@ -34,6 +34,8 @@ export type ProductGalleryProps = {
 export enum ButtonVariant {
   Primary = "primary",
   Secondary = "secondary",
+  // Krok kasy, po którym zamówienie albo płatność dzieje się naprawdę.
+  Accent = "accent",
 }
 
 // Default — przycisk na szerokość napisu; Block — na całą szerokość kolumny
