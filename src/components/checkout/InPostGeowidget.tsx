@@ -64,9 +64,9 @@ function mapPoint(raw: RawInPostPoint): InPostPoint | null {
   if (!raw?.name) return null;
   return {
     code: stripCountryPrefix(raw.name, raw.country),
-    description: [raw.address?.line1, raw.address?.line2]
-      .filter(Boolean)
-      .join(", "),
+    // Sama ulica: druga linia InPostu to kod i miasto, które mają własne
+    // pola — sklejone powtarzały się w adresie zamówienia i w mailach.
+    description: raw.address?.line1 ?? "",
     city: raw.address_details?.city ?? "",
     postCode: raw.address_details?.post_code ?? "",
   };
