@@ -16,6 +16,8 @@ const VARIANTS: Record<ButtonVariant, string> = {
     "border border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]",
   [ButtonVariant.Secondary]:
     "border border-[var(--foreground)] text-[var(--foreground)]",
+  [ButtonVariant.Accent]:
+    "border border-[var(--color-cta)] bg-[var(--color-cta)] text-[var(--background)]",
 };
 
 const SIZES: Record<ButtonSize, string> = {

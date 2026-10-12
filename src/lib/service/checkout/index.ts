@@ -17,18 +17,16 @@ import {
 } from "@/contracts/server/order";
 import {
   AvailabilityResult,
-  CartPricingResult,
   CheckoutError,
   CheckoutFailure,
+  PlacedCheckout,
   PlaceOrderInput,
   PlaceOrderResult,
-  PricedLine,
   UnavailableItem,
   UnavailableReason,
+  UpdateOrderInput,
 } from "@/contracts/server/checkout";
 import { PaymentRecord, PaymentStatus } from "@/contracts/server/payment";
-import { DeliveryMethod } from "@/contracts/server/shipping";
-import { Currency } from "@/contracts/shared";
 import {
   getReservedProductIds,
   prepareProduct,
@@ -41,14 +39,8 @@ import { paymentService } from "@/lib/service/payment";
 import { UNKNOWN_PAYMENT_METHOD_LABEL } from "@/lib/service/payment/helpers";
 import { customerMailService } from "@/lib/service/customerMail";
 import { studioMailService } from "@/lib/service/studioMail";
-import {
-  LOCKER_META_KEY,
-  LOCKER_NOTE_PREFIX,
-  ORDER_META,
-} from "@/lib/service/order/helpers";
-import { getUnitPrice } from "@/lib/helpers/currency";
-import { getShippingAmount, getShippingCostInZloty } from "@/lib/helpers/shipping";
-import { getCartFingerprint, getUnavailableItems } from "./helpers";
+import { LOCKER_META_KEY, ORDER_META } from "@/lib/service/order/helpers";
+import { getDeliveryFields, getUnavailableItems } from "./helpers";
 
 const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
 const WC_KEY = process.env.WC_CONSUMER_KEY;
@@ -111,8 +103,7 @@ class CheckoutService {
     return withReservations(raw.map(prepareProduct), getReservedProductIds(reserving));
   }
 
-  // Świeże produkty z koszyka, o ile wszystkie da się jeszcze kupić. Jedno
-  // miejsce dla obu pytań, jakie zadaje kasa: „czy wolno" i „za ile".
+  // Świeże produkty z koszyka, o ile wszystkie da się jeszcze kupić.
   private async getPurchasableProducts(
     items: OrderItem[]
   ): Promise<{ ok: true; products: ProductProps[] } | CheckoutFailure> {
@@ -134,9 +125,8 @@ class CheckoutService {
       : { ok: true, products };
   }
 
-  // Czy koszyk da się jeszcze kupić. Sprawdzane tuż przed zapłatą — ceramika to
-  // pojedyncze sztuki, więc ktoś mógł kupić tę samą pracę, kiedy klient
-  // wypełniał adres.
+  // Czy koszyk da się jeszcze kupić — ceramika to pojedyncze sztuki, więc ktoś
+  // mógł kupić tę samą pracę, kiedy klient wypełniał adres.
   async getAvailability(items: OrderItem[]): Promise<AvailabilityResult> {
     const result = await this.getPurchasableProducts(items);
     return result.ok ? { ok: true } : result;
@@ -181,48 +171,6 @@ class CheckoutService {
     });
   }
 
-  // Ile naprawdę kosztuje ten koszyk. Ceny biorą się z WooCommerce po numerze
-  // produktu, wysyłka z cennika dla kraju i sposobu dostawy — żadnej kwoty nie
-  // bierzemy z żądania.
-  async priceCart(
-    items: OrderItem[],
-    country: string,
-    currency: Currency,
-    deliveryMethod: DeliveryMethod
-  ): Promise<CartPricingResult> {
-    const result = await this.getPurchasableProducts(items);
-    if (!result.ok) return result;
-
-    const { products } = result;
-
-    const byId = new Map(products.map((product) => [product.id, product]));
-    const lines: PricedLine[] = items.map((item) => {
-      const product = byId.get(item.id)!;
-      const unitAmount = Math.round(getUnitPrice(product, currency) * 100);
-      return {
-        id: item.id,
-        quantity: item.quantity,
-        unitAmount,
-        amount: unitAmount * item.quantity,
-      };
-    });
-
-    const productsAmount = lines.reduce((sum, line) => sum + line.amount, 0);
-    const shippingAmount = getShippingAmount(country, currency, deliveryMethod);
-
-    return {
-      ok: true,
-      cart: {
-        currency,
-        lines,
-        productsAmount,
-        shippingAmount,
-        total: productsAmount + shippingAmount,
-        fingerprint: getCartFingerprint(items),
-      },
-    };
-  }
-
   // Prace, które zdążyły się sprzedać (albo trafić do czyjegoś złożonego
   // zamówienia), zanim to zamówienie zostało opłacone. Dotyczy tylko zamówień,
   // które pracy nie trzymały — patrz completePayment. Niedostępny WooCommerce
@@ -235,38 +183,26 @@ class CheckoutService {
     return availability.ok ? [] : availability.unavailable;
   }
 
-  // Złożenie zamówienia — PRZED zapłatą (decyzja Natalii 2026-10-08):
+  // Złożenie zamówienia — PRZED zapłatą (decyzja Natalii 2026-10-08), osobnym
+  // przyciskiem „Złóż zamówienie" na końcu kroku „Wysyłka" (2026-10-12):
   // zamówienie jest złożone, klient dostaje maila, praca znika ze sklepu
   // zarezerwowana na 48 h, a dopiero potem klient płaci. Płatność, która nie
   // przejdzie, nie kasuje zamówienia — klient zapłaci później z linku
   // w mailu, a bez wpłaty sklep sam anuluje zamówienie po terminie.
   //
-  // Kolejność: szkic w WooCommerce → przypięcie szkicu do płatności w Stripe
-  // (od tej chwili płatność sama wie, co opłaca, i domknie to webhookiem, choćby
-  // klient nie wrócił do tej karty przeglądarki) → złożenie (on-hold, sztuka
-  // zdjęta z magazynu) → mail „złożone". Gdy coś padnie przed złożeniem,
-  // szkic zostaje niewidoczny i nikomu nie przeszkadza.
+  // Kolejność: szkic w WooCommerce → złożenie (on-hold, sztuka zdjęta
+  // z magazynu) → mail „złożone". Płatność w Stripe powstaje dopiero potem,
+  // DLA złożonego zamówienia (getPlacedCheckout). Gdy coś padnie przed
+  // złożeniem, szkic zostaje niewidoczny i nikomu nie przeszkadza.
   //
-  // Ta sama płatność drugi raz (podwójne kliknięcie, ponowione żądanie) nie
-  // zakłada drugiego zamówienia: płatność ma już przypięte swoje.
-  async placeOrder(
-    input: PlaceOrderInput,
-    payment: PaymentRecord
-  ): Promise<PlaceOrderResult> {
-    if (payment.orderId) {
-      const existing = await orderService
-        .getOrderForPayment(payment.orderId)
-        .catch(() => null);
-      if (!existing || existing.key !== payment.orderKey) {
-        return { ok: false, error: CheckoutError.PaymentNotVerified, unavailable: [] };
-      }
-      const placed = { id: existing.id, key: existing.key };
-      if (existing.status === OrderStatus.OnHold) return { ok: true, order: placed };
-      if (existing.status !== OrderStatus.CheckoutDraft) {
-        return { ok: false, error: CheckoutError.PaymentNotVerified, unavailable: [] };
-      }
-      return this.finishPlacement(placed, existing.items, payment.id);
-    }
+  // To samo „Złóż zamówienie" drugi raz (ponowione żądanie po zerwanym
+  // połączeniu) nie zakłada drugiego zamówienia — patrz checkoutId.
+  async placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
+    const existing = await orderService.findPlacedByCheckout(
+      input.billing.email,
+      input.checkoutId
+    );
+    if (existing) return { ok: true, order: existing };
 
     // Złożenie rezerwuje pracę, więc dostępność sprawdzamy tutaj, na serwerze,
     // a nie tylko w przeglądarce.
@@ -276,25 +212,15 @@ class CheckoutService {
     const draft = await this.saveDraftOrder(input);
     if (!draft.ok) return draft;
 
-    try {
-      await paymentService.attachOrder(payment.id, draft.order);
-    } catch (error) {
-      // Bez przypięcia płatność nie wiedziałaby, co opłaca. Klient nie
-      // zapłaci, dopóki się nie uda — szkic zostaje niewidoczny.
-      console.error("Stripe order attach failed:", error);
-      return { ok: false, error: CheckoutError.OrderFailed, unavailable: [] };
-    }
-
-    return this.finishPlacement(draft.order, input.items, payment.id);
+    return this.finishPlacement(draft.order, input.items);
   }
 
   private async finishPlacement(
     order: PlacedOrder,
-    items: OrderItem[],
-    paymentIntentId: string
+    items: OrderItem[]
   ): Promise<PlaceOrderResult> {
     try {
-      await orderService.markPlaced(order.id, paymentIntentId);
+      await orderService.markPlaced(order.id);
     } catch (error) {
       console.error(`Order ${order.id}: placement failed:`, error);
       return { ok: false, error: CheckoutError.OrderFailed, unavailable: [] };
@@ -316,7 +242,6 @@ class CheckoutService {
             "i nic nie zapłacił."
         )
         .catch((error) => console.error(`Order ${order.id}: cancel failed:`, error));
-      await paymentService.releaseIntent(paymentIntentId).catch(() => null);
       return { ok: false, error: CheckoutError.Unavailable, unavailable: overbooked };
     }
 
@@ -352,55 +277,11 @@ class CheckoutService {
 
   // Szkic zamówienia (`checkout-draft`) — niewidoczny na liście zamówień i w
   // panelu klienta, dopóki placeOrder go nie złoży. Każde nowe złożenie
-  // zaczyna od nowego szkicu zamiast poprawiać stary: poprawka przez API
-  // dopisałaby drugą linię wysyłki zamiast podmienić pierwszą.
-  private async saveDraftOrder({
-    billing,
-    items,
-    note,
-    customerId,
-    deliveryMethod,
-    locker,
-    locale,
-    currency,
-  }: PlaceOrderInput): Promise<PlaceOrderResult> {
-    // Wysyłkę liczymy z cennika dla kraju adresu i sposobu dostawy, nie z kwoty
-    // z żądania — a że ta sama kwota musiała być w płatności (metadane
-    // w Stripe, patrz canDraftOrderFor), suma zamówienia zgadza się z tym, co
-    // klient zapłaci. Sposób dostawy przychodzi tu już rozstrzygnięty
-    // (resolveDeliveryMethod).
-    const shippingTotal = getShippingCostInZloty(billing.country, deliveryMethod);
-
-    // Parcel-locker orders (Poland + InPost International countries): ship to
-    // the locker's address and label the shipping line with the locker code so
-    // the studio knows where to send it.
-    const isLocker = deliveryMethod === DeliveryMethod.Locker && !!locker;
-    const shipping = isLocker
-      ? {
-          ...billing,
-          company: `Paczkomat ${locker!.code}`,
-          address_1: locker!.description || locker!.code,
-          address_2: "",
-          city: locker!.city,
-          postcode: locker!.postCode,
-        }
-      : billing;
-    const shippingTitle = isLocker
-      ? `Paczkomat InPost ${locker!.code}`
-      : "Shipping";
-
-    // Tu trafia tylko to, co klient może przeczytać w swoim mailu: jego własna
-    // uwaga i wybrany paczkomat. Uwagi dla Magdy idą osobno, jako notatki
-    // prywatne — patrz OrderService.
-    const noteParts: string[] = [];
-    if (note) noteParts.push(note);
-    if (isLocker) {
-      noteParts.push(
-        `${LOCKER_NOTE_PREFIX}${locker!.code}${
-          locker!.description ? ` (${locker!.description})` : ""
-        }`
-      );
-    }
+  // zaczyna od nowego szkicu zamiast poprawiać stary. Adres, wysyłka i uwagi —
+  // patrz getDeliveryFields.
+  private async saveDraftOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
+    const { items, customerId, locale, currency, checkoutId } = input;
+    const delivery = getDeliveryFields(input);
 
     try {
       const order = await this.wcFetch<RawPlacedOrder>("orders", {
@@ -410,26 +291,23 @@ class CheckoutService {
           ...(customerId ? { customer_id: customerId } : {}),
           payment_method: "stripe",
           payment_method_title: UNKNOWN_PAYMENT_METHOD_LABEL,
-          billing,
-          shipping,
+          billing: delivery.billing,
+          shipping: delivery.shipping,
           line_items: items.map((item) => ({
             product_id: item.id,
             quantity: item.quantity,
           })),
-          shipping_lines: [
-            {
-              method_id: "flat_rate",
-              method_title: shippingTitle,
-              total: shippingTotal.toFixed(2),
-            },
-          ],
-          customer_note: noteParts.length ? noteParts.join("\n") : undefined,
+          shipping_lines: [delivery.shippingLine],
+          customer_note: delivery.customerNote || undefined,
           meta_data: [
-            ...(isLocker ? [{ key: LOCKER_META_KEY, value: locker!.code }] : []),
+            ...(delivery.lockerCode
+              ? [{ key: LOCKER_META_KEY, value: delivery.lockerCode }]
+              : []),
             // W tym języku i tej walucie klient dostanie maile i zobaczy
             // zamówienie na koncie — patrz getOrderPreferences.
             ...(locale ? [{ key: ORDER_META.locale, value: locale }] : []),
             { key: ORDER_META.currency, value: currency },
+            { key: ORDER_META.checkoutId, value: checkoutId },
           ],
         }),
       });
@@ -439,6 +317,58 @@ class CheckoutService {
       console.error("WooCommerce draft order error:", error);
       return { ok: false, error: CheckoutError.OrderFailed, unavailable: [] };
     }
+  }
+
+  // Poprawka złożonego, jeszcze nieopłaconego zamówienia — „Wstecz" z kroku
+  // „Płatność" i „Zapisz zmiany" (decyzja Natalii 2026-10-12): to samo
+  // zamówienie, bez drugiego maila. Prace się nie zmieniają (zostają
+  // zarezerwowane), zmienia się adres, sposób dostawy i przez to kwota.
+  // Zamówienia, za które pieniądze już idą, nie poprawiamy — Magda wysłałaby
+  // paczkę gdzie indziej, niż klient zapłacił.
+  async updatePlacedOrder(input: UpdateOrderInput): Promise<PlaceOrderResult> {
+    let order;
+    try {
+      order = await orderService.getOrderForPayment(input.orderId);
+    } catch (error) {
+      console.error(`Order ${input.orderId}: lookup for update failed:`, error);
+      return { ok: false, error: CheckoutError.CatalogUnavailable, unavailable: [] };
+    }
+
+    const notEditable: CheckoutFailure = {
+      ok: false,
+      error: CheckoutError.OrderNotEditable,
+      unavailable: [],
+    };
+    if (
+      !order ||
+      order.key !== input.key ||
+      order.status !== OrderStatus.OnHold ||
+      !order.reservedUntil ||
+      order.awaitingConfirmation
+    ) {
+      return notEditable;
+    }
+    if (order.paymentIntentId) {
+      const payment = await paymentService.getPayment(order.paymentIntentId);
+      if (
+        payment?.status === PaymentStatus.Succeeded ||
+        payment?.status === PaymentStatus.Processing
+      ) {
+        return notEditable;
+      }
+    }
+
+    try {
+      await orderService.updateDelivery(
+        order.id,
+        getDeliveryFields(input),
+        order.shippingLineId
+      );
+    } catch (error) {
+      console.error(`Order ${order.id}: delivery update failed:`, error);
+      return { ok: false, error: CheckoutError.OrderFailed, unavailable: [] };
+    }
+    return { ok: true, order: { id: order.id, key: order.key } };
   }
 
   // Co klient może już zobaczyć o swojej płatności — bez zapisywania
@@ -607,6 +537,27 @@ class CheckoutService {
       console.error(`Order ${order.id}: payment could not be started:`, error);
       return null;
     }
+  }
+
+  // Złożone zamówienie w kształcie dla kroku „Płatność": numer i płatność
+  // dla formularza (getOrderPayment — po poprawce z inną kwotą płatność jest
+  // wymieniana na nową). Gdy WooCommerce nie odda
+  // zamówienia zaraz po złożeniu, krok „Płatność" pokaże drogę do strony
+  // zamówienia — samo zamówienie jest złożone.
+  async getPlacedCheckout(placed: PlacedOrder): Promise<PlacedCheckout> {
+    const order = await orderService
+      .getOrderByKey(placed.id, placed.key)
+      .catch((error) => {
+        console.error(`Order ${placed.id}: lookup after placement failed:`, error);
+        return null;
+      });
+
+    return {
+      orderId: placed.id,
+      key: placed.key,
+      number: order?.number ?? placed.id.toString(),
+      clientSecret: order ? await this.getOrderPayment(order) : null,
+    };
   }
 
   // Stan zamówienia tuż po powrocie ze Stripe'a. Webhook potrafi dojść kilka

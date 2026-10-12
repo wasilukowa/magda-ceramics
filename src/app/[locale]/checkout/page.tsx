@@ -1,9 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements } from "@stripe/react-stripe-js";
 import { useCart } from "@/hooks/useCart";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useAuth } from "@/lib/store/providers/AuthProvider";
@@ -11,31 +9,21 @@ import CheckoutContent from "./CheckoutContent";
 import CheckoutAuthGate from "@/components/checkout/CheckoutAuthGate";
 import CheckoutUnavailable from "@/components/checkout/CheckoutUnavailable";
 import OrderSummary from "@/components/checkout/OrderSummary";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Address } from "@/contracts/server/cart";
 import {
-  CheckoutError,
-  CheckoutErrorResponse,
+  CheckoutPlacement,
+  PlacedCheckout,
   UnavailableItem,
 } from "@/contracts/server/checkout";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
-import {
-  getPricedDeliveryMethod,
-  getShippingCost,
-  hasInPostLocker,
-} from "@/lib/helpers/shipping";
+import { getShippingCost, hasInPostLocker } from "@/lib/helpers/shipping";
 import { getCartTotal } from "@/lib/helpers/currency";
 import {
-  getCheckoutErrorKey,
-  getOrderItems,
-  getPaymentIntentId,
+  parsePlacedOrder,
+  readPlacedOrderRaw,
+  rememberPlacedOrder,
 } from "@/lib/helpers/checkout";
-import { getStripeFonts } from "@/lib/helpers/stripeAppearance";
-import { useStripeAppearance } from "@/hooks/useStripeAppearance";
-
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
 
 const EMPTY_ADDRESS: Address = {
   firstName: "",
@@ -50,47 +38,52 @@ const EMPTY_ADDRESS: Address = {
   note: "",
 };
 
+// Pamięć karty nie wysyła zdarzeń o zmianach w tej samej karcie — czytamy ją
+// raz, przy rysowaniu. Serwer jej nie ma.
+const subscribeNever = () => () => {};
+const getNoPlacedOrder = () => null;
+
 function Checkout() {
-  const { items, itemCount, removeItem } = useCart();
+  const { items, itemCount, removeItem, clearCart } = useCart();
   const { currency } = useCurrency();
   const user = useAuth();
+  const router = useRouter();
   const t = useTranslations("checkout");
-  const stripeAppearance = useStripeAppearance();
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
   // Guests must first choose between signing in and continuing without an
   // account; logged-in customers skip the gate entirely.
   const [guestChosen, setGuestChosen] = useState(false);
   const showGate = !user && !guestChosen;
-  // Address lives here (not in CheckoutContent) so it survives the Stripe
-  // Elements remount that happens when the intent is recreated on currency
-  // change. Pre-fill the e-mail for logged-in customers.
+  // Adres i dostawa mieszkają tutaj, nie w CheckoutContent, żeby przetrwały
+  // ekran „Ktoś był szybszy", który na chwilę zastępuje formularz.
+  // Pre-fill the e-mail for logged-in customers.
   const [address, setAddress] = useState<Address>(() => ({
     ...EMPTY_ADDRESS,
     email: user?.email ?? "",
   }));
   // Parcel-locker delivery is offered for Poland and the InPost International
-  // countries. Method + selected locker live here (not in CheckoutContent) so
-  // they survive the Elements remount.
+  // countries.
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>(
     DeliveryMethod.Locker
   );
   const [locker, setLocker] = useState<InPostPoint | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  // Prace, które zdążyły się sprzedać — z wyceny koszyka albo ze sprawdzenia
-  // tuż przed zapłatą. Dopóki lista nie jest pusta, kasa nie pokazuje
-  // formularza płatności.
+  // Prace, które zdążyły się sprzedać — wykryte przy składaniu zamówienia.
+  // Dopóki lista nie jest pusta, kasa pokazuje je zamiast formularza.
   const [soldOut, setSoldOut] = useState<UnavailableItem[]>([]);
+  // Zamówienie złożone w tej wizycie — patrz CheckoutPlacement.
+  const [placement, setPlacement] = useState<CheckoutPlacement | null>(null);
+  const lastOrder = parsePlacedOrder(
+    useSyncExternalStore(subscribeNever, readPlacedOrderRaw, getNoPlacedOrder)
+  );
 
+  // Po złożeniu zamówienia liczy się to, co w nim jest — koszyk jest już pusty.
+  const orderItems = placement?.items ?? items;
+  const orderCurrency = placement?.currency ?? currency;
   const country = address.country;
   const hasLocker = hasInPostLocker(country);
   const effectiveMethod = hasLocker ? deliveryMethod : DeliveryMethod.Courier;
   const usingLocker = hasLocker && effectiveMethod === DeliveryMethod.Locker;
-  const subtotal = getCartTotal(items, currency);
-  const shippingCost = getShippingCost(country, currency, effectiveMethod);
-  // Sposób dostawy, z którym wyceniamy płatność. W Polsce paczkomat i kurier
-  // kosztują tyle samo, więc przełączanie nie zakłada płatności od nowa.
-  const pricedMethod = getPricedDeliveryMethod(country, effectiveMethod);
-  const grandTotal = subtotal + shippingCost;
+  const shippingCost = getShippingCost(country, orderCurrency, effectiveMethod);
+  const grandTotal = getCartTotal(orderItems, orderCurrency) + shippingCost;
   const deliveryLabel = usingLocker
     ? t("summaryDeliveryLocker")
     : t("summaryDeliveryCourier");
@@ -103,54 +96,55 @@ function Checkout() {
     if (field === "country") setLocker(null);
   }
 
-  // (Re)create the PaymentIntent whenever pricing inputs change. Stripe does
-  // not allow changing an intent's currency after creation, so country,
-  // currency and priced delivery-method changes recreate it; the new client
-  // secret remounts the form.
-  useEffect(() => {
-    if (items.length === 0) return;
+  // Pierwsze złożenie: prace z koszyka przechodzą do zamówienia (zarezerwowane
+  // dla tego klienta), więc koszyk się czyści. Poprawka podmienia tylko
+  // płatność i odcisk zapisanych danych.
+  function handlePlaced(checkout: PlacedCheckout, details: string) {
+    if (placement) {
+      setPlacement({ ...placement, checkout, details });
+      return;
+    }
+    setPlacement({ checkout, items, currency, details });
+    rememberPlacedOrder({ id: checkout.orderId, key: checkout.key, number: checkout.number });
+    clearCart();
+  }
 
-    // Do serwera idą same numery produktów i sztuki — kwotę do zapłaty liczy
-    // on sam, z cen w WooCommerce.
-    fetch("/api/create-payment-intent", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        items: getOrderItems(items),
-        country,
-        currency,
-        deliveryMethod: pricedMethod,
-      }),
-    })
-      .then((r) => r.json())
-      .then((data: CheckoutErrorResponse & { clientSecret?: string }) => {
-        if (data.error === CheckoutError.Unavailable) {
-          setSoldOut(data.unavailable ?? []);
-        } else if (data.error) {
-          setError(t(getCheckoutErrorKey(data.error)));
-        } else if (data.clientSecret) {
-          setClientSecret(data.clientSecret);
-          setSoldOut([]);
-          setError(null);
-        }
-      })
-      .catch(() => setError(t("connectionError")));
-  }, [items, country, currency, pricedMethod, t]);
+  // „Wstecz" z pierwszego kroku: gość wraca do wyboru gość / logowanie,
+  // zalogowany tam, skąd przyszedł.
+  function leaveCheckout() {
+    if (!user) {
+      setGuestChosen(false);
+      return;
+    }
+    if (window.history.length > 1) router.back();
+    else router.push("/shop");
+  }
 
-  // Wyrzucenie sprzedanych prac zmienia koszyk, więc wycena i płatność liczą
-  // się od nowa same — tu zostaje tylko sprzątnięcie komunikatu.
+  // Wyrzucenie sprzedanych prac zmienia koszyk, a z nim podsumowanie — tu
+  // zostaje tylko sprzątnięcie komunikatu.
   function removeSoldOut() {
     soldOut.forEach((item) => removeItem(item.id));
     setSoldOut([]);
   }
 
-  if (itemCount === 0) {
+  if (itemCount === 0 && !placement) {
     return (
-      <div className="max-w-3xl mx-auto px-6 py-24 text-center">
-        <p className="text-sm text-[var(--muted)] mb-6">{t("empty")}</p>
+      <div className="max-w-3xl mx-auto px-6 py-24 text-center space-y-6">
+        <p className="text-sm text-[var(--muted)]">{t("empty")}</p>
+        {lastOrder && (
+          <p className="text-sm">
+            {t("lastOrder", { number: lastOrder.number })}{" "}
+            <Link
+              href={{ pathname: "/order", query: { id: lastOrder.id, key: lastOrder.key } }}
+              className="underline underline-offset-4 hover:text-[var(--muted)] transition-colors"
+            >
+              {t("goToOrder")}
+            </Link>
+          </p>
+        )}
         <Link
           href="/shop"
-          className="text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"
+          className="inline-block text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"
         >
           {t("backToShop")}
         </Link>
@@ -158,12 +152,12 @@ function Checkout() {
     );
   }
 
-  const summary = (
+  const pendingSummary = (
     <OrderSummary
-      items={items}
-      currency={currency}
-      shippingCost={shippingCost}
-      grandTotal={grandTotal}
+      items={orderItems}
+      currency={orderCurrency}
+      shippingCost={null}
+      grandTotal={null}
       deliveryLabel={deliveryLabel}
     />
   );
@@ -172,57 +166,36 @@ function Checkout() {
     <div className="max-w-5xl mx-auto px-6 py-16">
       <h1 className="text-xs tracking-widest uppercase mb-12">{t("title")}</h1>
 
-      {clientSecret && !showGate && soldOut.length === 0 ? (
-        // Elements wraps both columns so the order-summary CTA can drive Stripe.
-        <Elements
-          key={clientSecret}
-          stripe={stripePromise}
-          options={{
-            clientSecret,
-            fonts: getStripeFonts(),
-            appearance: stripeAppearance,
-          }}
-        >
-          <CheckoutContent
-            items={items}
-            currency={currency}
-            address={address}
-            onFieldChange={setField}
-            shippingCost={shippingCost}
-            grandTotal={grandTotal}
-            hasLocker={hasLocker}
-            deliveryMethod={effectiveMethod}
-            onDeliveryMethodChange={setDeliveryMethod}
-            locker={locker}
-            onLockerSelect={setLocker}
-            deliveryLabel={deliveryLabel}
-            onSoldOut={setSoldOut}
-            paymentIntentId={getPaymentIntentId(clientSecret)}
-          />
-        </Elements>
-      ) : (
+      {soldOut.length > 0 || showGate ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           <div>
-            {error && <p className="text-sm text-[var(--color-error)] mb-6">{error}</p>}
             {soldOut.length > 0 ? (
               <CheckoutUnavailable items={soldOut} onRemove={removeSoldOut} />
-            ) : showGate ? (
-              <CheckoutAuthGate onGuestContinue={() => setGuestChosen(true)} />
             ) : (
-              !error && (
-                <div className="space-y-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="h-12 bg-[var(--color-ceramic)] animate-pulse"
-                    />
-                  ))}
-                </div>
-              )
+              <CheckoutAuthGate onGuestContinue={() => setGuestChosen(true)} />
             )}
           </div>
-          {summary}
+          {pendingSummary}
         </div>
+      ) : (
+        <CheckoutContent
+          items={orderItems}
+          currency={orderCurrency}
+          address={address}
+          onFieldChange={setField}
+          hasLocker={hasLocker}
+          deliveryMethod={effectiveMethod}
+          onDeliveryMethodChange={setDeliveryMethod}
+          locker={locker}
+          onLockerSelect={setLocker}
+          deliveryLabel={deliveryLabel}
+          shippingCost={shippingCost}
+          grandTotal={grandTotal}
+          placement={placement}
+          onPlaced={handlePlaced}
+          onSoldOut={setSoldOut}
+          onLeave={leaveCheckout}
+        />
       )}
     </div>
   );

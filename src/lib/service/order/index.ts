@@ -7,6 +7,7 @@ import {
   OrderLineItem,
   OrderProps,
   OrderStatus,
+  PlacedOrder,
   RawOrder,
   RawOrderRefund,
   SalesOrder,
@@ -14,6 +15,7 @@ import {
   UnpaidOrder,
 } from "@/contracts/server/order";
 import { PaymentRecord } from "@/contracts/server/payment";
+import { DeliveryFields } from "@/contracts/server/checkout";
 import { LedgerAmount } from "@/contracts/server/exchangeRate";
 import { Currency } from "@/contracts/shared";
 import { EXCHANGE_RATE_PLN_PER_EUR } from "@/lib/helpers/currency";
@@ -27,7 +29,9 @@ import {
   getLedgerRemark,
   getReservationDeadline,
   isCheckoutDraft,
+  isFromCheckout,
   isOrderKey,
+  LOCKER_META_KEY,
   ORDER_META,
   prepareOrder,
   prepareCustomerOrderMail,
@@ -41,6 +45,9 @@ import {
 const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
 // Najwięcej, ile WooCommerce oddaje na jednej stronie listy.
 const SALES_PAGE_SIZE = 100;
+// Jak daleko wstecz szukać zamówienia złożonego z tej samej wizyty w kasie —
+// ponowione „Złóż zamówienie" przychodzi po sekundach, najwyżej minutach.
+const PLACED_LOOKUP_WINDOW_MS = 60 * 60 * 1000;
 const WC_KEY = process.env.WC_CONSUMER_KEY;
 const WC_SECRET = process.env.WC_CONSUMER_SECRET;
 
@@ -283,17 +290,15 @@ class OrderService {
   // prosto do on-hold, bo przejście przez „oczekuje na płatność" oddałoby
   // sztukę z powrotem. ‼️ Z tego samego powodu zamówienie złożone nie może już
   // nigdy wrócić do „oczekuje na płatność".
-  // Zwraca termin rezerwacji (ISO).
-  async markPlaced(orderId: number, paymentIntentId: string): Promise<string> {
+  // Zwraca termin rezerwacji (ISO). Płatności jeszcze nie ma — kasa zakłada ją
+  // dla złożonego zamówienia (CheckoutService.getOrderPayment).
+  async markPlaced(orderId: number): Promise<string> {
     const reservedUntil = getReservationDeadline(new Date());
     await this.wcFetch(`orders/${orderId}`, {
       method: "PUT",
       body: JSON.stringify({
         status: OrderStatus.OnHold,
-        meta_data: [
-          { key: ORDER_META.reservedUntil, value: reservedUntil },
-          { key: ORDER_META.paymentIntent, value: paymentIntentId },
-        ],
+        meta_data: [{ key: ORDER_META.reservedUntil, value: reservedUntil }],
       }),
     });
     await this.addPrivateNotes(orderId, [
@@ -302,6 +307,56 @@ class OrderService {
         `przed wpłatą.`,
     ]);
     return reservedUntil;
+  }
+
+  // Zamówienie złożone już z tej samej wizyty w kasie (patrz
+  // PlaceOrderInput.checkoutId) — szukane wśród świeżych złożonych zamówień na
+  // ten sam adres e-mail. Null, gdy nie ma; awaria też daje null, bo wtedy
+  // i złożenie nowego najpewniej się nie uda.
+  async findPlacedByCheckout(
+    email: string,
+    checkoutId: string
+  ): Promise<PlacedOrder | null> {
+    const after = new Date(Date.now() - PLACED_LOOKUP_WINDOW_MS).toISOString();
+    try {
+      const recent = await this.wcFetch<RawOrder[]>(
+        `orders?status=${OrderStatus.OnHold}&search=${encodeURIComponent(email)}` +
+          `&after=${encodeURIComponent(after)}&per_page=20&_fields=id,order_key,meta_data`
+      );
+      const match = recent.find((raw) => isFromCheckout(raw, checkoutId));
+      return match ? { id: match.id, key: match.order_key ?? "" } : null;
+    } catch (error) {
+      console.error("Placed order lookup failed:", error);
+      return null;
+    }
+  }
+
+  // Poprawka dostawy w złożonym, nieopłaconym zamówieniu („Zapisz zmiany"
+  // w kasie). Linia wysyłki jest PODMIENIANA po numerze — bez numeru
+  // WooCommerce dopisałby drugą. Przy zmianie linii WooCommerce sam przelicza
+  // sumę zamówienia. Magda dostaje notatkę, bo mail „złożone" pokazuje dane
+  // sprzed poprawki.
+  async updateDelivery(
+    orderId: number,
+    fields: DeliveryFields,
+    shippingLineId: number | null
+  ): Promise<void> {
+    await this.wcFetch(`orders/${orderId}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        billing: fields.billing,
+        shipping: fields.shipping,
+        shipping_lines: [
+          { ...(shippingLineId ? { id: shippingLineId } : {}), ...fields.shippingLine },
+        ],
+        customer_note: fields.customerNote,
+        meta_data: [{ key: LOCKER_META_KEY, value: fields.lockerCode ?? "" }],
+      }),
+    });
+    await this.addPrivateNotes(orderId, [
+      "Klient poprawił dane dostawy przed zapłatą. Mail „złożone” pokazuje " +
+        "dane sprzed poprawki — wysyłać na adres z zamówienia.",
+    ]);
   }
 
   // Płatność, którą klient opłaca to zamówienie — patrz ORDER_META.paymentIntent.

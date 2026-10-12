@@ -85,6 +85,9 @@ export const ORDER_META = {
   mailRefunds: "_mc_mail_refunds",
   // Mail „nowe zamówienie" do pracowni.
   mailStudioNewOrder: "_mc_mail_studio_new_order",
+  // Numer wizyty w kasie, z której zamówienie złożono — patrz
+  // PlaceOrderInput.checkoutId.
+  checkoutId: "_mc_checkout_id",
 } as const;
 
 // Kod paczkomatu w zamówieniu (zapisuje go kasa — CheckoutService.saveDraftOrder).
@@ -229,6 +232,7 @@ export const prepareOrderForPayment = (raw: RawOrder): OrderForPayment => ({
   awaitingConfirmation: isAwaitingConfirmation(raw),
   reservedUntil: getReservedUntil(raw),
   paymentIntentId: getMetaValue(raw, ORDER_META.paymentIntent) || null,
+  shippingLineId: raw.shipping_lines?.[0]?.id ?? null,
   confirmationSent: Boolean(getMetaValue(raw, ORDER_META.mailConfirmation)),
   studioNotified: Boolean(getMetaValue(raw, ORDER_META.mailStudioNewOrder)),
 });
@@ -489,3 +493,8 @@ export const prepareStudioOrderMail = (raw: RawOrder): StudioOrderMail => {
   };
 };
 
+
+// Złożone zamówienie z tej samej wizyty w kasie — patrz
+// OrderService.findPlacedByCheckout.
+export const isFromCheckout = (raw: RawOrder, checkoutId: string): boolean =>
+  getMetaValue(raw, ORDER_META.checkoutId) === checkoutId;

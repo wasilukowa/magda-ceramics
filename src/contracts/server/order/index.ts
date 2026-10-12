@@ -115,6 +115,8 @@ export type OrderForPayment = {
   // Ostatnia płatność w Stripe założona dla tego zamówienia — przy anulowaniu
   // trzeba ją zamknąć, żeby nie dało się zapłacić za anulowane.
   paymentIntentId: string | null;
+  // Linia wysyłki — poprawka zamówienia podmienia ją zamiast dopisać drugą.
+  shippingLineId: number | null;
   // Czy klient dostał już potwierdzenie — webhook Stripe'a potrafi przyjść
   // drugi raz, a potwierdzenie ma wyjść raz.
   confirmationSent: boolean;
@@ -156,6 +158,7 @@ export type RawOrder = {
   billing?: RawOrderAddress & { email?: string; phone?: string };
   shipping?: RawOrderAddress & { company?: string };
   shipping_total?: string;
+  shipping_lines?: { id: number }[];
   customer_note?: string;
   meta_data?: { key: string; value: string | number }[];
   // Data zapłaty (UTC, bez strefy na końcu). Null, dopóki nie zapłacono.

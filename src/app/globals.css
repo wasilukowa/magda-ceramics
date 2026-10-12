@@ -60,6 +60,12 @@
      Ten ma 4,78:1 na tle strony i 3,84:1 na kafelku ceramicznym. */
   --color-heart: #57756F;
 
+  /* Przyciski kroków kasy, po których coś się dzieje naprawdę: „Złóż
+     zamówienie" i „Zapłać" (decyzja Natalii 2026-10-12: turkus z serduszka).
+     Odwołanie do --color-heart, więc tryb ciemny przestawia je razem z nim.
+     Napis w kolorze tła ma 4,6:1 w jasnym i 7,4:1 w ciemnym. */
+  --color-cta: var(--color-heart);
+
   /* Gwiazdki przy opiniach. Sam akcent ma na tle strony kontrast 2,38:1 —
      za mało jak na znak, który NIESIE INFORMACJĘ (ocenę). Ta sama szałwia,
      tylko głębsza, daje 4,78:1, czyli AA nawet dla drobnego tekstu.
