@@ -42,10 +42,11 @@ function getPreparedDimensions(raw: RawProduct): ProductDimension[] {
   });
 }
 
-// Pola ACF z ręcznym tłumaczeniem (N25). Klucze z myślnikiem, jak przy
-// wymiarach, z tym samym zapasem na wersję z podkreśleniem.
-const ENGLISH_NAME_FIELD = "name-en";
-const ENGLISH_DESCRIPTION_FIELD = "description-en";
+// Pola ACF z ręcznym tłumaczeniem (N25): „Nazwa EN” i „Opis EN”. Klucze
+// takie, jakie nadała im Natalia w WordPressie (sprawdzone 2026-10-12),
+// z myślnikiem jak przy wymiarach i z tym samym zapasem na podkreślenie.
+const ENGLISH_NAME_FIELD = "nazwa-en";
+const ENGLISH_DESCRIPTION_FIELD = "opis-en";
 
 function getMetaText(raw: RawProduct, metaKey: string): string | null {
   const alias = metaKey.replace("-", "_");
