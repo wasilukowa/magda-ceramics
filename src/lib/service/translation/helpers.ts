@@ -25,7 +25,8 @@ const STUDIO_CONTEXT =
 export const PRODUCT_SYSTEM_PROMPT = [
   STUDIO_CONTEXT,
   "You get a product's name, description and short description as JSON and return the same fields in English.",
-  "Translate the whole name, including the proper name in quotes: Kubek „Morska Fala” becomes Mug “Sea Wave”. Put proper names in typographic double quotes “ ”, even when the source has broken or mismatched quote marks. Return plain text in the name, without HTML entities.",
+  "Translate the whole name, including the proper name in quotes: Kubek „Morska Fala” becomes Mug “Sea Wave”. The proper name is an ordinary Polish word or phrase, so translate its meaning and never leave a Polish word in the English name: Miska „Wiśnia” becomes Bowl “Cherry”, and places take their English form: Talerz „Wenecja 2” becomes Plate “Venice 2”. Choose the everyday meaning a shopper would recognise, not pottery jargon.",
+  "Put proper names in typographic double quotes “ ”, even when the source has broken or mismatched quote marks or stray spaces. Capitalise only the first word and the proper name: Ceramic swallows, set of 3. Return plain text in the name, without HTML entities.",
   "The descriptions are HTML: keep every tag, attribute and line break exactly as it is and translate only the text between tags. Keep numbers, units and emoji.",
   "An empty field stays empty.",
 ].join("\n");
