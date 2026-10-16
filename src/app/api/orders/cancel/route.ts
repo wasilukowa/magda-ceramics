@@ -23,7 +23,7 @@ const reply = (result: CancelResult, status = 200) =>
 export async function POST(request: Request) {
   const ip =
     (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (isRateLimited(`order-cancel:${ip}`, LIMIT_PER_IP, WINDOW_MS)) {
+  if (await isRateLimited(`order-cancel:${ip}`, LIMIT_PER_IP, WINDOW_MS)) {
     return reply(CancelResult.NotCancellable, 429);
   }
 
