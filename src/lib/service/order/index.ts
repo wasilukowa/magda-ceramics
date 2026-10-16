@@ -2,6 +2,7 @@ import "server-only";
 
 import { HttpError, isNotFoundError, serverFetch } from "@/lib/api";
 import {
+  CancelReason,
   CustomerOrderMail,
   OrderForPayment,
   OrderLineItem,
@@ -368,10 +369,15 @@ class OrderService {
 
   // Anulowanie. WooCommerce sam oddaje wtedy sztukę do magazynu (patrz
   // markPlaced). Notatka mówi Magdzie, dlaczego.
-  async cancel(orderId: number, note: string): Promise<void> {
+  // Powód idzie w tym samym zapisie co stan: webhook o anulowaniu musi od
+  // razu wiedzieć, że to sklep anulował i mail do klienta już jest w drodze.
+  async cancel(orderId: number, reason: CancelReason, note: string): Promise<void> {
     await this.wcFetch(`orders/${orderId}`, {
       method: "PUT",
-      body: JSON.stringify({ status: OrderStatus.Cancelled }),
+      body: JSON.stringify({
+        status: OrderStatus.Cancelled,
+        meta_data: [{ key: ORDER_META.cancelReason, value: reason }],
+      }),
     });
     await this.addPrivateNotes(orderId, [note]);
   }

@@ -16,13 +16,14 @@ import {
   ORDER_META,
   prepareCustomerOrderMail,
 } from "@/lib/service/order/helpers";
-import { getRefundAmount } from "./helpers";
+import { getRefundAmount, isCancelledInPanel } from "./helpers";
 
 // Maile do klienta o jego zamówieniu — w języku i walucie klienta. Zastępują
 // maile WooCommerce (angielskie i w złotych dla wszystkich). „Złożone" wysyła
 // kasa przy złożeniu, potwierdzenie — domknięcie płatności, „anulowane" —
-// anulowanie nieopłaconego zamówienia; resztę (wysłane, notatka Magdy, zwrot)
-// — webhook WooCommerce, bo te rzeczy dzieją się w panelu WordPressa.
+// anulowanie nieopłaconego zamówienia; resztę (wysłane, notatka Magdy, zwrot,
+// anulowanie w panelu) — webhook WooCommerce, bo te rzeczy dzieją się
+// w panelu WordPressa.
 //
 // Żaden mail nie może zatrzymać tego, co go wywołało: płatność jest zapisana,
 // zanim mail wyjdzie. Nieudany mail zostaje w logu i w notatce dla Magdy.
@@ -99,6 +100,18 @@ class CustomerMailService {
     if (!order || order.sent.cancelled) return;
     await this.deliver(
       { kind: CustomerMailKind.Cancelled, order, cancelReason: reason },
+      { key: ORDER_META.mailCancelled, value: this.now() }
+    );
+  }
+
+  // Anulowane przez Magdę w panelu (webhook z akcji
+  // woocommerce_order_status_cancelled). Zamówienia, które anulował sam sklep,
+  // mają zapisany powód i swój mail dostały już przy anulowaniu.
+  async sendCancelledInPanel(orderId: number): Promise<void> {
+    const order = await this.loadOrder(orderId);
+    if (!order || !isCancelledInPanel(order)) return;
+    await this.deliver(
+      { kind: CustomerMailKind.Cancelled, order, cancelReason: CancelReason.Studio },
       { key: ORDER_META.mailCancelled, value: this.now() }
     );
   }

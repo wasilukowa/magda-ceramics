@@ -342,6 +342,14 @@ const lockerCodeHtml = (label: string): string =>
 const absoluteUrl = (locale: string, href: "/terms" | "/account/orders"): string =>
   `${SITE_URL}${getPathname({ locale, href })}`;
 
+// Pierwsze zdanie maila o anulowaniu. Po anulowaniu w panelu liczy się, czy
+// klient zdążył zapłacić: wtedy pieniądze muszą do niego wrócić.
+const getCancelledIntroKey = (reason: CancelReason | undefined, paid: boolean): string => {
+  if (reason === CancelReason.Customer) return "cancelled.customer";
+  if (reason === CancelReason.Studio) return paid ? "cancelled.studioPaid" : "cancelled.studio";
+  return "cancelled.expired";
+};
+
 export const buildCustomerOrderMail = async ({
   kind,
   order,
@@ -376,14 +384,17 @@ export const buildCustomerOrderMail = async ({
       case CustomerMailKind.Placed:
         return t("placed.intro", { number, deadline, count });
       case CustomerMailKind.Cancelled:
-        return t(
-          cancelReason === CancelReason.Customer ? "cancelled.customer" : "cancelled.expired",
-          { number, count }
-        );
+        return t(getCancelledIntroKey(cancelReason, order.paid), { number, count });
       default:
         return t(`${kind}.intro`, { number });
     }
   })();
+
+  // Zaproszenie do ponownego zamówienia tylko wtedy, gdy praca na pewno wróciła
+  // do sklepu. Magda anuluje w panelu z różnych powodów (np. praca się
+  // stłukła), więc tam go nie ma.
+  const showReorder =
+    kind === CustomerMailKind.Cancelled && cancelReason !== CancelReason.Studio;
 
   // Złożone, nieopłacone: droga do zapłaty i termin, po którym przepada.
   const isPlaced = kind === CustomerMailKind.Placed;
@@ -417,7 +428,7 @@ export const buildCustomerOrderMail = async ({
     ...(isPlaced
       ? ["", t("placed.payment"), `${payLabel}: ${payUrl}`, "", t("placed.deadline", { deadline, count })]
       : []),
-    ...(kind === CustomerMailKind.Cancelled ? ["", `${t("cancelled.shop", { count })} ${shopUrl}`] : []),
+    ...(showReorder ? ["", `${t("cancelled.shop", { count })} ${shopUrl}`] : []),
     ...(kind === CustomerMailKind.Refunded ? ["", t("refunded.timing")] : []),
     ...(kind === CustomerMailKind.Note && note ? ["", note] : []),
     ...(showSummary
@@ -501,7 +512,7 @@ export const buildCustomerOrderMail = async ({
     <p style="margin:0 0 32px;font-size:13px;line-height:1.7;${MUTED}">${escapeHtml(t("placed.deadline", { deadline, count }))}</p>`
         : ""
     }
-    ${kind === CustomerMailKind.Cancelled ? `<p style="margin:0 0 28px;font-size:13px;line-height:1.7;${MUTED}">${t("cancelled.shop", { count })} ${link(shopUrl, t("cancelled.shopLink"))}</p>` : ""}
+    ${showReorder ? `<p style="margin:0 0 28px;font-size:13px;line-height:1.7;${MUTED}">${t("cancelled.shop", { count })} ${link(shopUrl, t("cancelled.shopLink"))}</p>` : ""}
     ${kind === CustomerMailKind.Refunded ? `<p style="margin:0 0 28px;font-size:13px;line-height:1.7;${MUTED}">${t("refunded.timing")}</p>` : ""}
     ${noteHtml}
     ${summaryHtml}

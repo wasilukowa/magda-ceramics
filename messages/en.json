@@ -673,6 +673,8 @@
       "heading": "Order cancelled",
       "expired": "I did not receive payment for order #{number} within 48 hours, so I have cancelled it. Nothing was charged and {count, plural, one {the piece is} other {the pieces are}} back in the shop.",
       "customer": "I have cancelled order #{number} as you asked. Nothing was charged and {count, plural, one {the piece is} other {the pieces are}} back in the shop.",
+      "studio": "I have cancelled order #{number}. Nothing was charged. If you have any questions, just reply to this email.",
+      "studioPaid": "I have cancelled order #{number}. The amount you paid will be returned to you — a separate email covers the refund. If you have any questions, just reply to this email.",
       "shop": "If you would still like {count, plural, one {it} other {them}}, you can order again — as long as nobody beats you to it:",
       "shopLink": "Shop"
     },

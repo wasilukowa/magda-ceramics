@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { CustomerOrderMail } from "@/contracts/server/order";
+import { CustomerOrderMail, OrderStatus } from "@/contracts/server/order";
 import { Currency } from "@/contracts/shared";
 
 // Podpis webhooka WooCommerce: HMAC-SHA256 z treści żądania, zakodowany
@@ -33,3 +33,11 @@ export const getRefundAmount = (
   if (order.amounts.currency === Currency.PLN) return { amount: amountPln, full };
   return { amount: full ? order.amounts.total : null, full };
 };
+
+// Anulowane w panelu, a klient jeszcze nic o tym nie wie. Sklep, anulując sam,
+// zapisuje powód (patrz ORDER_META.cancelReason) i wysyła własny mail —
+// takiego zamówienia nie ruszamy, żeby klient nie dostał dwóch.
+export const isCancelledInPanel = (order: CustomerOrderMail): boolean =>
+  order.status === OrderStatus.Cancelled &&
+  order.cancelReason === null &&
+  !order.sent.cancelled;
