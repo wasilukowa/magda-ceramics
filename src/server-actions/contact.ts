@@ -74,12 +74,16 @@ export async function sendContactMessage(
   const ip = headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 
   if (
-    isRateLimited(
+    (await isRateLimited(
       `contact:email:${parsed.data.email.toLowerCase()}`,
       CONTACT_LIMIT_PER_EMAIL,
       CONTACT_WINDOW_MS,
-    ) ||
-    isRateLimited(`contact:ip:${ip}`, CONTACT_LIMIT_PER_IP, CONTACT_WINDOW_MS)
+    )) ||
+    (await isRateLimited(
+      `contact:ip:${ip}`,
+      CONTACT_LIMIT_PER_IP,
+      CONTACT_WINDOW_MS,
+    ))
   ) {
     // Bez adresu i bez IP w logu — to dane osobowe, a do zauważenia, że ktoś
     // wali w formularz, wystarczy sam ślad.

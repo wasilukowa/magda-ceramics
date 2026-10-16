@@ -12,6 +12,7 @@
   "dependencies": {
     "@stripe/react-stripe-js": "^7.0.0",
     "@stripe/stripe-js": "^10.0.0",
+    "@upstash/redis": "^1.39.0",
     "ai": "^7.0.114",
     "next": "16.4.0",
     "next-intl": "^4.14.8",

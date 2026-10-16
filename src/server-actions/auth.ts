@@ -84,10 +84,12 @@ export async function login(
   const emailKey = `login:email:${address}`;
   const ipKey = `login:ip:${ip}`;
 
-  if (
-    hasExceededLimit(emailKey, LOGIN_LIMIT_PER_EMAIL) ||
-    hasExceededLimit(ipKey, LOGIN_LIMIT_PER_IP)
-  ) {
+  const [emailBlocked, ipBlocked] = await Promise.all([
+    hasExceededLimit(emailKey, LOGIN_LIMIT_PER_EMAIL),
+    hasExceededLimit(ipKey, LOGIN_LIMIT_PER_IP),
+  ]);
+
+  if (emailBlocked || ipBlocked) {
     // Bez adresu i bez IP w logu — to dane osobowe, a do zauważenia, że ktoś
     // wali w formularz, wystarczy sam ślad.
     console.warn("Login: rate limit hit");
@@ -100,9 +102,11 @@ export async function login(
 
   // Zła próba wygląda tak samo niezależnie od tego, czy konto istnieje —
   // inaczej formularz mówiłby obcej osobie, kto ma konto w sklepie.
-  const rejected = (): LoginFormState => {
-    recordAttempt(emailKey, LOGIN_WINDOW_MS);
-    recordAttempt(ipKey, LOGIN_WINDOW_MS);
+  const rejected = async (): Promise<LoginFormState> => {
+    await Promise.all([
+      recordAttempt(emailKey, LOGIN_WINDOW_MS),
+      recordAttempt(ipKey, LOGIN_WINDOW_MS),
+    ]);
     return {
       status: "error",
       message: t("errors.invalidCredentials"),
@@ -166,12 +170,16 @@ export async function register(
 
   const ip = await clientIp();
   if (
-    isRateLimited(
+    (await isRateLimited(
       `register:email:${parsed.data.email.toLowerCase()}`,
       REGISTER_LIMIT_PER_EMAIL,
       REGISTER_WINDOW_MS,
-    ) ||
-    isRateLimited(`register:ip:${ip}`, REGISTER_LIMIT_PER_IP, REGISTER_WINDOW_MS)
+    )) ||
+    (await isRateLimited(
+      `register:ip:${ip}`,
+      REGISTER_LIMIT_PER_IP,
+      REGISTER_WINDOW_MS,
+    ))
   ) {
     console.warn("Registration: rate limit hit");
     return {
@@ -241,8 +249,12 @@ export async function requestPasswordReset(
   const address = parsed.data.toLowerCase();
 
   if (
-    isRateLimited(`reset:email:${address}`, RESET_LIMIT_PER_EMAIL, RESET_WINDOW_MS) ||
-    isRateLimited(`reset:ip:${ip}`, RESET_LIMIT_PER_IP, RESET_WINDOW_MS)
+    (await isRateLimited(
+      `reset:email:${address}`,
+      RESET_LIMIT_PER_EMAIL,
+      RESET_WINDOW_MS,
+    )) ||
+    (await isRateLimited(`reset:ip:${ip}`, RESET_LIMIT_PER_IP, RESET_WINDOW_MS))
   ) {
     // Bez adresu i bez IP — to dane osobowe, a do zauważenia, że ktoś wali
     // w formularz, wystarczy sam ślad w logu.
