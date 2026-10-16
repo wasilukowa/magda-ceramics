@@ -93,7 +93,7 @@ export default async function CategoryPage({
 
       <CategoryFilterLinks
         locale={locale}
-        categories={categories}
+        categories={await productService.getShopBarCategories(locale, category)}
         activeSlug={category}
       />
 

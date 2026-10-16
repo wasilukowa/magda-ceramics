@@ -10,6 +10,7 @@ import {
 import { RawReservingOrder } from "@/contracts/server/order";
 import {
   getReservedProductIds,
+  pickShopBarCategories,
   prepareProduct,
   prepareCategory,
   PUBLISHED_ONLY,
@@ -135,6 +136,18 @@ class ProductService {
     } catch {
       return [];
     }
+  }
+
+  // Pasek kategorii nad siatką sklepu. Te same kategorie co w menu — z pracami
+  // do kupienia — żeby sklep i menu nie mówiły różnych rzeczy. Wyjątek: na
+  // stronie kategorii, w której zostały już tylko sprzedane prace, ta
+  // kategoria zostaje w pasku, żeby było widać, gdzie się jest.
+  async getShopBarCategories(locale?: string, activeSlug?: string): Promise<CategoryProps[]> {
+    const [all, navigation] = await Promise.all([
+      this.getCategories(locale),
+      this.getNavigationCategories(locale),
+    ]);
+    return pickShopBarCategories(all, navigation, activeSlug);
   }
 
   // Cały katalog (albo cała kategoria), RAZEM ze sprzedanymi — bez sufitu,
