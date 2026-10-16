@@ -123,3 +123,16 @@ export function prepareCategory(raw: RawCategory): CategoryProps {
     image: raw.image ? { src: raw.image.src, alt: raw.image.alt } : null,
   };
 }
+
+// Kategorie w pasku nad siatką sklepu: te z menu (z pracami do kupienia),
+// w kolejności z WooCommerce, plus kategoria, na której stronie się jest —
+// także wtedy, gdy zostały w niej już tylko sprzedane prace.
+export const pickShopBarCategories = (
+  all: CategoryProps[],
+  navigation: CategoryProps[],
+  activeSlug?: string
+): CategoryProps[] => {
+  const shown = new Set(navigation.map((category) => category.slug));
+  if (activeSlug) shown.add(activeSlug);
+  return all.filter((category) => shown.has(category.slug));
+};

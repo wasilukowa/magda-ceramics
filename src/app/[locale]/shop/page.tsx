@@ -32,7 +32,7 @@ export default async function ShopPage({
   const { locale } = await params;
   const [t, categories] = await Promise.all([
     getTranslations({ locale, namespace: "shop" }),
-    productService.getCategories(locale),
+    productService.getShopBarCategories(locale),
   ]);
 
   return (
