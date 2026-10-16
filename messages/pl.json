@@ -701,6 +701,8 @@
       "heading": "Zamówienie anulowane",
       "expired": "Nie dostałam płatności za zamówienie #{number} w ciągu 48 godzin, więc je anulowałam. Nic nie zostało pobrane, a {count, plural, one {praca wróciła} other {prace wróciły}} do sklepu.",
       "customer": "Anulowałam zamówienie #{number}, tak jak prosiłaś/eś. Nic nie zostało pobrane, a {count, plural, one {praca wróciła} other {prace wróciły}} do sklepu.",
+      "studio": "Anulowałam zamówienie #{number}. Nic nie zostało pobrane. Jeśli masz pytania, po prostu odpisz na tego maila.",
+      "studioPaid": "Anulowałam zamówienie #{number}. Zapłacona kwota wróci do Ciebie — o zwrocie informuje osobny mail. Jeśli masz pytania, po prostu odpisz na tego maila.",
       "shop": "Jeśli nadal masz na {count, plural, one {nią} other {nie}} ochotę, możesz zamówić {count, plural, one {ją} other {je}} jeszcze raz — o ile nikt Cię nie uprzedzi:",
       "shopLink": "Sklep"
     },

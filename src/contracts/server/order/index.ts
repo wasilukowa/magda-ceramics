@@ -242,6 +242,11 @@ export enum CancelReason {
   Expired = "expired",
   // Klient sam anulował (przycisk w mailu albo na stronie zamówienia).
   Customer = "customer",
+  // Magda zmieniła stan na „Anulowane” w panelu WordPressa.
+  Studio = "studio",
+  // Przy składaniu ktoś w tej samej chwili zamówił tę samą pracę — klient
+  // widzi to w kasie, więc maila o anulowaniu nie dostaje.
+  Overbooked = "overbooked",
 }
 
 // Czym kończy się próba anulowania nieopłaconego zamówienia.
@@ -322,6 +327,12 @@ export type CustomerOrderMail = {
   number: string;
   // Klucz zamówienia — do linku „Zapłać" bez logowania.
   key: string;
+  status: OrderStatus;
+  // Czy zamówienie zostało kiedyś opłacone (także gdy potem je anulowano).
+  paid: boolean;
+  // Kto anulował, jeśli zrobił to sam sklep — patrz ORDER_META.cancelReason.
+  // null = sklep tego nie zrobił (np. Magda w panelu).
+  cancelReason: CancelReason | null;
   // Do kiedy praca czeka zarezerwowana (ISO), jeśli czeka.
   reservedUntil: string | null;
   email: string;
@@ -388,5 +399,12 @@ export type CustomerMailInput = {
 export type RawCustomerNoteAction = {
   action: string;
   arg: { order_id: number; customer_note: string };
+};
+
+// Webhook WooCommerce z akcji, której pierwszym argumentem jest numer
+// zamówienia (np. woocommerce_order_status_cancelled).
+export type RawOrderIdAction = {
+  action: string;
+  arg: number | string;
 };
 

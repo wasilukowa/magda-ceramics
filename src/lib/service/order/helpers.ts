@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { hasLocale } from "next-intl";
 import {
+  CancelReason,
   CustomerOrderMail,
   DeliveryKind,
   OrderAmounts,
@@ -75,6 +76,10 @@ export const ORDER_META = {
   // Zapłata w euro (zapisuje OrderService przy zapłacie).
   paidCurrency: "_paid_currency",
   paidAmount: "_paid_amount",
+  // Powód anulowania, gdy anuluje sam sklep (klient albo 48 h). Zapisywany
+  // w tym samym żądaniu co stan „Anulowane”, więc webhook o anulowaniu zawsze
+  // go widzi. Brak = anulowała Magda w panelu.
+  cancelReason: "_mc_cancel_reason",
   // Które maile do klienta już wyszły — żeby żaden nie poszedł dwa razy.
   mailPlaced: "_mc_mail_placed",
   mailCancelled: "_mc_mail_cancelled",
@@ -427,6 +432,13 @@ const parseIdList = (value: string | undefined): number[] =>
     .map((part) => Number(part.trim()))
     .filter((id) => Number.isInteger(id) && id > 0);
 
+const getCancelReason = (raw: RawOrder): CancelReason | null => {
+  const value = getMetaValue(raw, ORDER_META.cancelReason);
+  return Object.values(CancelReason).includes(value as CancelReason)
+    ? (value as CancelReason)
+    : null;
+};
+
 export const prepareCustomerOrderMail = (raw: RawOrder): CustomerOrderMail | null => {
   const email = raw.billing?.email;
   if (!email) return null;
@@ -437,6 +449,9 @@ export const prepareCustomerOrderMail = (raw: RawOrder): CustomerOrderMail | nul
     id: raw.id,
     number: raw.number,
     key: raw.order_key ?? "",
+    status: toOrderStatus(raw.status),
+    paid: Boolean(raw.date_paid_gmt),
+    cancelReason: getCancelReason(raw),
     reservedUntil:
       getPaymentState(raw) === OrderPaymentState.Unpaid ? getReservedUntil(raw) : null,
     email,

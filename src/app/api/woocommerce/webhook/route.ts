@@ -1,13 +1,14 @@
-import { RawCustomerNoteAction, RawOrder } from "@/contracts/server/order";
+import { RawCustomerNoteAction, RawOrder, RawOrderIdAction } from "@/contracts/server/order";
 import { customerMailService } from "@/lib/service/customerMail";
 import { isValidWooSignature, isWooPing } from "@/lib/service/customerMail/helpers";
 
 // Tematy webhooków WooCommerce, na które sklep odpowiada mailem do klienta.
 const TOPIC_ORDER_UPDATED = "order.updated";
 const TOPIC_CUSTOMER_NOTE = "action.woocommerce_new_customer_note";
+const TOPIC_ORDER_CANCELLED = "action.woocommerce_order_status_cancelled";
 
 // Webhook WooCommerce — zmiany, które Magda robi w panelu WordPressa:
-// „Zrealizowane" (paczka wysłana), notatka dla klienta, zwrot. Na każdą z nich
+// „Zrealizowane" (paczka wysłana), notatka dla klienta, zwrot, anulowanie. Na każdą z nich
 // klient dostaje mail od sklepu, w swoim języku i walucie (patrz
 // CustomerMailService).
 //
@@ -38,6 +39,9 @@ export async function POST(request: Request) {
     } else if (topic === TOPIC_CUSTOMER_NOTE) {
       const { arg } = JSON.parse(body) as RawCustomerNoteAction;
       await customerMailService.sendNote(Number(arg?.order_id), String(arg?.customer_note ?? ""));
+    } else if (topic === TOPIC_ORDER_CANCELLED) {
+      const { arg } = JSON.parse(body) as RawOrderIdAction;
+      await customerMailService.sendCancelledInPanel(Number(arg));
     }
   } catch (error) {
     console.error(`WooCommerce webhook (${topic}) failed:`, error);

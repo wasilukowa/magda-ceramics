@@ -237,6 +237,7 @@ class CheckoutService {
       await orderService
         .cancel(
           order.id,
+          CancelReason.Overbooked,
           "Anulowane od razu przy składaniu: ktoś w tej samej chwili zamówił tę " +
             "samą pracę. Klient zobaczył w kasie, że praca jest niedostępna, " +
             "i nic nie zapłacił."
@@ -611,6 +612,7 @@ class CheckoutService {
 
     await orderService.cancel(
       orderId,
+      reason,
       reason === CancelReason.Customer
         ? "Anulowane przez klienta przed zapłatą. Praca wróciła do sklepu."
         : "Anulowane automatycznie: brak wpłaty w ciągu 48 h. Praca wróciła do sklepu."
