@@ -24,6 +24,14 @@ export type InPostPoint = {
   postCode: string;
 };
 
+// Raw shape InPost hands back on point selection — only the fields we map.
+export type RawInPostPoint = {
+  name?: string;
+  country?: string;
+  address?: { line1?: string; line2?: string };
+  address_details?: { city?: string; post_code?: string };
+};
+
 // Native price points per currency, in the smallest unit (grosze / euro cents).
 // These are deliberate flat rates set by the studio, not currency conversions.
 export type ZoneRate = {

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Script from "next/script";
 import { useLocale, useTranslations } from "next-intl";
-import { InPostPoint } from "@/contracts/server/shipping";
+import { InPostPoint, RawInPostPoint } from "@/contracts/server/shipping";
+import { getInPostPoint } from "@/lib/helpers/shipping";
 
 // ONE widget for every country we ship lockers to, Poland included.
 //
@@ -38,40 +39,6 @@ const htmlAttributes = (attributes: Record<string, string>) =>
     .map(([name, value]) => `${name}="${escapeAttribute(value)}"`)
     .join(" ");
 
-// Raw shape InPost hands back on point selection — only the fields we map.
-type RawInPostPoint = {
-  name?: string;
-  country?: string;
-  address?: { line1?: string; line2?: string };
-  address_details?: { city?: string; post_code?: string };
-};
-
-// ‼️ The International widget prefixes point names with the country:
-// `PL_POP-WAW722`, `FR_FR021607`. The domestic one never did, and the bare code
-// is what InPost itself prints and what Magda types into epaka when she buys a
-// label — so the prefix comes off here, at the edge, and the rest of the app
-// (order note, `_inpost_locker_id`, the shipping line title) keeps seeing the
-// code it always saw. No Polish code contains an underscore, so the pattern
-// cannot eat part of a real one.
-const stripCountryPrefix = (name: string, country?: string) => {
-  if (country && name.startsWith(`${country}_`)) {
-    return name.slice(country.length + 1);
-  }
-  return name.replace(/^[A-Z]{2}_/, "");
-};
-
-function mapPoint(raw: RawInPostPoint): InPostPoint | null {
-  if (!raw?.name) return null;
-  return {
-    code: stripCountryPrefix(raw.name, raw.country),
-    // Sama ulica: druga linia InPostu to kod i miasto, które mają własne
-    // pola — sklejone powtarzały się w adresie zamówienia i w mailach.
-    description: raw.address?.line1 ?? "",
-    city: raw.address_details?.city ?? "",
-    postCode: raw.address_details?.post_code ?? "",
-  };
-}
-
 type Props = {
   // ISO code of the shipping country: scopes the map to that country's lockers
   // and centres it there.
@@ -92,7 +59,7 @@ export default function InPostGeowidget({ country, onSelect }: Props) {
       const detail =
         (event as CustomEvent).detail ??
         (event as unknown as { details?: RawInPostPoint }).details;
-      const point = mapPoint(detail ?? {});
+      const point = getInPostPoint(detail ?? {});
       if (point) onSelect(point);
     }
 
