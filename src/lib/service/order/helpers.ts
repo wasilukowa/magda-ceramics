@@ -149,6 +149,10 @@ export const getOrderPreferences = (raw: RawOrder): OrderPreferences => {
 // tą samą regułą co kasa (cena sztuki przeliczona i zaokrąglona w górę,
 // wysyłka z cennika dla kraju i sposobu dostawy), a suma opłaconego
 // zamówienia to kwota, którą pobrał Stripe — nie nasze przeliczenie.
+// Paczkomat, jeśli zamówienie ma zapisany kod punktu; inaczej kurier.
+const getDeliveryMethod = (raw: RawOrder): DeliveryMethod =>
+  getMetaValue(raw, LOCKER_META_KEY) ? DeliveryMethod.Locker : DeliveryMethod.Courier;
+
 export const getOrderAmounts = (raw: RawOrder, currency: Currency): OrderAmounts => {
   const lines = raw.line_items ?? [];
 
@@ -178,10 +182,7 @@ export const getOrderAmounts = (raw: RawOrder, currency: Currency): OrderAmounts
     };
   });
   const country = raw.shipping?.country || raw.billing?.country || "";
-  const method = getMetaValue(raw, LOCKER_META_KEY)
-    ? DeliveryMethod.Locker
-    : DeliveryMethod.Courier;
-  const shipping = getShippingCost(country, Currency.EUR, method);
+  const shipping = getShippingCost(country, Currency.EUR, getDeliveryMethod(raw));
   const paid = parsePositive(getMetaValue(raw, ORDER_META.paidAmount));
 
   return {
@@ -244,7 +245,7 @@ export const prepareOrderForPayment = (raw: RawOrder): OrderForPayment => ({
 
 export const prepareOrder = (raw: RawOrder): OrderProps => {
   const status = toOrderStatus(raw.status);
-  const { currency, items, total } = getOrderAmounts(
+  const { currency, items, shipping, total } = getOrderAmounts(
     raw,
     getOrderPreferences(raw).currency
   );
@@ -260,6 +261,8 @@ export const prepareOrder = (raw: RawOrder): OrderProps => {
     total,
     currency,
     items,
+    shipping,
+    deliveryMethod: getDeliveryMethod(raw),
     paymentState,
     reservedUntil: waiting ? getReservedUntil(raw) : null,
     payable: waiting && isPayableStatus(status),

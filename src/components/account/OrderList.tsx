@@ -5,6 +5,7 @@ import { formatPrice } from "@/lib/helpers/currency";
 import { formatDeadline } from "@/lib/helpers/date";
 import { countPieces } from "@/lib/helpers/order";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
+import OrderShippingLine from "@/components/order/OrderShippingLine";
 
 const STATUS_TONE: Record<string, string> = {
   completed: "var(--color-success)",
@@ -74,6 +75,7 @@ export default async function OrderList({ orders }: { orders: OrderProps[] }) {
                 </span>
               </li>
             ))}
+            <OrderShippingLine order={order} />
           </ul>
 
           <div className="flex justify-between border-t border-[var(--border)] pt-3 text-sm">
