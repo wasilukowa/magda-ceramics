@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { ReservationStep, UnpaidOrder } from "@/contracts/server/order";
+import { RawOrder, ReservationStep, UnpaidOrder } from "@/contracts/server/order";
+import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
-import { getDueReminders, getReservationDeadline, getReservationStep } from "./helpers";
+import { getShippingCost } from "@/lib/helpers/shipping";
+import {
+  getDueReminders,
+  getReservationDeadline,
+  getReservationStep,
+  LOCKER_META_KEY,
+  ORDER_META,
+  prepareOrder,
+} from "./helpers";
 
 const PLACED_AT = new Date("2026-10-12T13:05:00Z");
 
@@ -56,5 +65,43 @@ describe("reservation", () => {
     expect(
       getReservationStep(unpaid({ awaitingConfirmation: true }), hoursAfterPlacing(49))
     ).toBe(ReservationStep.Expire);
+  });
+});
+
+const rawOrder = (overrides: Partial<RawOrder> = {}): RawOrder => ({
+  id: 731,
+  number: "731",
+  status: "processing",
+  date_created: "2026-10-19T12:00:00",
+  total: "80.00",
+  currency: "PLN",
+  line_items: [{ id: 1, product_id: 580, name: "Świecznik „Łąka”", quantity: 1, total: "60.00" }],
+  shipping_total: "20.00",
+  ...overrides,
+});
+
+describe("order in the account", () => {
+  it("shows the shipping cost of a locker delivery", () => {
+    const order = prepareOrder(
+      rawOrder({ meta_data: [{ key: LOCKER_META_KEY, value: "WAW01M" }] })
+    );
+    expect(order.shipping).toBe(20);
+    expect(order.deliveryMethod).toBe(DeliveryMethod.Locker);
+    expect(order.items[0].total + order.shipping).toBe(order.total);
+  });
+
+  it("shows the courier rate in euro for an order paid in euro", () => {
+    const order = prepareOrder(
+      rawOrder({
+        shipping: { country: "DE" },
+        meta_data: [
+          { key: ORDER_META.paidCurrency, value: "EUR" },
+          { key: ORDER_META.paidAmount, value: "32.00" },
+        ],
+      })
+    );
+    expect(order.currency).toBe(Currency.EUR);
+    expect(order.deliveryMethod).toBe(DeliveryMethod.Courier);
+    expect(order.shipping).toBe(getShippingCost("DE", Currency.EUR, DeliveryMethod.Courier));
   });
 });

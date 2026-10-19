@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Raporty Playwrighta (npm run test:e2e) — gotowy kod przeglądarki śladów.
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
 

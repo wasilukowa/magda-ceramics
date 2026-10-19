@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { OrderProps } from "@/contracts/server/order";
 import { formatPrice } from "@/lib/helpers/currency";
+import OrderShippingLine from "@/components/order/OrderShippingLine";
 
 // Co jest w zamówieniu i ile kosztuje — w walucie, w której klient zamawiał.
 export default function OrderItems({ order }: { order: OrderProps }) {
@@ -20,6 +21,7 @@ export default function OrderItems({ order }: { order: OrderProps }) {
             </span>
           </li>
         ))}
+        <OrderShippingLine order={order} />
       </ul>
       <div className="flex justify-between border-t border-[var(--border)] pt-3 text-sm">
         <span className="text-xs tracking-widest uppercase text-[var(--muted)]">

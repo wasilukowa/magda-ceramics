@@ -1,6 +1,7 @@
 // Domena: zamówienia klienta. Raw* = surowa odpowiedź WooCommerce.
 
 import { LedgerAmount } from "@/contracts/server/exchangeRate";
+import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
 
 export enum OrderStatus {
@@ -72,6 +73,10 @@ export type OrderProps = {
   total: number;
   currency: Currency;
   items: OrderLineItem[];
+  // Koszt wysyłki w walucie zamówienia i sposób dostawy — wiersz „Wysyłka"
+  // między pracami a sumą, jak w podsumowaniu kasy.
+  shipping: number;
+  deliveryMethod: DeliveryMethod;
   paymentState: OrderPaymentState;
   // Do kiedy praca czeka zarezerwowana (ISO). Null przy zamówieniach sprzed
   // rezerwacji i przy tych, które już nie czekają.

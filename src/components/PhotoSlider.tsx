@@ -7,31 +7,49 @@ import { PhotoSliderProps } from "@/contracts/shared";
 
 // Wypełnia ramkę rodzica (wysokość i proporcje ustawia strona) i przycina
 // zdjęcia do niej, więc najważniejsze powinno być blisko środka kadru.
+//
+// Zdjęcia leżą jedno na drugim, więc dla przeglądarki wszystkie są „na
+// ekranie" i bez ograniczenia pobierała od razu cały suwak — na stronie
+// głównej 17 zdjęć, ok. 1 MB, a pierwsze czekało w kolejce razem z resztą
+// (pomiar 2026-10-19: na wolnym 3G ok. 30 s do pokazania zdjęcia). Teraz
+// w drzewie są tylko zdjęcia już oglądane i dwa sąsiednie bieżącego (żeby
+// przejście było płynne), a sąsiednie pobierają się z niskim priorytetem.
 export function PhotoSlider({ photos, sizes }: PhotoSliderProps) {
   const t = useTranslations("photoSlider");
   const [current, setCurrent] = useState(0);
+  const [seen, setSeen] = useState<ReadonlySet<number>>(() => new Set([0]));
+  const count = photos.length;
 
-  const prev = () => setCurrent((c) => (c === 0 ? photos.length - 1 : c - 1));
-  const next = () => setCurrent((c) => (c === photos.length - 1 ? 0 : c + 1));
+  const show = (index: number) => {
+    setCurrent(index);
+    setSeen((before) => new Set(before).add(index));
+  };
+  const prev = () => show(current === 0 ? count - 1 : current - 1);
+  const next = () => show(current === count - 1 ? 0 : current + 1);
+  const isNeighbour = (i: number) =>
+    i === (current + 1) % count || i === (current - 1 + count) % count;
 
   return (
     <div className="relative w-full h-full min-h-[300px] overflow-hidden bg-[var(--color-accent)]">
-      {photos.map((photo, i) => (
-        <div
-          key={photo.src}
-          className="absolute inset-0 transition-opacity duration-500"
-          style={{ opacity: i === current ? 1 : 0 }}
-        >
-          <Image
-            src={photo.src}
-            alt={photo.alt}
-            fill
-            className="object-cover"
-            sizes={sizes}
-            preload={i === 0}
-          />
-        </div>
-      ))}
+      {photos.map((photo, i) =>
+        seen.has(i) || isNeighbour(i) ? (
+          <div
+            key={photo.src}
+            className="absolute inset-0 transition-opacity duration-500"
+            style={{ opacity: i === current ? 1 : 0 }}
+          >
+            <Image
+              src={photo.src}
+              alt={photo.alt}
+              fill
+              className="object-cover"
+              sizes={sizes}
+              preload={i === 0}
+              fetchPriority={i === current ? undefined : "low"}
+            />
+          </div>
+        ) : null
+      )}
 
       <button
         onClick={prev}
@@ -57,7 +75,7 @@ export function PhotoSlider({ photos, sizes }: PhotoSliderProps) {
         {photos.map((photo, i) => (
           <button
             key={photo.src}
-            onClick={() => setCurrent(i)}
+            onClick={() => show(i)}
             aria-label={t("goTo", { number: i + 1 })}
             className="w-1.5 h-1.5 rounded-full transition-colors"
             style={{ background: i === current ? "white" : "rgba(255,255,255,0.45)" }}
