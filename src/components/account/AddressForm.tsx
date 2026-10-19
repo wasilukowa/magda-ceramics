@@ -2,11 +2,12 @@
 
 import { useActionState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { updateAddress } from "@/server-actions/account";
-import { AccountFormState, CustomerAddress } from "@/contracts/server/auth";
+import { saveAddress } from "@/server-actions/addresses";
+import { AccountFormState, SavedAddressInput } from "@/contracts/server/auth";
 import { CHECKOUT_COUNTRIES } from "@/content/data";
 import { getCountryLabel } from "@/lib/helpers/shipping";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
+import { ButtonVariant } from "@/contracts/shared";
 
 const initialState: AccountFormState = { status: "idle", message: "" };
 
@@ -15,71 +16,71 @@ const inputClass =
 const labelClass = "text-xs tracking-widest uppercase text-[var(--muted)]";
 const errorClass = "text-xs text-[var(--color-error)]";
 
-export default function AddressForm({ billing }: { billing: CustomerAddress }) {
+type Props = {
+  // Numer poprawianego adresu; bez niego formularz dodaje nowy.
+  id?: string;
+  initial: SavedAddressInput;
+  // Po zapisaniu (z komunikatem) albo po „Anuluj" (bez).
+  onDone: (message?: string) => void;
+};
+
+// Pola jednego zapisanego adresu — „Edytuj" przy adresie albo „Dodaj adres"
+// w zakładce „Adresy".
+export default function AddressForm({ id, initial, onDone }: Props) {
   const t = useTranslations("account");
   const locale = useLocale();
   const [state, formAction, pending] = useActionState(
-    updateAddress,
+    async (prevState: AccountFormState, formData: FormData) => {
+      const result = await saveAddress(prevState, formData);
+      if (result.status === "success") onDone(result.message);
+      return result;
+    },
     initialState,
   );
 
+  const field = (
+    name: keyof SavedAddressInput,
+    autoComplete: string,
+    type = "text",
+  ) => (
+    <div className="flex flex-col gap-2">
+      <label htmlFor={`address-${name}`} className={labelClass}>
+        {t(`fields.${name}`)}
+      </label>
+      <input
+        id={`address-${name}`}
+        name={name}
+        type={type}
+        autoComplete={autoComplete}
+        defaultValue={initial[name]}
+        aria-invalid={Boolean(state.errors?.[name])}
+        className={inputClass}
+      />
+      {state.errors?.[name] && <p className={errorClass}>{state.errors[name]}</p>}
+    </div>
+  );
+
   return (
-    <form action={formAction} className="flex flex-col gap-6" noValidate>
+    <form
+      action={formAction}
+      className="flex flex-col gap-6 border border-[var(--color-control-border)] p-5"
+      noValidate
+    >
+      <input type="hidden" name="id" value={id ?? ""} />
+
       <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-2">
-          <label htmlFor="firstName" className={labelClass}>
-            {t("fields.firstName")}
-          </label>
-          <input
-            id="firstName"
-            name="firstName"
-            autoComplete="given-name"
-            defaultValue={billing.firstName}
-            className={inputClass}
-          />
-          {state.errors?.firstName && (
-            <p className={errorClass}>{state.errors.firstName}</p>
-          )}
-        </div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="lastName" className={labelClass}>
-            {t("fields.lastName")}
-          </label>
-          <input
-            id="lastName"
-            name="lastName"
-            autoComplete="family-name"
-            defaultValue={billing.lastName}
-            className={inputClass}
-          />
-          {state.errors?.lastName && (
-            <p className={errorClass}>{state.errors.lastName}</p>
-          )}
-        </div>
+        {field("firstName", "given-name")}
+        {field("lastName", "family-name")}
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="phone" className={labelClass}>
-          {t("fields.phone")}
-        </label>
-        <input
-          id="phone"
-          name="phone"
-          type="tel"
-          autoComplete="tel"
-          defaultValue={billing.phone}
-          className={inputClass}
-        />
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <label htmlFor="country" className={labelClass}>
+        <label htmlFor="address-country" className={labelClass}>
           {t("fields.country")}
         </label>
         <select
-          id="country"
+          id="address-country"
           name="country"
-          defaultValue={billing.country || "PL"}
+          defaultValue={initial.country || "PL"}
           className={inputClass}
         >
           {CHECKOUT_COUNTRIES.map((c) => (
@@ -88,83 +89,45 @@ export default function AddressForm({ billing }: { billing: CustomerAddress }) {
             </option>
           ))}
         </select>
-        {state.errors?.country && (
-          <p className={errorClass}>{state.errors.country}</p>
-        )}
+        {state.errors?.country && <p className={errorClass}>{state.errors.country}</p>}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label htmlFor="street" className={labelClass}>
-          {t("fields.street")}
-        </label>
-        <input
-          id="street"
-          name="street"
-          autoComplete="street-address"
-          defaultValue={billing.street}
-          className={inputClass}
-        />
-        {state.errors?.street && (
-          <p className={errorClass}>{state.errors.street}</p>
-        )}
-      </div>
+      {field("street", "address-line1")}
+      {field("street2", "address-line2")}
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-2">
-          <label htmlFor="postcode" className={labelClass}>
-            {t("fields.postcode")}
-          </label>
-          <input
-            id="postcode"
-            name="postcode"
-            autoComplete="postal-code"
-            defaultValue={billing.postcode}
-            className={inputClass}
-          />
-          {state.errors?.postcode && (
-            <p className={errorClass}>{state.errors.postcode}</p>
-          )}
-        </div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="city" className={labelClass}>
-            {t("fields.city")}
-          </label>
-          <input
-            id="city"
-            name="city"
-            autoComplete="address-level2"
-            defaultValue={billing.city}
-            className={inputClass}
-          />
-          {state.errors?.city && <p className={errorClass}>{state.errors.city}</p>}
-        </div>
+        {field("postcode", "postal-code")}
+        {field("city", "address-level2")}
       </div>
 
-      {state.status === "success" && (
-        <p aria-live="polite" className="text-xs text-[var(--color-success)]">
-          {state.message}
-        </p>
-      )}
+      {field("phone", "tel", "tel")}
+
       {state.status === "error" && !state.errors && (
         <p aria-live="polite" className={errorClass}>
           {state.message}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className={buttonClass({ className: "self-start" })}
-      >
-        {pending ? (
-          t("saving")
-        ) : (
-          <>
-            {t("save")}
-            <ButtonArrow />
-          </>
-        )}
-      </button>
+      <div className="flex flex-wrap gap-3">
+        <button type="submit" disabled={pending} className={buttonClass()}>
+          {pending ? (
+            t("saving")
+          ) : (
+            <>
+              {t("save")}
+              <ButtonArrow />
+            </>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => onDone()}
+          disabled={pending}
+          className={buttonClass({ variant: ButtonVariant.Secondary })}
+        >
+          {t("addresses.cancel")}
+        </button>
+      </div>
     </form>
   );
 }

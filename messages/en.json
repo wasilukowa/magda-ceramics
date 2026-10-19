@@ -197,6 +197,14 @@
     "chooseLocker": "Choose a parcel locker",
     "changeLocker": "Change",
     "closeLocker": "Close",
+    "savedLockers": "Your parcel lockers",
+    "savedAddresses": "Your addresses",
+    "otherLocker": "Another parcel locker",
+    "addToMyLockers": "Add to my parcel lockers",
+    "addToMyAddresses": "Add to my addresses",
+    "savedInAccount": "Saved in your account",
+    "saveNeedsLogin": "Sign in to save it for next time.",
+    "saveFailed": "Could not save. Please try again.",
     "lockerRequired": "Please select a parcel locker.",
     "lockerLoading": "Loading map...",
     "lockerUnavailable": "Parcel locker selection is unavailable right now. Please choose courier delivery.",
@@ -399,15 +407,12 @@
     "save": "Save changes",
     "saving": "Saving…",
     "nav": {
-      "overview": "Overview",
       "orders": "Orders",
       "details": "Details",
+      "addresses": "Addresses",
       "wishlist": "Wishlist",
       "logout": "Sign out",
       "loggingOut": "Signing out…"
-    },
-    "overview": {
-      "intro": "Manage your orders, details and wishlist in one place."
     },
     "orders": {
       "empty": "You have no orders yet.",
@@ -431,9 +436,23 @@
       "title": "Profile",
       "success": "Profile updated."
     },
-    "address": {
-      "title": "Shipping address",
-      "success": "Address updated."
+    "addresses": {
+      "deliveryTitle": "Shipping addresses",
+      "lockersTitle": "Your parcel lockers",
+      "intro": "At checkout, your newest address and parcel locker are filled in for you — you can always pick another one.",
+      "emptyAddresses": "You have no saved addresses yet.",
+      "emptyLockers": "You have no saved parcel lockers yet.",
+      "add": "Add address",
+      "addLocker": "Add parcel locker",
+      "edit": "Edit",
+      "change": "Change",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "lockerCountry": "Parcel locker country",
+      "chooseOnMap": "Choose on the map",
+      "saved": "Address saved.",
+      "limit": "You can save up to {count} addresses.",
+      "failed": "Could not save the changes. Please try again."
     },
     "password": {
       "title": "Change password",
@@ -448,6 +467,7 @@
       "country": "Country",
       "street": "Street address",
       "postcode": "Postcode",
+      "street2": "Flat, floor, company (optional)",
       "city": "City",
       "currentPassword": "Current password",
       "newPassword": "New password"
@@ -461,6 +481,7 @@
       "city": "Please enter your city.",
       "postcode": "Please enter your postcode.",
       "country": "Please select a country.",
+      "phone": "Please enter a valid phone number.",
       "passwordRequired": "Please enter your current password.",
       "passwordLength": "Password must be at least 8 characters.",
       "wrongPassword": "Current password is incorrect.",

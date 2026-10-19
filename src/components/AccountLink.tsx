@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useAuth } from "@/lib/store/providers/AuthProvider";
+import { cn } from "@/lib/utils";
 
 // Jedyny kawałek nagłówka, który zależy od sesji: zalogowany idzie na konto,
 // gość na logowanie. Sesja przychodzi obietnicą (patrz AuthProvider), więc ten
@@ -16,6 +17,7 @@ import { useAuth } from "@/lib/store/providers/AuthProvider";
 
 // Zalogowany widzi ludzika WYPEŁNIONEGO, gość sam kontur. Dotąd obie wersje
 // wyglądały identycznie i po pasku nie dało się poznać, czy jest się w środku.
+// Wypełniony ma kolor wypełnionego serca ulubionych (prośba Natalii 2026-10-19).
 const AccountIcon = ({ isLoggedIn }: { isLoggedIn: boolean }) => (
   <svg
     width="22"
@@ -27,6 +29,7 @@ const AccountIcon = ({ isLoggedIn }: { isLoggedIn: boolean }) => (
     // Bez tego wypełnienie zlewa głowę z ramionami w jedną plamę: obrys
     // rysuje się wtedy w środku figury, a nie na jej brzegu.
     strokeLinejoin="round"
+    className={cn(isLoggedIn && "text-[var(--color-heart)]")}
   >
     <circle cx="12" cy="8" r="4" />
     <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />

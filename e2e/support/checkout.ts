@@ -63,16 +63,21 @@ export const fillCourierAddress = async (page: Page, locale: Locale, street = CU
   await page.getByLabel(t.phone, { exact: true }).fill(CUSTOMER.phone);
 };
 
-// Paczkomat wybrany na mapie InPostu tak jak klient: wyszukanie kodu
-// i „Wybierz". Mapa jest w ramce i mówi po polsku na polskiej stronie.
-export const chooseLocker = async (page: Page, code: string) => {
-  const t = MESSAGES.pl.checkout;
-  await page.getByRole("button", { name: t.chooseLocker }).click();
+// Paczkomat wybrany na otwartej mapie InPostu tak jak klient: wyszukanie
+// kodu i „Wybierz". Mapa jest w ramce i mówi po polsku na polskiej stronie.
+export const pickLockerOnMap = async (page: Page, code: string) => {
   const map = page.frameLocator("inpost-geowidget iframe");
   await map.locator("input").first().fill(code);
   await map.locator("li", { hasText: code }).first().click();
   await map.getByRole("button", { name: "Wybierz" }).first().click();
   await expect(page.getByText(code, { exact: true })).toBeVisible();
+};
+
+// Paczkomat w kasie, razem z obowiązkowym przy nim telefonem.
+export const chooseLocker = async (page: Page, code: string) => {
+  const t = MESSAGES.pl.checkout;
+  await page.getByRole("button", { name: t.chooseLocker }).click();
+  await pickLockerOnMap(page, code);
   await page.getByLabel(t.phoneRequired, { exact: true }).fill(CUSTOMER.phone);
 };
 

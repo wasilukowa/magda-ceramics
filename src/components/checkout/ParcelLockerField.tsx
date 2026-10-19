@@ -3,21 +3,33 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { InPostPoint } from "@/contracts/server/shipping";
-import InPostGeowidget from "./InPostGeowidget";
+import { SavedLocker } from "@/contracts/server/auth";
+import { isSavedLocker, toInPostPoint } from "@/lib/helpers/savedDelivery";
+import { cn } from "@/lib/utils";
+import LockerMapDialog from "./LockerMapDialog";
 
 type Props = {
   country: string;
   locker: InPostPoint | null;
   onSelect: (point: InPostPoint) => void;
+  // Paczkomaty z konta klienta w tym kraju (prośba Natalii 2026-10-19).
+  savedLockers: SavedLocker[];
+  // „Dodaj do moich paczkomatów" — pod paczkomatem spoza tej listy.
+  saveButton: React.ReactNode;
 };
+
+const LOCKER_CARD_CLASS = "w-full border px-3 py-3 text-sm text-left space-y-1";
 
 export default function ParcelLockerField({
   country,
   locker,
   onSelect,
+  savedLockers,
+  saveButton,
 }: Props) {
   const t = useTranslations("checkout");
   const [open, setOpen] = useState(false);
+  const chosenOutsideSaved = locker !== null && !isSavedLocker(savedLockers, locker.code);
 
   function handleSelect(point: InPostPoint) {
     onSelect(point);
@@ -30,24 +42,58 @@ export default function ParcelLockerField({
         {t("parcelLocker")}
       </label>
 
-      {locker ? (
-        <div className="border border-[var(--color-control-border)] px-3 py-3 text-sm space-y-1">
-          <p className="font-medium">{locker.code}</p>
-          {locker.description && (
-            <p className="text-[var(--muted)] text-xs">{locker.description}</p>
-          )}
-          {(locker.postCode || locker.city) && (
-            <p className="text-[var(--muted)] text-xs">
-              {[locker.postCode, locker.city].filter(Boolean).join(" ")}
-            </p>
-          )}
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            className="text-[10px] tracking-widest uppercase underline mt-1 hover:text-[var(--muted)] transition-colors"
-          >
-            {t("changeLocker")}
-          </button>
+      {savedLockers.length > 0 && (
+        <div className="space-y-2 mb-2">
+          <p className="text-xs text-[var(--muted)]">{t("savedLockers")}</p>
+          {savedLockers.map((saved) => {
+            const selected = locker?.code === saved.code;
+            return (
+              <button
+                key={saved.code}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => onSelect(toInPostPoint(saved))}
+                className={cn(
+                  LOCKER_CARD_CLASS,
+                  "transition-colors",
+                  selected
+                    ? "border-[var(--foreground)]"
+                    : "border-[var(--color-control-border)] hover:border-[var(--foreground)]"
+                )}
+              >
+                <span className="block font-medium">{saved.code}</span>
+                <span className="block text-[var(--muted)] text-xs">
+                  {[saved.description, [saved.postCode, saved.city].filter(Boolean).join(" ")]
+                    .filter(Boolean)
+                    .join(", ")}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {chosenOutsideSaved ? (
+        <div className="space-y-3">
+          <div className={cn(LOCKER_CARD_CLASS, "border-[var(--color-control-border)]")}>
+            <p className="font-medium">{locker.code}</p>
+            {locker.description && (
+              <p className="text-[var(--muted)] text-xs">{locker.description}</p>
+            )}
+            {(locker.postCode || locker.city) && (
+              <p className="text-[var(--muted)] text-xs">
+                {[locker.postCode, locker.city].filter(Boolean).join(" ")}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="text-[10px] tracking-widest uppercase underline mt-1 hover:text-[var(--muted)] transition-colors"
+            >
+              {t("changeLocker")}
+            </button>
+          </div>
+          {saveButton}
         </div>
       ) : (
         <button
@@ -55,35 +101,12 @@ export default function ParcelLockerField({
           onClick={() => setOpen(true)}
           className="w-full border border-[var(--color-control-border)] px-3 py-3 text-sm text-left hover:border-[var(--foreground)] transition-colors"
         >
-          {t("chooseLocker")}
+          {savedLockers.length > 0 ? t("otherLocker") : t("chooseLocker")}
         </button>
       )}
 
       {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setOpen(false)}
-        >
-          <div
-            className="bg-[var(--background)] w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
-              <p className="text-xs tracking-widest uppercase">
-                {t("chooseLocker")}
-              </p>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="text-xs tracking-widest uppercase hover:text-[var(--muted)] transition-colors"
-                aria-label={t("closeLocker")}
-              >
-                ✕
-              </button>
-            </div>
-            <InPostGeowidget country={country} onSelect={handleSelect} />
-          </div>
-        </div>
+        <LockerMapDialog country={country} onSelect={handleSelect} onClose={() => setOpen(false)} />
       )}
     </div>
   );

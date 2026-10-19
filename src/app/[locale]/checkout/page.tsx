@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useSyncExternalStore } from "react";
+import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { useCart } from "@/hooks/useCart";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -11,6 +11,9 @@ import CheckoutUnavailable from "@/components/checkout/CheckoutUnavailable";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Address } from "@/contracts/server/cart";
+import { SavedDelivery } from "@/contracts/server/auth";
+import { getSavedDelivery } from "@/server-actions/addresses";
+import { getCheckoutPrefill } from "@/lib/helpers/savedDelivery";
 import {
   CheckoutPlacement,
   PlacedCheckout,
@@ -66,6 +69,10 @@ function Checkout() {
     DeliveryMethod.Locker
   );
   const [locker, setLocker] = useState<InPostPoint | null>(null);
+  // Adresy i paczkomaty z konta zalogowanego klienta. Przychodzą z WordPressa
+  // po chwili — kasa nie czeka na nie z pokazaniem formularza.
+  const [saved, setSaved] = useState<SavedDelivery | null>(null);
+  const [prefilled, setPrefilled] = useState(false);
   // Prace, które zdążyły się sprzedać — wykryte przy składaniu zamówienia.
   // Dopóki lista nie jest pusta, kasa pokazuje je zamiast formularza.
   const [soldOut, setSoldOut] = useState<UnavailableItem[]>([]);
@@ -74,6 +81,27 @@ function Checkout() {
   const lastOrder = parsePlacedOrder(
     useSyncExternalStore(subscribeNever, readPlacedOrderRaw, getNoPlacedOrder)
   );
+
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    void getSavedDelivery().then((result) => {
+      if (active && result) setSaved(result);
+    });
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
+  // Zapisane dane wpisują się raz, zaraz po przyjściu (decyzja Natalii
+  // 2026-10-19) — tylko tam, gdzie klient jeszcze niczego nie wpisał.
+  if (saved && !prefilled) {
+    setPrefilled(true);
+    const prefill = getCheckoutPrefill(address, locker, saved);
+    setAddress(prefill.address);
+    setLocker(prefill.locker);
+    if (prefill.method) setDeliveryMethod(prefill.method);
+  }
 
   // Po złożeniu zamówienia liczy się to, co w nim jest — koszyk jest już pusty.
   const orderItems = placement?.items ?? items;
@@ -188,6 +216,9 @@ function Checkout() {
           onDeliveryMethodChange={setDeliveryMethod}
           locker={locker}
           onLockerSelect={setLocker}
+          saved={saved}
+          canSave={Boolean(user)}
+          onSavedChange={setSaved}
           deliveryLabel={deliveryLabel}
           shippingCost={shippingCost}
           grandTotal={grandTotal}

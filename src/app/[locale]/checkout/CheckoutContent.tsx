@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { CartItem, Address } from "@/contracts/server/cart";
+import { SavedDelivery } from "@/contracts/server/auth";
 import { Currency } from "@/contracts/shared";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import {
@@ -38,6 +39,10 @@ type Props = {
   onDeliveryMethodChange: (method: DeliveryMethod) => void;
   locker: InPostPoint | null;
   onLockerSelect: (point: InPostPoint) => void;
+  // Adresy i paczkomaty z konta zalogowanego klienta — patrz ShippingFields.
+  saved: SavedDelivery | null;
+  canSave: boolean;
+  onSavedChange: (saved: SavedDelivery) => void;
   deliveryLabel: string;
   shippingCost: number;
   grandTotal: number;
@@ -67,6 +72,9 @@ export default function CheckoutContent({
   onDeliveryMethodChange,
   locker,
   onLockerSelect,
+  saved,
+  canSave,
+  onSavedChange,
   deliveryLabel,
   shippingCost,
   grandTotal,
@@ -252,6 +260,9 @@ export default function CheckoutContent({
               onDeliveryMethodChange={onDeliveryMethodChange}
               locker={locker}
               onLockerSelect={onLockerSelect}
+              saved={saved}
+              canSave={canSave}
+              onSavedChange={onSavedChange}
             />
           </div>
 

@@ -196,6 +196,14 @@
     "chooseLocker": "Wybierz paczkomat",
     "changeLocker": "Zmień",
     "closeLocker": "Zamknij",
+    "savedLockers": "Twoje paczkomaty",
+    "savedAddresses": "Twoje adresy",
+    "otherLocker": "Inny paczkomat",
+    "addToMyLockers": "Dodaj do moich paczkomatów",
+    "addToMyAddresses": "Dodaj do moich adresów",
+    "savedInAccount": "Zapisane w Twoim koncie",
+    "saveNeedsLogin": "Zaloguj się, żeby zapisać na następne zakupy.",
+    "saveFailed": "Nie udało się zapisać. Spróbuj ponownie.",
     "lockerRequired": "Wybierz paczkomat.",
     "lockerLoading": "Ładowanie mapy...",
     "lockerUnavailable": "Wybór paczkomatu jest chwilowo niedostępny. Wybierz dostawę kurierem.",
@@ -398,15 +406,12 @@
     "save": "Zapisz zmiany",
     "saving": "Zapisywanie…",
     "nav": {
-      "overview": "Przegląd",
       "orders": "Zamówienia",
       "details": "Dane",
+      "addresses": "Adresy",
       "wishlist": "Ulubione",
       "logout": "Wyloguj się",
       "loggingOut": "Wylogowywanie…"
-    },
-    "overview": {
-      "intro": "Zarządzaj zamówieniami, danymi i listą ulubionych w jednym miejscu."
     },
     "orders": {
       "empty": "Nie masz jeszcze żadnych zamówień.",
@@ -430,9 +435,23 @@
       "title": "Profil",
       "success": "Profil zaktualizowany."
     },
-    "address": {
-      "title": "Adres dostawy",
-      "success": "Adres zaktualizowany."
+    "addresses": {
+      "deliveryTitle": "Adresy dostawy",
+      "lockersTitle": "Twoje paczkomaty",
+      "intro": "Przy zamawianiu kasa sama wpisze Twój najnowszy adres i wybierze paczkomat — zawsze możesz zmienić je na inne.",
+      "emptyAddresses": "Nie masz jeszcze zapisanych adresów.",
+      "emptyLockers": "Nie masz jeszcze zapisanych paczkomatów.",
+      "add": "Dodaj adres",
+      "addLocker": "Dodaj paczkomat",
+      "edit": "Edytuj",
+      "change": "Zmień",
+      "delete": "Usuń",
+      "cancel": "Anuluj",
+      "lockerCountry": "Kraj paczkomatu",
+      "chooseOnMap": "Wybierz na mapie",
+      "saved": "Adres zapisany.",
+      "limit": "Możesz zapisać najwyżej {count} adresów.",
+      "failed": "Nie udało się zapisać zmian. Spróbuj ponownie."
     },
     "password": {
       "title": "Zmień hasło",
@@ -447,6 +466,7 @@
       "country": "Kraj",
       "street": "Ulica i numer",
       "postcode": "Kod pocztowy",
+      "street2": "Nr mieszkania, piętro, firma (opcjonalnie)",
       "city": "Miasto",
       "currentPassword": "Obecne hasło",
       "newPassword": "Nowe hasło"
@@ -460,6 +480,7 @@
       "city": "Podaj miasto.",
       "postcode": "Podaj kod pocztowy.",
       "country": "Wybierz kraj.",
+      "phone": "Podaj poprawny numer telefonu.",
       "passwordRequired": "Podaj obecne hasło.",
       "passwordLength": "Hasło musi mieć co najmniej 8 znaków.",
       "wrongPassword": "Obecne hasło jest nieprawidłowe.",

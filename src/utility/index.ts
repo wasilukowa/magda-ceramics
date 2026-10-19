@@ -9,6 +9,9 @@ export const isString = (value: unknown): value is string =>
 export const isCorrectNumber = (value: unknown): value is number =>
   typeof value === "number" && !isNaN(value) && isFinite(value);
 
+export const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
 export const isObjectEmpty = (object: object): boolean =>
   Object.keys(object).length === 0;
 

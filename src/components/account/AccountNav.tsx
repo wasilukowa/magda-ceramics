@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils";
 import LogoutButton from "./LogoutButton";
 
 const LINKS = [
-  { href: "/account", key: "overview" },
   { href: "/account/orders", key: "orders" },
   { href: "/account/details", key: "details" },
+  { href: "/account/addresses", key: "addresses" },
   { href: "/wishlist", key: "wishlist" },
 ] as const;
 
@@ -19,10 +19,7 @@ export default function AccountNav() {
   return (
     <nav className="flex flex-col gap-1 text-sm">
       {LINKS.map((link) => {
-        const active =
-          link.href === "/account"
-            ? pathname === "/account"
-            : pathname.startsWith(link.href);
+        const active = pathname.startsWith(link.href);
         return (
           <Link
             key={link.href}
