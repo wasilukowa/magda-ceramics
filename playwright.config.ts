@@ -11,8 +11,12 @@ loadEnvConfig(process.cwd());
 const PORT = 3100;
 const BASE_URL = `http://localhost:${PORT}`;
 
-// Maile z testowych zamówień idą na skrzynkę testową Resenda, nie do
-// pracowni — zmienna z powłoki wygrywa z .env.local.
+// Serwer testów nie wysyła maili: bez klucza Resenda sklep tylko odnotowuje
+// w zamówieniu, że mail nie wyszedł. Testy maili nie sprawdzają, a darmowy
+// plan Resenda (100 dziennie) jest wspólny z prawdziwymi zamówieniami —
+// 2026-10-19 zamówienia testowe wyczerpały go w jeden dzień. Na wszelki
+// wypadek adresy pracowni wskazują skrzynkę testową. Pusta zmienna z powłoki
+// wygrywa z .env.local.
 const TEST_INBOX = "delivered@resend.dev";
 
 export default defineConfig({
@@ -41,6 +45,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.E2E_ORDERS,
     timeout: 10 * 60_000,
     env: {
+      RESEND_API_KEY: "",
       CONTACT_RECIPIENT_EMAIL: TEST_INBOX,
       CONTACT_BCC_EMAIL: TEST_INBOX,
     },

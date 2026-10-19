@@ -1,5 +1,6 @@
-import { RawOrder } from "@/contracts/server/order";
+import { CancelReason, RawOrder } from "@/contracts/server/order";
 import { RawProduct } from "@/contracts/server/product";
+import { ORDER_META } from "@/lib/service/order/helpers";
 
 // Bezpośredni dostęp testów do WooCommerce Magdy — żeby sprawdzić, co sklep
 // naprawdę zapisał (stan zamówienia, magazyn), i posprzątać po zamówieniach
@@ -57,11 +58,19 @@ export const getTestOrders = async (since: Date, email: string): Promise<RawOrde
 
 // Sprzątanie po zamówieniu testowym: anulowanie (WooCommerce oddaje wtedy
 // sztukę do sklepu) i kosz, żeby nie zostało na liście zamówień Magdy ani
-// w zestawieniu sprzedaży.
+// w zestawieniu sprzedaży. Powód zapisany razem ze stanem, jak przy
+// anulowaniu przez sam sklep: webhook na produkcji wie wtedy, że mail
+// o anulowaniu nie jest potrzebny.
 export const discardOrder = async (id: number): Promise<void> => {
   const order = await getOrder(id);
   if (order.status !== "cancelled") {
-    await wc(`/orders/${id}`, { method: "PUT", body: JSON.stringify({ status: "cancelled" }) });
+    await wc(`/orders/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        status: "cancelled",
+        meta_data: [{ key: ORDER_META.cancelReason, value: CancelReason.Studio }],
+      }),
+    });
   }
   await wc(`/orders/${id}`, { method: "DELETE" });
 };
