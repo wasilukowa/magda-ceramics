@@ -38,12 +38,16 @@ const montserrat = Montserrat({
   weight: ["300", "400", "500", "600"],
 });
 
-// Serif companion, used only for display quotes (see Quote.tsx)
+// Serif companion, used only for display quotes (see Quote.tsx) and the 404
+// page. Not preloaded: most pages never use it, and on a slow connection its
+// files competed with the first photo (measured 2026-10-19). Pages that do use
+// it fetch it as soon as the text is laid out.
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin", "latin-ext"],
   weight: ["300", "400"],
   style: ["normal", "italic"],
+  preload: false,
 });
 
 // Metadane WSPÓLNE dla całej aplikacji — i zapas dla stron, które nie mają

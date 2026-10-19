@@ -74,3 +74,19 @@ test("the English shop shows prices in euro", async ({ page }) => {
   await expect(page.locator("main").getByText(/\d+(\.\d{2})? €/).first()).toBeVisible();
   await expect(page.locator("main").getByText(/\d zł/)).toHaveCount(0);
 });
+
+// Suwak na głównej pobiera zdjęcia dopiero, gdy są potrzebne (2026-10-19) —
+// następne i to „przez koniec" muszą się mimo to pokazać.
+test("the home slider loads only nearby photos and still shows the next ones", async ({ page }) => {
+  const photo = (number: number) => page.getByAltText(`Ceramika Magdy, zdjęcie ${number}`, { exact: true });
+  await page.goto("/pl");
+  await expect(photo(1)).toBeVisible();
+  await expect(page.getByAltText(/^Ceramika Magdy, zdjęcie/)).toHaveCount(3);
+
+  await page.getByRole("button", { name: "Następne zdjęcie" }).click();
+  await expect(photo(2)).toHaveJSProperty("complete", true);
+  expect(await photo(2).evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  await page.getByRole("button", { name: "Poprzednie zdjęcie" }).click();
+  await page.getByRole("button", { name: "Poprzednie zdjęcie" }).click();
+  await expect(page.getByAltText(/^Ceramika Magdy, zdjęcie/).last()).toHaveJSProperty("complete", true);
+});
