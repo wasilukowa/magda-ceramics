@@ -1,6 +1,8 @@
 // Domena: uwierzytelnianie i klient (konto). Typy "Raw*" = surowa odpowiedź
 // WooCommerce; pozostałe = typy domenowe używane w całej aplikacji.
 
+import { InPostPoint } from "@/contracts/server/shipping";
+
 export type SessionPayload = {
   customerId: number;
   email: string;
@@ -20,14 +22,36 @@ export type PasswordResetPayload = {
 
 // --- Klient (domena) ---
 
-export type CustomerAddress = {
+// Adres dostawy zapisany w koncie (zakładka „Adresy", decyzja Natalii
+// 2026-10-19). Klient może mieć ich kilka; kasa wpisuje najnowszy.
+export type SavedAddress = {
+  id: string;
   firstName: string;
   lastName: string;
   phone: string;
   street: string;
-  city: string;
+  street2: string;
   postcode: string;
+  city: string;
   country: string;
+};
+
+// Adres bez numeru — taki, jaki przychodzi z formularza albo z kasy.
+export type SavedAddressInput = Omit<SavedAddress, "id">;
+
+// Paczkomat zapisany w koncie („Twoje paczkomaty"). Kod punktu jest jego
+// numerem — ten sam paczkomat nie zapisze się dwa razy. Kraj, bo mapa InPostu
+// i kasa pokazują paczkomaty jednego kraju naraz.
+export type SavedLocker = InPostPoint & {
+  country: string;
+};
+
+// To, co kasa wie o zalogowanym kliencie, zanim zacznie on cokolwiek wpisywać.
+export type SavedDelivery = {
+  firstName: string;
+  lastName: string;
+  addresses: SavedAddress[];
+  lockers: SavedLocker[];
 };
 
 export type Customer = {
@@ -35,7 +59,8 @@ export type Customer = {
   email: string;
   firstName: string;
   lastName: string;
-  billing: CustomerAddress;
+  addresses: SavedAddress[];
+  lockers: SavedLocker[];
   wishlist: number[];
   // Data ostatniej zmiany konta (czas UTC, prosto z WooCommerce). Używa jej
   // link do zmiany hasła, żeby dało się go użyć tylko raz.
@@ -49,6 +74,7 @@ export type RawWcAddress = {
   last_name?: string;
   phone?: string;
   address_1?: string;
+  address_2?: string;
   city?: string;
   postcode?: string;
   country?: string;

@@ -16,6 +16,7 @@ const PRIVATE_ROUTES: StaticRoute[] = [
   "/account",
   "/account/orders",
   "/account/details",
+  "/account/addresses",
   "/login",
   "/register",
   "/wishlist",

@@ -1,47 +1,35 @@
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { getCurrentCustomer } from "@/lib/auth/dal";
 import ProfileForm from "@/components/account/ProfileForm";
-import AddressForm from "@/components/account/AddressForm";
 import PasswordForm from "@/components/account/PasswordForm";
+import AccountSection from "@/components/account/AccountSection";
+import AccountLoading from "@/components/account/AccountLoading";
 
 export async function generateMetadata() {
   const t = await getTranslations("account");
   return { title: `${t("nav.details")} — Magda Ceramics` };
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="flex flex-col gap-6">
-      <h2 className="text-sm tracking-widest uppercase border-b border-[var(--border)] pb-3">
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
+async function Profile() {
+  const customer = await getCurrentCustomer();
+  return customer ? <ProfileForm customer={customer} /> : null;
 }
 
+// Dane klienta we własnej granicy <Suspense> — patrz strona zamówień.
 export default async function DetailsPage() {
   const t = await getTranslations("account");
-  const customer = await getCurrentCustomer();
-  if (!customer) return null;
 
   return (
     <div className="flex flex-col gap-14">
-      <Section title={t("profile.title")}>
-        <ProfileForm customer={customer} />
-      </Section>
-      <Section title={t("address.title")}>
-        <AddressForm billing={customer.billing} />
-      </Section>
-      <Section title={t("password.title")}>
+      <AccountSection title={t("profile.title")}>
+        <Suspense fallback={<AccountLoading />}>
+          <Profile />
+        </Suspense>
+      </AccountSection>
+      <AccountSection title={t("password.title")}>
         <PasswordForm />
-      </Section>
+      </AccountSection>
     </div>
   );
 }

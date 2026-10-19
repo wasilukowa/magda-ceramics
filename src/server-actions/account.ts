@@ -56,57 +56,6 @@ export async function updateProfile(
   }
 }
 
-export async function updateAddress(
-  _prevState: AccountFormState,
-  formData: FormData,
-): Promise<AccountFormState> {
-  const t = await getTranslations("account");
-  const session = await getSession();
-  if (!session) return unauthorized(t("errors.unauthorized"));
-
-  const schema = z.object({
-    firstName: z.string().min(1, t("errors.firstName")),
-    lastName: z.string().min(1, t("errors.lastName")),
-    phone: z.string().optional().default(""),
-    street: z.string().min(1, t("errors.street")),
-    city: z.string().min(1, t("errors.city")),
-    postcode: z.string().min(1, t("errors.postcode")),
-    country: z.string().min(2, t("errors.country")),
-  });
-
-  const parsed = schema.safeParse({
-    firstName: String(formData.get("firstName") ?? "").trim(),
-    lastName: String(formData.get("lastName") ?? "").trim(),
-    phone: String(formData.get("phone") ?? "").trim(),
-    street: String(formData.get("street") ?? "").trim(),
-    city: String(formData.get("city") ?? "").trim(),
-    postcode: String(formData.get("postcode") ?? "").trim(),
-    country: String(formData.get("country") ?? "").trim(),
-  });
-
-  if (!parsed.success) {
-    const fieldErrors = z.flattenError(parsed.error).fieldErrors;
-    return {
-      status: "error",
-      message: t("errors.validation"),
-      errors: Object.fromEntries(
-        Object.entries(fieldErrors).map(([k, v]) => [k, v?.[0]]),
-      ),
-    };
-  }
-
-  try {
-    await customerService.updateCustomer(session.customerId, {
-      billing: parsed.data,
-    });
-    revalidatePath("/account", "layout");
-    return { status: "success", message: t("address.success") };
-  } catch (err) {
-    console.error("Update address failed:", err);
-    return { status: "error", message: t("errors.server") };
-  }
-}
-
 export async function changePassword(
   _prevState: AccountFormState,
   formData: FormData,

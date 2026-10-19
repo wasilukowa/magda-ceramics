@@ -3,10 +3,16 @@ import "server-only";
 import { HttpError, isNotFoundError, serverFetch } from "@/lib/api";
 import {
   Customer,
-  CustomerAddress,
   RawWcCustomer,
+  SavedAddress,
+  SavedLocker,
 } from "@/contracts/server/auth";
-import { prepareCustomer, WISHLIST_META_KEY } from "./helpers";
+import {
+  ADDRESSES_META_KEY,
+  LOCKERS_META_KEY,
+  prepareCustomer,
+  WISHLIST_META_KEY,
+} from "./helpers";
 
 const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
 const WC_KEY = process.env.WC_CONSUMER_KEY;
@@ -17,7 +23,6 @@ export type CustomerUpdate = {
   lastName?: string;
   email?: string;
   password?: string;
-  billing?: CustomerAddress;
 };
 
 // Wszystkie operacje używają kluczy administracyjnych WooCommerce i są
@@ -79,17 +84,6 @@ class CustomerService {
     if (update.lastName !== undefined) body.last_name = update.lastName;
     if (update.email !== undefined) body.email = update.email;
     if (update.password !== undefined) body.password = update.password;
-    if (update.billing) {
-      body.billing = {
-        first_name: update.billing.firstName,
-        last_name: update.billing.lastName,
-        phone: update.billing.phone,
-        address_1: update.billing.street,
-        city: update.billing.city,
-        postcode: update.billing.postcode,
-        country: update.billing.country,
-      };
-    }
 
     const raw = await this.wcFetch<RawWcCustomer>(`customers/${id}`, {
       method: "PUT",
@@ -98,15 +92,27 @@ class CustomerService {
     return prepareCustomer(raw);
   }
 
-  async setWishlist(customerId: number, productIds: number[]): Promise<number[]> {
-    const unique = Array.from(new Set(productIds.map(Number)));
+  // Jedna wartość w danych klienta, zapisana w całości.
+  private async setMeta(customerId: number, key: string, value: unknown): Promise<Customer> {
     const raw = await this.wcFetch<RawWcCustomer>(`customers/${customerId}`, {
       method: "PUT",
-      body: JSON.stringify({
-        meta_data: [{ key: WISHLIST_META_KEY, value: unique }],
-      }),
+      body: JSON.stringify({ meta_data: [{ key, value }] }),
     });
-    return prepareCustomer(raw).wishlist;
+    return prepareCustomer(raw);
+  }
+
+  async setWishlist(customerId: number, productIds: number[]): Promise<number[]> {
+    const unique = Array.from(new Set(productIds.map(Number)));
+    return (await this.setMeta(customerId, WISHLIST_META_KEY, unique)).wishlist;
+  }
+
+  // Zapisane adresy i paczkomaty — zawsze cała lista, najnowsze pierwsze.
+  async setSavedAddresses(customerId: number, addresses: SavedAddress[]): Promise<Customer> {
+    return this.setMeta(customerId, ADDRESSES_META_KEY, addresses);
+  }
+
+  async setSavedLockers(customerId: number, lockers: SavedLocker[]): Promise<Customer> {
+    return this.setMeta(customerId, LOCKERS_META_KEY, lockers);
   }
 }
 
