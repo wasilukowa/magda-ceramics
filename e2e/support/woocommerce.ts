@@ -1,3 +1,4 @@
+import { RawWcCustomer } from "@/contracts/server/auth";
 import { CancelReason, RawOrder } from "@/contracts/server/order";
 import { RawProduct } from "@/contracts/server/product";
 import { ORDER_META } from "@/lib/service/order/helpers";
@@ -29,6 +30,26 @@ const wc = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
 export const getProduct = (id: number) => wc<StockedProduct>(`/products/${id}`);
 
 export const getOrder = (id: number) => wc<RawOrder>(`/orders/${id}`);
+
+// Tymczasowe konto klienta do testów konta — zakładane przed testem
+// i usuwane po nim (razem z zostawionymi przez przerwany test).
+export const createCustomer = (customer: {
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+}) => wc<RawWcCustomer>("/customers", { method: "POST", body: JSON.stringify(customer) });
+
+export const getCustomer = (id: number) => wc<RawWcCustomer>(`/customers/${id}`);
+
+export const deleteCustomers = async (email: string): Promise<void> => {
+  const customers = await wc<RawWcCustomer[]>(
+    `/customers?email=${encodeURIComponent(email)}&role=all`
+  );
+  for (const customer of customers) {
+    await wc(`/customers/${customer.id}?force=true`, { method: "DELETE" });
+  }
+};
 
 // Prace, które można kupić: z ceną, w sklepie, po jednej sztuce na stanie.
 // Najtańsze najpierw — zamówienia testowe i tak zostaną anulowane, ale

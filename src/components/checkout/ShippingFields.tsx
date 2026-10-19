@@ -9,7 +9,18 @@ import { getCountryLabel, getShippingCost } from "@/lib/helpers/shipping";
 import { formatPrice } from "@/lib/helpers/currency";
 import { cn } from "@/lib/utils";
 import { isPhoneNumber } from "@/utility";
+import { SavedAddress, SavedDelivery } from "@/contracts/server/auth";
+import { rememberAddress, rememberLocker } from "@/server-actions/addresses";
+import {
+  findSavedAddress,
+  getAddressFields,
+  getAddressLines,
+  isSavedLocker,
+  toSavedAddressInput,
+  toSavedLocker,
+} from "@/lib/helpers/savedDelivery";
 import ParcelLockerField from "./ParcelLockerField";
+import SaveToAccountButton from "./SaveToAccountButton";
 import CheckoutField, { CHECKOUT_INPUT_CLASS } from "./CheckoutField";
 
 type Props = {
@@ -22,6 +33,11 @@ type Props = {
   onDeliveryMethodChange: (method: DeliveryMethod) => void;
   locker: InPostPoint | null;
   onLockerSelect: (point: InPostPoint) => void;
+  // Adresy i paczkomaty z konta — null dla gościa i zanim przyjdą.
+  saved: SavedDelivery | null;
+  // Zalogowany może dopisać do konta nowy adres albo paczkomat.
+  canSave: boolean;
+  onSavedChange: (saved: SavedDelivery) => void;
 };
 
 // Krok 2 kasy: dokąd i jak. Telefon jest tutaj (decyzja Natalii 2026-10-12),
@@ -36,11 +52,40 @@ export default function ShippingFields({
   onDeliveryMethodChange,
   locker,
   onLockerSelect,
+  saved,
+  canSave,
+  onSavedChange,
 }: Props) {
   const t = useTranslations("checkout");
   const locale = useLocale();
 
   const usingLocker = hasLocker && deliveryMethod === DeliveryMethod.Locker;
+  const savedAddresses = saved?.addresses ?? [];
+  const savedLockers = (saved?.lockers ?? []).filter((candidate) => candidate.country === address.country);
+  const addressComplete =
+    !!address.street.trim() && !!address.postcode.trim() && !!address.city.trim();
+  const chosenAddress = addressComplete ? findSavedAddress(savedAddresses, address) : undefined;
+
+  // Zapisany adres wpisuje się w pola; telefon tylko wtedy, gdy pole jest puste.
+  function fillSavedAddress(savedAddress: SavedAddress) {
+    Object.entries(getAddressFields(savedAddress)).forEach(([field, value]) =>
+      onFieldChange(field as keyof Address, value)
+    );
+    if (!address.phone && savedAddress.phone) onFieldChange("phone", savedAddress.phone);
+  }
+
+  async function saveAddress(): Promise<boolean> {
+    const result = await rememberAddress(toSavedAddressInput(address));
+    if (result) onSavedChange(result);
+    return result !== null;
+  }
+
+  async function saveLocker(): Promise<boolean> {
+    if (!locker) return false;
+    const result = await rememberLocker(toSavedLocker(locker, address.country));
+    if (result) onSavedChange(result);
+    return result !== null;
+  }
 
   const set =
     (field: keyof Address) =>
@@ -85,9 +130,49 @@ export default function ShippingFields({
       )}
 
       {usingLocker ? (
-        <ParcelLockerField country={address.country} locker={locker} onSelect={onLockerSelect} />
+        <ParcelLockerField
+          country={address.country}
+          locker={locker}
+          onSelect={onLockerSelect}
+          savedLockers={savedLockers}
+          saveButton={
+            locker && (
+              <SaveToAccountButton
+                key={locker.code}
+                label={t("addToMyLockers")}
+                isSaved={isSavedLocker(saved?.lockers ?? [], locker.code)}
+                canSave={canSave}
+                onSave={saveLocker}
+              />
+            )
+          }
+        />
       ) : (
         <>
+          {savedAddresses.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs text-[var(--muted)]">{t("savedAddresses")}</p>
+              {savedAddresses.map((savedAddress) => {
+                const selected = chosenAddress?.id === savedAddress.id;
+                return (
+                  <button
+                    key={savedAddress.id}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => fillSavedAddress(savedAddress)}
+                    className={cn(
+                      "w-full border px-3 py-3 text-sm text-left transition-colors",
+                      selected
+                        ? "border-[var(--foreground)]"
+                        : "border-[var(--color-control-border)] hover:border-[var(--foreground)]"
+                    )}
+                  >
+                    {getAddressLines(savedAddress, locale).slice(1).join(", ")}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <CheckoutField label={t("street")}>
             <input
               value={address.street}
@@ -122,6 +207,15 @@ export default function ShippingFields({
               />
             </CheckoutField>
           </div>
+          {addressComplete && (
+            <SaveToAccountButton
+              key={[address.street, address.street2, address.postcode, address.city, address.country].join("|")}
+              label={t("addToMyAddresses")}
+              isSaved={chosenAddress !== undefined}
+              canSave={canSave}
+              onSave={saveAddress}
+            />
+          )}
         </>
       )}
 

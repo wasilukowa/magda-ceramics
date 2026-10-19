@@ -145,4 +145,8 @@ test("a parcel locker is picked on the map", async ({ page }) => {
 
   await chooseLocker(page, "WAW01M");
   await expect(summary(page, "pl")).toContainText(t.summaryDeliveryLocker);
+
+  // Gość nie ma konta, w którym mógłby paczkomat zapisać.
+  await expect(page.getByRole("button", { name: t.addToMyLockers })).toBeDisabled();
+  await expect(page.getByText(t.saveNeedsLogin)).toBeVisible();
 });
