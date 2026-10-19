@@ -623,7 +623,8 @@
     "heading": "We couldn't find that page",
     "text": "The address may be out of date or have a typo in it. Have a look around the shop — something is bound to catch your eye.",
     "shop": "Go to the shop",
-    "home": "Home"
+    "home": "Home",
+    "suggestions": "You might like"
   },
   "error": {
     "heading": "Something went wrong",

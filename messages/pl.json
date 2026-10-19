@@ -622,7 +622,8 @@
     "heading": "Nie znaleźliśmy tej strony",
     "text": "Adres może być nieaktualny albo zawierać literówkę. Zajrzyj do sklepu — na pewno coś Ci wpadnie w oko.",
     "shop": "Przejdź do sklepu",
-    "home": "Strona główna"
+    "home": "Strona główna",
+    "suggestions": "Może spodoba Ci się"
   },
   "error": {
     "heading": "Coś poszło nie tak",
