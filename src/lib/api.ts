@@ -42,7 +42,7 @@ export const serverFetch = (url: string, options?: RequestInit) => {
 
 const RETRY_DELAY_MS = 750;
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Jedno ponowienie — WYŁĄCZNIE dla zapytań, które tylko czytają. Serwer WP
 // pracowni pod obciążeniem builda oddaje czasem gołe 500 z Apache'a albo nie
