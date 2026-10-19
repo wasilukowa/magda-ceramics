@@ -1,6 +1,6 @@
 import "server-only";
 
-import { HttpError, isNotFoundError, serverFetch } from "@/lib/api";
+import { HttpError, isNotFoundError, serverFetch, wait } from "@/lib/api";
 import {
   CancelReason,
   CustomerOrderMail,
@@ -49,6 +49,9 @@ const SALES_PAGE_SIZE = 100;
 // Jak daleko wstecz szukać zamówienia złożonego z tej samej wizyty w kasie —
 // ponowione „Złóż zamówienie" przychodzi po sekundach, najwyżej minutach.
 const PLACED_LOOKUP_WINDOW_MS = 60 * 60 * 1000;
+// Przerwy przed kolejnymi sprawdzeniami, czy złożenie zapisało się mimo
+// braku odpowiedzi — patrz markPlaced.
+const PLACEMENT_CHECK_DELAYS_MS = [3_000, 6_000];
 const WC_KEY = process.env.WC_CONSUMER_KEY;
 const WC_SECRET = process.env.WC_CONSUMER_SECRET;
 
@@ -293,21 +296,52 @@ class OrderService {
   // nigdy wrócić do „oczekuje na płatność".
   // Zwraca termin rezerwacji (ISO). Płatności jeszcze nie ma — kasa zakłada ją
   // dla złożonego zamówienia (CheckoutService.getOrderPayment).
+  //
+  // Brak odpowiedzi nie znaczy, że zapisu nie ma. Sprawdzone 2026-10-19 testem
+  // zamówień: WordPress zapisywał złożenie dłużej niż limit 10 s, klient
+  // zobaczył „Błąd połączenia", a zamówienie było złożone i praca
+  // zarezerwowana — tylko bez maila „złożone". Dlatego po zerwanym połączeniu
+  // albo błędzie serwera najpierw pytamy WooCommerce, co zapisał. Odmowa (4xx)
+  // znaczy, że nic się nie zapisało.
   async markPlaced(orderId: number): Promise<string> {
     const reservedUntil = getReservationDeadline(new Date());
-    await this.wcFetch(`orders/${orderId}`, {
-      method: "PUT",
-      body: JSON.stringify({
-        status: OrderStatus.OnHold,
-        meta_data: [{ key: ORDER_META.reservedUntil, value: reservedUntil }],
-      }),
-    });
+    try {
+      await this.wcFetch(`orders/${orderId}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          status: OrderStatus.OnHold,
+          meta_data: [{ key: ORDER_META.reservedUntil, value: reservedUntil }],
+        }),
+      });
+    } catch (error) {
+      if (error instanceof HttpError && error.status < 500) throw error;
+      if (!(await this.isPlaced(orderId))) throw error;
+      console.warn(`Order ${orderId}: placed although WooCommerce did not answer:`, error);
+    }
     await this.addPrivateNotes(orderId, [
       `Zamówienie złożone, czeka na wpłatę — praca zarezerwowana na ` +
         `${RESERVATION_HOURS} h. Bez wpłaty sklep sam je anuluje. Nie wysyłać ` +
         `przed wpłatą.`,
     ]);
     return reservedUntil;
+  }
+
+  // Czy zamówienie jest już złożone (on-hold). WordPress może jeszcze kończyć
+  // zapis, na który nie doczekaliśmy się odpowiedzi, więc pytamy kilka razy
+  // z przerwami. Awaria przy sprawdzaniu liczy się jak „nie".
+  private async isPlaced(orderId: number): Promise<boolean> {
+    for (const delay of PLACEMENT_CHECK_DELAYS_MS) {
+      await wait(delay);
+      try {
+        const order = await this.wcFetch<Pick<RawOrder, "status">>(
+          `orders/${orderId}?_fields=status`
+        );
+        if (order.status === OrderStatus.OnHold) return true;
+      } catch (error) {
+        console.error(`Order ${orderId}: placement check failed:`, error);
+      }
+    }
+    return false;
   }
 
   // Zamówienie złożone już z tej samej wizyty w kasie (patrz
