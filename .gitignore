@@ -42,3 +42,8 @@ next-env.d.ts
 
 # materiały robocze od Magdy (zdjęcia, ulotka) — zostają tylko na dysku
 /MATERIALY
+
+# playwright
+/test-results/
+/playwright-report/
+/playwright/.cache/
