@@ -118,23 +118,6 @@ export type AboutContent = {
 
 export type AboutByLocale = Record<Locale, AboutContent>;
 
-// --- Strona „Moja ceramika" ---------------------------------------------------
-// Opowieść o tym, jak powstaje naczynie — od bryły gliny do drugiego wypału.
-// Kroki są prawdziwe i ustalone, tekst przy każdym pisze Magda, więc treść
-// siedzi tu jako dane, dokładnie jak przy „O mnie" i dokumentach prawnych.
-export type CeramicsStep = {
-  heading: string;
-  paragraphs: string[];
-};
-
-export type CeramicsContent = {
-  intro: string;
-  steps: CeramicsStep[];
-  closing: string;
-};
-
-export type CeramicsByLocale = Record<Locale, CeramicsContent>;
-
 // --- Strona „Pytania i odpowiedzi" -------------------------------------------
 // Pytania, które wracają najczęściej, pogrupowane tematycznie. `moreRoute`
 // odsyła tam, gdzie temat jest opisany wiążąco (wysyłka, regulamin) — dzięki
