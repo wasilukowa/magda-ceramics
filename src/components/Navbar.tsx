@@ -273,9 +273,14 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu. Bywa dłuższe niż ekran, a przyklejony nagłówek nie
+          przewija się razem ze stroną — dół menu (waluta, wygląd) był nie do
+          osiągnięcia (2026-10-20). Dlatego menu leży pod nagłówkiem
+          (`absolute top-full`) i przewija się samo, najwyżej do dołu ekranu:
+          100% to tu wysokość nagłówka, więc liczy się też po jego zwinięciu.
+          Logo, ikonki i krzyżyk zostają na miejscu. */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-[var(--color-navbar-border)] bg-[var(--color-navbar)]">
+        <div className="md:hidden absolute top-full inset-x-0 max-h-[calc(100dvh-100%)] overflow-y-auto overscroll-contain border-t border-[var(--color-navbar-border)] bg-[var(--color-navbar)]">
           <div className="max-w-[1200px] mx-auto px-6 py-5">
             <ul className="flex flex-col gap-5 text-sm tracking-widest uppercase text-[var(--foreground)]">
               <li>
@@ -296,9 +301,10 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                 </Link>
               </li>
               <li><Link href="/about" onClick={() => setMobileOpen(false)}>{t("nav.about")}</Link></li>
-              {/* „Pracownia" bez własnej strony — tu zwykły nagłówek, przygaszony,
-                  żeby nie udawał linku. */}
-              <li className="text-[var(--muted)]">{t("nav.studio")}</li>
+              {/* „Pracownia" bez własnej strony — tu zwykły nagłówek nad trzema
+                  wciętymi linkami, w tym samym kolorze co reszta menu (szary
+                  wyglądał na wyłączony — uwaga Natalii 2026-10-20). */}
+              <li>{t("nav.studio")}</li>
               {STUDIO_LINKS.map((item) => (
                 <li key={item.route} className="pl-4">
                   <Link href={item.route} onClick={() => setMobileOpen(false)}>
