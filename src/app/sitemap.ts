@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { connection } from "next/server";
 import { getPathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { SITE_URL, SITEMAP_ROUTES } from "@/content/data";
@@ -47,5 +48,11 @@ async function catalogueEntries(): Promise<MetadataRoute.Sitemap> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Bez tego Next robi z mapy plik statyczny przy wdrożeniu i do następnego
+  // wdrożenia nie widać w niej prac dodanych ani usuniętych w WordPressie
+  // (2026-10-20: brakowało trzech nowych, a skasowana wciąż w niej była).
+  // Katalog i tak idzie z cache'u (profil „catalog"), więc liczenie mapy przy
+  // każdym zapytaniu nie dokłada pracy WooCommerce'owi.
+  await connection();
   return [...SITEMAP_ROUTES.map((route) => entry(route)), ...(await catalogueEntries())];
 }
