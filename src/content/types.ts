@@ -37,6 +37,13 @@ export type AppRoute =
   | { pathname: "/shop/[category]"; params: { category: string } }
   | { pathname: "/product/[slug]"; params: { slug: string } };
 
+// Pozycja menu: dokąd prowadzi i pod jakim kluczem z „nav" w tłumaczeniach
+// leży jej nazwa.
+export type NavLinkType = {
+  route: StaticRoute;
+  labelKey: string;
+};
+
 // Adresy, na które wolno wskazać z dokumentu prawnego. Żaden paragraf nie
 // linkuje do konkretnego produktu, więc wystarczą trasy statyczne.
 export type LegalRoute = StaticRoute;

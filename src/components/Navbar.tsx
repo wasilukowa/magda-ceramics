@@ -9,9 +9,10 @@ import CurrencySwitcher from "@/components/CurrencySwitcher";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
+import StudioMenu from "@/components/StudioMenu";
 import { useWishlist } from "@/hooks/useWishlist";
 import { AccountIconLink, AccountMenuLink } from "@/components/AccountLink";
-import { INSTAGRAM_URL } from "@/content/data";
+import { INSTAGRAM_URL, STUDIO_LINKS } from "@/content/data";
 import { CategoryNavigationProps } from "@/contracts/shared";
 import { getCategoryLabel } from "@/lib/helpers/category";
 import { cn } from "@/lib/utils";
@@ -25,9 +26,7 @@ const GROW_BELOW = 8;
 
 // „Sklep" to jedyna pozycja menu, która prowadzi do sprzedaży, więc jako jedyna
 // jest wytłuszczona i ma szersze odstępy między literami. Reszta paska zostaje
-// cienka — wyróżnienie działa właśnie dlatego, że jest jedno. „Pytania
-// i odpowiedzi" świadomie go NIE dostają, choć stoją obok: gdyby wytłuścić
-// oba, sklep przestałby się wyróżniać.
+// cienka — wyróżnienie działa właśnie dlatego, że jest jedno.
 const SHOP_LINK_CLASS = "font-semibold tracking-[0.2em]";
 
 // Ikonki w nagłówku mają 22 px, a palec potrzebuje pola około 44 × 44 px.
@@ -39,7 +38,6 @@ const TAP_AREA_CLASS =
   "relative before:absolute before:-inset-[11px] before:content-[''] md:before:hidden";
 
 export default function Navbar({ categories }: CategoryNavigationProps) {
-  const [aboutOpen, setAboutOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { itemCount, openCart } = useCart();
@@ -74,6 +72,28 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
   return (
     <header className="sticky top-0 z-50 bg-[var(--color-navbar)]">
 
+      {/* Waluta, język i tryb ciemny nad logo, z prawej (decyzja Natalii
+          2026-10-20) — żeby w pasku menu zostało więcej miejsca. Tylko od
+          768 px: telefon ma je w rozwijanym menu. Po przewinięciu pasek się
+          zwija i na górze zostaje samo logo. `invisible` zdejmuje przyciski
+          z kolejki Tab, gdy ich nie widać. Pasek zajmuje miejsce górnego
+          odstępu logo (od 768 px logo ma `pt-0`), więc nagłówek nie urósł
+          i zwija się o tyle samo, co wcześniej. */}
+      <div
+        className={cn(
+          "hidden md:grid motion-safe:transition-all motion-safe:duration-300",
+          scrolled ? "grid-rows-[0fr] opacity-0 invisible" : "grid-rows-[1fr]"
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="max-w-[1200px] mx-auto flex items-center justify-end gap-6 px-6 pt-3 text-[var(--foreground)]">
+            <CurrencySwitcher />
+            <LanguageSwitcher />
+            <ThemeToggle />
+          </div>
+        </div>
+      </div>
+
       {/* Logo row */}
       {/* The logo is 5.17:1, so h-20 alone measures 414px — wider than a 390px
           phone. Height steps up with the viewport, and px-6 plus max-w-full
@@ -81,7 +101,7 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
       <div
         className={cn(
           "max-w-[1200px] mx-auto flex justify-center px-6 motion-safe:transition-all motion-safe:duration-300",
-          scrolled ? "pt-3 pb-2" : "pt-8 pb-6"
+          scrolled ? "pt-3 pb-2" : "pt-8 md:pt-0 pb-6"
         )}
       >
         {/* Odkąd „Strona główna" zniknęła z menu, to logo jest jedyną drogą
@@ -127,44 +147,9 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
 
         {/* Desktop nav — centered */}
         <ul className="hidden md:flex shrink-0 items-center gap-5 lg:gap-10 text-sm tracking-widest uppercase text-[var(--foreground)]">
-          {/* „O mnie" działa tak samo jak „Sklep": sam jest linkiem, a pod nim
-              siedzą Opinie i Kontakt. Dzięki temu doszła nowa pozycja, a górny
-              pasek nie urósł. */}
-          <li
-            className="relative"
-            onMouseEnter={() => setAboutOpen(true)}
-            onMouseLeave={() => setAboutOpen(false)}
-          >
-            <Link href="/about" className="flex items-center gap-1.5 hover:opacity-60 transition-opacity">
-              {t("nav.about")}
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </Link>
-
-            {aboutOpen && (
-              // Szersze niż rozwijane „Sklep": „Moja ceramika" / „My ceramics"
-              // łamały się przy 160 px na dwa wiersze i lista wyglądała krzywo.
-              <ul className="absolute top-full left-1/2 -translate-x-1/2 bg-[var(--color-navbar)] border border-[var(--color-navbar-border)] min-w-[200px] shadow-sm">
-                {[
-                  { href: "/about" as const, label: t("nav.about") },
-                  { href: "/about/ceramics" as const, label: t("nav.ceramics") },
-                  { href: "/reviews" as const, label: t("nav.reviews") },
-                  { href: "/contact" as const, label: t("nav.contact") },
-                ].map((item) => (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className="block px-5 py-3 text-xs tracking-widest uppercase hover:bg-[var(--color-navbar-hover)] transition-colors"
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-
+          {/* Kolejność od 2026-10-20 (decyzja Natalii): najpierw to, co
+              sprzedaje, potem „O mnie" jako zwykły link, a Moja ceramika,
+              Opinie i Kontakt pod „Pracownią". */}
           <li
             className="relative"
             onMouseEnter={() => setShopOpen(true)}
@@ -203,6 +188,14 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
           </li>
 
           <li>
+            <Link href="/about" className="hover:opacity-60 transition-opacity">
+              {t("nav.about")}
+            </Link>
+          </li>
+
+          <StudioMenu />
+
+          <li>
             {/* W pasku krótko: pełne „Pytania i odpowiedzi" mierzy 190 px i przy
                 768 px wypycha menu na przełączniki — ten sam problem, co W7
                 w audycie. Nazwa strony, stopka i menu telefonu zostają pełne. */}
@@ -231,12 +224,6 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
         {/* Right icons. Na telefonie odstęp 22 px zamiast 16: przy 16 pola
             dotyku sąsiednich ikonek (44 px) nachodziłyby na siebie. */}
         <div className="flex-1 flex items-center justify-end gap-[22px] md:gap-4 lg:gap-5 text-[var(--foreground)]">
-          <CurrencySwitcher className="hidden md:flex" />
-
-          <LanguageSwitcher className="hidden md:flex" />
-
-          <ThemeToggle className="hidden md:block" />
-
           <AccountIconLink className="hidden md:block hover:opacity-60 transition-opacity" />
 
           {/* Bez licznika (decyzja Natalii 2026-10-07): pusta lista to sam
@@ -291,10 +278,6 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
         <div className="md:hidden border-t border-[var(--color-navbar-border)] bg-[var(--color-navbar)]">
           <div className="max-w-[1200px] mx-auto px-6 py-5">
             <ul className="flex flex-col gap-5 text-sm tracking-widest uppercase text-[var(--foreground)]">
-              <li><Link href="/about" onClick={() => setMobileOpen(false)}>{t("nav.about")}</Link></li>
-              <li className="pl-4"><Link href="/about/ceramics" onClick={() => setMobileOpen(false)}>{t("nav.ceramics")}</Link></li>
-              <li className="pl-4"><Link href="/reviews" onClick={() => setMobileOpen(false)}>{t("nav.reviews")}</Link></li>
-              <li className="pl-4"><Link href="/contact" onClick={() => setMobileOpen(false)}>{t("nav.contact")}</Link></li>
               <li>
                 <Link href="/shop" className={SHOP_LINK_CLASS} onClick={() => setMobileOpen(false)}>
                   {t("nav.shop")} — {t("categories.all")}
@@ -312,6 +295,17 @@ export default function Navbar({ categories }: CategoryNavigationProps) {
                   {t("nav.archive")}
                 </Link>
               </li>
+              <li><Link href="/about" onClick={() => setMobileOpen(false)}>{t("nav.about")}</Link></li>
+              {/* „Pracownia" bez własnej strony — tu zwykły nagłówek, przygaszony,
+                  żeby nie udawał linku. */}
+              <li className="text-[var(--muted)]">{t("nav.studio")}</li>
+              {STUDIO_LINKS.map((item) => (
+                <li key={item.route} className="pl-4">
+                  <Link href={item.route} onClick={() => setMobileOpen(false)}>
+                    {t(`nav.${item.labelKey}`)}
+                  </Link>
+                </li>
+              ))}
               <li>
                 <Link href="/faq" onClick={() => setMobileOpen(false)}>
                   {t("nav.faq")}
