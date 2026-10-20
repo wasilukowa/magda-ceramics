@@ -1,6 +1,15 @@
-import { Country, CookieRegistryEntry, StaticRoute } from "./types";
+import { Country, CookieRegistryEntry, NavLinkType, StaticRoute } from "./types";
 import { ShippingZone, ShippingRates } from "@/contracts/server/shipping";
 import { CookieCategory } from "@/contracts/shared";
+
+// Co siedzi pod „Pracownią" w menu — na komputerze w rozwijanej liście, na
+// telefonie pod nagłówkiem. Dodanie pozycji to jeden wiersz tutaj (plus nazwa
+// w messages/*.json pod „nav").
+export const STUDIO_LINKS: NavLinkType[] = [
+  { route: "/about/ceramics", labelKey: "ceramics" },
+  { route: "/reviews", labelKey: "reviews" },
+  { route: "/contact", labelKey: "contact" },
+];
 
 // Zdjęcia w sliderze na stronie głównej, w kolejności pokazywania (tej samej,
 // co nazwy plików u Natalii, 2026-10-07: „a_" na początek, „w_" na koniec).
