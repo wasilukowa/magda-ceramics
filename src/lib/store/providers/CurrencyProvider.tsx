@@ -9,6 +9,7 @@ import {
 import { Currency } from "@/contracts/shared";
 import { CurrencyStore } from "@/contracts/store";
 import { createLocalStorageStore } from "@/lib/store/localStorageStore";
+import { isCurrency } from "@/utility";
 
 const CurrencyContext = createContext<CurrencyStore | null>(null);
 const STORAGE_KEY = "currency";
@@ -17,13 +18,12 @@ const STORAGE_KEY = "currency";
 // przełącznikiem. Dopóki nie wybrał (null), obowiązuje domyślna dla języka
 // strony — patrz getDefaultCurrency. Dzięki temu ręczny wybór działa w obu
 // językach, a ktoś, kto niczego nie klikał, po przejściu na drugi język dostaje
-// jego walutę. Wartość zapisana jest gołym tekstem ("pln"/"eur"), a nie
+// jego walutę. Wartość zapisana jest gołym tekstem ("pln"/"eur"/"gbp"), a nie
 // JSON-em — stąd własny odczyt zamiast JSON.parse.
 const currencyStore = createLocalStorageStore<Currency | null>(
   STORAGE_KEY,
   null,
-  (raw) =>
-    raw === Currency.EUR || raw === Currency.PLN ? (raw as Currency) : null,
+  (raw) => (isCurrency(raw) ? raw : null),
   (value) => value ?? ""
 );
 

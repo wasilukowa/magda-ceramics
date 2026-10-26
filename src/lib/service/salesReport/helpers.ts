@@ -29,19 +29,21 @@ export const hasEntriesInMonth = (order: SalesOrder, month: string): boolean =>
     isInMonth(getWarsawDay(new Date(refund.createdAt)), month)
   );
 
-// Sprzedaż w złotych: dla zamówienia w euro kwota z przeliczenia NBP, dla
-// reszty suma zamówienia.
+// Sprzedaż w złotych: dla zamówienia w obcej walucie kwota z przeliczenia
+// NBP, dla reszty suma zamówienia.
 const getSaleGrosze = (order: SalesOrder): number | null => {
-  if (!order.eur) return toGrosze(order.totalPln);
-  return order.eur.conversion ? toGrosze(order.eur.conversion.amountPln) : null;
+  if (!order.foreign) return toGrosze(order.totalPln);
+  return order.foreign.conversion
+    ? toGrosze(order.foreign.conversion.amountPln)
+    : null;
 };
 
 // Zwrot w złotych. WooCommerce zapisuje go w złotych z katalogu, a sprzedaż
-// w euro trafiła do ewidencji po kursie NBP — zwrot liczymy więc jako tę
-// samą część kwoty z ewidencji. Pełny zwrot zdejmuje dokładnie tyle, ile
+// w obcej walucie trafiła do ewidencji po kursie NBP — zwrot liczymy więc jako
+// tę samą część kwoty z ewidencji. Pełny zwrot zdejmuje dokładnie tyle, ile
 // sprzedaż dodała.
 const getRefundGrosze = (order: SalesOrder, refundPln: number): number | null => {
-  if (!order.eur) return -toGrosze(refundPln);
+  if (!order.foreign) return -toGrosze(refundPln);
   const saleGrosze = getSaleGrosze(order);
   const totalGrosze = toGrosze(order.totalPln);
   if (saleGrosze === null || totalGrosze === 0) return null;
@@ -66,7 +68,7 @@ export const buildSalesReport = (
         day: paidOn,
         orderNumber: order.number,
         grosze: getSaleGrosze(order),
-        eur: order.eur,
+        foreign: order.foreign,
         needsRefundCheck: order.cancelled && order.refunds.length === 0,
       });
     }
@@ -79,7 +81,7 @@ export const buildSalesReport = (
         day,
         orderNumber: order.number,
         grosze: getRefundGrosze(order, refund.amountPln),
-        eur: order.eur,
+        foreign: order.foreign,
         needsRefundCheck: false,
       });
     }

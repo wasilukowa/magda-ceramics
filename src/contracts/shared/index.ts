@@ -9,6 +9,7 @@ import {
 export enum Currency {
   PLN = "pln",
   EUR = "eur",
+  GBP = "gbp",
 }
 
 // Wygląd strony. Wartość trafia do atrybutu data-theme na <html> i do pamięci

@@ -37,9 +37,9 @@ export type OrderPreferences = {
 };
 
 // Kwoty zamówienia w walucie klienta. WooCommerce trzyma wszystko w złotych
-// (tak księgujemy), więc dla zamówień w euro kwoty są przeliczane tą samą
-// regułą co w kasie, a suma opłaconego zamówienia to dokładnie to, co pobrał
-// Stripe.
+// (tak księgujemy), więc dla zamówień w euro i funtach kwoty są przeliczane
+// tą samą regułą co w kasie, a suma opłaconego zamówienia to dokładnie to, co
+// pobrał Stripe.
 export type OrderAmounts = {
   currency: Currency;
   items: OrderLineItem[];
@@ -190,16 +190,16 @@ export type RawOrderRefund = {
 };
 
 // Opłacone zamówienie w ujęciu zestawienia sprzedaży: kiedy zapłacono, ile
-// w złotych, czy w euro — i zwroty z datami.
+// w złotych, czy w obcej walucie — i zwroty z datami.
 export type SalesOrder = {
   id: number;
   number: string;
   // Chwila zapłaty, ISO w UTC.
   paidAt: string;
   totalPln: number;
-  // Zapłacono w euro: kwota i przeliczenie NBP zapisane przy zapłacie
-  // (puste, gdy NBP wtedy nie odpowiedział).
-  eur: LedgerAmount | null;
+  // Zapłacono w euro albo funtach: kwota i przeliczenie NBP zapisane przy
+  // zapłacie (puste, gdy NBP wtedy nie odpowiedział).
+  foreign: LedgerAmount | null;
   refunds: { createdAt: string; amountPln: number }[];
   // Opłacone, a potem anulowane. Pieniądze pewnie wróciły, ale zwrot liczy
   // się dopiero wtedy, gdy jest zapisany w WooCommerce.
@@ -377,7 +377,7 @@ export type StudioOrderMail = {
   items: { name: string; quantity: number; totalPln: number }[];
   shippingPln: number;
   totalPln: number;
-  // Waluta i kwota zapłaty; dla euro także przeliczenie do ewidencji.
+  // Waluta i kwota zapłaty; dla euro i funtów także przeliczenie do ewidencji.
   paidCurrency: Currency;
   paidTotal: number;
   ledger: LedgerAmount | null;
@@ -393,7 +393,7 @@ export type CustomerMailInput = {
   // Treść notatki Magdy (CustomerMailKind.Note).
   note?: string;
   // Zwrot (CustomerMailKind.Refunded). Kwota w walucie klienta albo null,
-  // gdy nie da się jej podać dokładnie (część zwrotu zamówienia w euro).
+  // gdy nie da się jej podać dokładnie (część zwrotu zamówienia w obcej walucie).
   refund?: { amount: number | null; full: boolean };
   // Powód anulowania (CustomerMailKind.Cancelled).
   cancelReason?: CancelReason;

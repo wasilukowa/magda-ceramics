@@ -15,12 +15,12 @@ export type SalesEntry = {
   day: string;
   orderNumber: string;
   // Kwota do ewidencji w złotych, z wysyłką; zwrot ze znakiem minus. Null,
-  // gdy zamówienie było w euro, a kursu NBP nie udało się pobrać.
+  // gdy zamówienie było w obcej walucie, a kursu NBP nie udało się pobrać.
   amountPln: number | null;
   // Suma od początku miesiąca do tego wiersza włącznie.
   runningTotalPln: number;
-  // Zamówienie zapłacone w euro.
-  eur: LedgerAmount | null;
+  // Zamówienie zapłacone w euro albo funtach.
+  foreign: LedgerAmount | null;
   // Sprzedaż anulowana bez zapisanego zwrotu — kwota stoi w zestawieniu,
   // ale Magda musi sprawdzić, czy pieniądze nie wróciły do klienta.
   needsRefundCheck: boolean;

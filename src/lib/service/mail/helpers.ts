@@ -23,7 +23,7 @@ import {
 import { formatCsvAmount, toCsv } from "@/lib/helpers/csv";
 import { formatDayPl, formatDeadline, formatMonthPl } from "@/lib/helpers/date";
 import { countPieces } from "@/lib/helpers/order";
-import { formatPlNumber } from "@/lib/helpers/ledger";
+import { formatPlAmount, formatPlNumber } from "@/lib/helpers/ledger";
 
 // Treść maila z linkiem do zmiany hasła. Wszystkie zdania idą z tłumaczeń
 // (namespace `auth.reset.email`), więc obie wersje językowe stoją obok siebie
@@ -192,14 +192,14 @@ export const buildSalesReportMail = async ({
     report.entries.filter((entry) => entry.kind === kind).length;
   const unconverted = report.entries.filter((entry) => entry.amountPln === null).length;
 
-  const eurRemarkFor = (entry: SalesEntry): string => {
-    if (!entry.eur) return "";
-    const amount = formatPlNumber(entry.eur.amountEur, 2);
-    if (!entry.eur.conversion) {
-      return t("remarks.eurMissing", { amount, date: formatDayPl(entry.eur.paidOn) });
+  const foreignRemarkFor = ({ foreign }: SalesEntry): string => {
+    if (!foreign) return "";
+    const amount = formatPlAmount(foreign.amount, foreign.currency);
+    if (!foreign.conversion) {
+      return t("remarks.foreignMissing", { amount, date: formatDayPl(foreign.paidOn) });
     }
-    const { rate } = entry.eur.conversion;
-    return t("remarks.eur", {
+    const { rate } = foreign.conversion;
+    return t("remarks.foreign", {
       amount,
       rate: formatPlNumber(rate.mid, 4),
       date: formatDayPl(rate.effectiveDate),
@@ -209,9 +209,9 @@ export const buildSalesReportMail = async ({
 
   const remarkFor = (entry: SalesEntry): string => {
     if (entry.kind === SalesEntryKind.Refund) {
-      return entry.eur ? t("remarks.refundEur") : t("remarks.refund");
+      return entry.foreign ? t("remarks.refundForeign") : t("remarks.refund");
     }
-    return [eurRemarkFor(entry), entry.needsRefundCheck ? t("remarks.cancelled") : ""]
+    return [foreignRemarkFor(entry), entry.needsRefundCheck ? t("remarks.cancelled") : ""]
       .filter(Boolean)
       .join("; ");
   };
@@ -538,7 +538,7 @@ export const buildCustomerOrderMail = async ({
 // --- Mail „nowe zamówienie" do pracowni -----------------------------------------
 // Zastępuje angielski mail WooCommerce w złotych. Po polsku (tylko
 // messages/pl.json, `studioOrderEmail`), z tym, co klient naprawdę zapłacił,
-// i z kwotą do ewidencji przy euro. Odpowiedź idzie prosto do klienta.
+// i z kwotą do ewidencji przy euro i funtach. Odpowiedź idzie prosto do klienta.
 
 const WP_URL = process.env.NEXT_PUBLIC_WP_URL;
 const LANGUAGE_NAMES: Record<string, string> = { pl: "polski", en: "angielski" };
@@ -562,7 +562,7 @@ export const buildStudioNewOrderMail = async ({
   const adminUrl = `${WP_URL}/wp-admin/admin.php?page=wc-orders&action=edit&id=${order.id}`;
 
   const ledgerLine =
-    order.paidCurrency === Currency.EUR
+    order.paidCurrency !== Currency.PLN
       ? order.ledger?.conversion
         ? t("ledger", {
             amount: `${formatPlNumber(order.ledger.conversion.amountPln, 2)} zł`,

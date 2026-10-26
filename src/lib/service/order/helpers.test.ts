@@ -5,6 +5,7 @@ import { Currency } from "@/contracts/shared";
 import { getShippingCost } from "@/lib/helpers/shipping";
 import {
   getDueReminders,
+  getLedgerRemark,
   getReservationDeadline,
   getReservationStep,
   LOCKER_META_KEY,
@@ -103,5 +104,52 @@ describe("order in the account", () => {
     expect(order.currency).toBe(Currency.EUR);
     expect(order.deliveryMethod).toBe(DeliveryMethod.Courier);
     expect(order.shipping).toBe(getShippingCost("DE", Currency.EUR, DeliveryMethod.Courier));
+  });
+
+  it("shows an order paid in pounds in pounds", () => {
+    const order = prepareOrder(
+      rawOrder({
+        shipping: { country: "GB" },
+        meta_data: [
+          { key: ORDER_META.paidCurrency, value: "GBP" },
+          { key: ORDER_META.paidAmount, value: "30.00" },
+        ],
+      })
+    );
+    expect(order.currency).toBe(Currency.GBP);
+    expect(order.items[0].total).toBe(12); // 60 zł / 5,20 = 11,54 → £12
+    expect(order.shipping).toBe(18);
+    expect(order.total).toBe(30);
+  });
+
+  it("keeps the pounds chosen in the checkout until the order is paid", () => {
+    const order = prepareOrder(
+      rawOrder({
+        status: "on-hold",
+        shipping: { country: "GB" },
+        meta_data: [{ key: ORDER_META.currency, value: Currency.GBP }],
+      })
+    );
+    expect(order.currency).toBe(Currency.GBP);
+    expect(order.total).toBe(12 + 18);
+  });
+});
+
+describe("ledger remark", () => {
+  it("spells out the NBP conversion of a payment in pounds", () => {
+    expect(
+      getLedgerRemark({
+        paidOn: "2026-10-26",
+        currency: Currency.GBP,
+        amount: 30,
+        conversion: {
+          rate: { mid: 5.2498, effectiveDate: "2026-10-23", table: "207/A/NBP/2026" },
+          amountPln: 157.49,
+        },
+      })
+    ).toBe(
+      "Do ewidencji sprzedaży: 157,49 zł = 30,00 £ × 5,2498 (średni kurs NBP z 23.10.2026, " +
+        "tabela 207/A/NBP/2026 — ostatni dzień roboczy przed dniem zapłaty 26.10.2026)."
+    );
   });
 });

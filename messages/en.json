@@ -602,7 +602,7 @@
         "duration": "Until you clear browser data"
       },
       "currency": {
-        "purpose": "Remembers the currency you selected (PLN / EUR).",
+        "purpose": "Remembers the currency you selected (PLN / EUR / GBP).",
         "duration": "Until you clear browser data"
       },
       "wishlist": {

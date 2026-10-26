@@ -1,6 +1,8 @@
 // Domena: kursy NBP do ewidencji sprzedaży. To NIE są kursy cen w sklepie —
 // te liczy stały kurs w helpers/currency. Raw* = surowa odpowiedź API NBP.
 
+import { Currency } from "@/contracts/shared";
+
 export type RawNbpRate = {
   no: string;
   effectiveDate: string;
@@ -15,7 +17,8 @@ export type RawNbpRates = {
 
 // Średni kurs z jednej tabeli A NBP.
 export type NbpRate = {
-  // Złotych za 1 €, cztery miejsca po przecinku — tak, jak publikuje NBP.
+  // Złotych za jednostkę waluty (1 €, 1 £), cztery miejsca po przecinku —
+  // tak, jak publikuje NBP.
   mid: number;
   // Dzień tabeli, YYYY-MM-DD.
   effectiveDate: string;
@@ -23,11 +26,14 @@ export type NbpRate = {
   table: string;
 };
 
-// Płatność w euro rozpisana do ewidencji sprzedaży. `conversion` jest puste,
-// gdy NBP nie odpowiedział — wtedy Magda przelicza ręcznie.
+// Płatność w obcej walucie (euro, funty) rozpisana do ewidencji sprzedaży.
+// `conversion` jest puste, gdy NBP nie odpowiedział — wtedy Magda przelicza
+// ręcznie.
 export type LedgerAmount = {
   // Dzień zapłaty w polskim kalendarzu, YYYY-MM-DD.
   paidOn: string;
-  amountEur: number;
+  currency: Currency;
+  // Zapłacona kwota w tej walucie.
+  amount: number;
   conversion: { rate: NbpRate; amountPln: number } | null;
 };

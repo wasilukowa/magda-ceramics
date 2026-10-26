@@ -19,9 +19,9 @@ import { PaymentRecord } from "@/contracts/server/payment";
 import { DeliveryFields } from "@/contracts/server/checkout";
 import { LedgerAmount } from "@/contracts/server/exchangeRate";
 import { Currency } from "@/contracts/shared";
-import { EXCHANGE_RATE_PLN_PER_EUR } from "@/lib/helpers/currency";
+import { EXCHANGE_RATES_PLN } from "@/lib/helpers/currency";
 import { getWarsawDay } from "@/lib/helpers/date";
-import { formatPlNumber, getLedgerAmountPln } from "@/lib/helpers/ledger";
+import { formatPlAmount, formatPlNumber, getLedgerAmountPln } from "@/lib/helpers/ledger";
 import { exchangeRateService } from "@/lib/service/exchangeRate";
 import { productService } from "@/lib/service/product";
 import { isTranslatedLocale } from "@/lib/service/translation/helpers";
@@ -55,49 +55,67 @@ const PLACEMENT_CHECK_DELAYS_MS = [3_000, 6_000];
 const WC_KEY = process.env.WC_CONSUMER_KEY;
 const WC_SECRET = process.env.WC_CONSUMER_SECRET;
 
-// Metadane płatności zapisywane przy zamówieniu. Zamówienia księgujemy
-// w złotych, więc przy płatności w euro zostaje zapis prawdziwej kwoty i kursu
-// — żeby dało się je uzgodnić ze Stripe'em.
-const getPaymentMeta = (payment: PaymentRecord) => [
-  { key: ORDER_META.stripeIntent, value: payment.id },
-  { key: ORDER_META.stripeStatus, value: payment.status },
-  ...(payment.currency === Currency.EUR
-    ? [
-        { key: ORDER_META.paidCurrency, value: "EUR" },
-        { key: ORDER_META.paidAmount, value: payment.paidTotal.toFixed(2) },
-        { key: "_exchange_rate", value: EXCHANGE_RATE_PLN_PER_EUR.toString() },
-      ]
-    : []),
-];
+// Jak notatka w zamówieniu nazywa ceny w danej walucie.
+const PRICES_IN_PL: Record<Currency, string> = {
+  [Currency.PLN]: "w złotych",
+  [Currency.EUR]: "w euro",
+  [Currency.GBP]: "w funtach",
+};
 
-// Kurs 4,3 to kurs, po którym sklep wylicza ceny w euro — nie ten do
-// ewidencji. Dlatego zaraz pod nim stoi przeliczenie po kursie NBP.
+// Waluta płatności, gdy to nie złote — tylko wtedy jest co dopisywać.
+const getForeignCurrency = (payment: PaymentRecord): Currency | null =>
+  payment.currency && payment.currency !== Currency.PLN ? payment.currency : null;
+
+// Metadane płatności zapisywane przy zamówieniu. Zamówienia księgujemy
+// w złotych, więc przy płatności w euro albo funtach zostaje zapis prawdziwej
+// kwoty i kursu — żeby dało się je uzgodnić ze Stripe'em.
+const getPaymentMeta = (payment: PaymentRecord) => {
+  const foreign = getForeignCurrency(payment);
+  return [
+    { key: ORDER_META.stripeIntent, value: payment.id },
+    { key: ORDER_META.stripeStatus, value: payment.status },
+    ...(foreign
+      ? [
+          { key: ORDER_META.paidCurrency, value: foreign.toUpperCase() },
+          { key: ORDER_META.paidAmount, value: payment.paidTotal.toFixed(2) },
+          { key: "_exchange_rate", value: EXCHANGE_RATES_PLN[foreign].toString() },
+        ]
+      : []),
+  ];
+};
+
+// Kurs 4,30 (euro) czy 5,20 (funt) to kurs, po którym sklep wylicza ceny —
+// nie ten do ewidencji. Dlatego zaraz pod nim stoi przeliczenie po kursie NBP.
 const getPaymentRemarks = (
   payment: PaymentRecord,
   ledger: LedgerAmount | null
-): string[] =>
-  payment.currency === Currency.EUR
-    ? [
-        `Zapłacono ${formatPlNumber(payment.paidTotal, 2)} € (ceny w euro sklep ` +
-          `wylicza po kursie ${formatPlNumber(EXCHANGE_RATE_PLN_PER_EUR, 2)}).`,
-        ...(ledger ? [getLedgerRemark(ledger)] : []),
-      ]
-    : [];
+): string[] => {
+  const foreign = getForeignCurrency(payment);
+  if (!foreign) return [];
+  return [
+    `Zapłacono ${formatPlAmount(payment.paidTotal, foreign)} (ceny ` +
+      `${PRICES_IN_PL[foreign]} sklep wylicza po kursie ` +
+      `${formatPlNumber(EXCHANGE_RATES_PLN[foreign], 2)}).`,
+    ...(ledger ? [getLedgerRemark(ledger)] : []),
+  ];
+};
 
-// Płatność w euro rozpisana do ewidencji: kwota w złotych po średnim kursie
-// NBP z ostatniego dnia roboczego przed dniem zapłaty (art. 11a ustawy
-// o PIT). Dzień zapłaty to dzień tego zapisu — ten sam, który WooCommerce
-// zapisze jako datę zapłaty. Null dla płatności w złotych.
+// Płatność w euro albo funtach rozpisana do ewidencji: kwota w złotych po
+// średnim kursie NBP z ostatniego dnia roboczego przed dniem zapłaty (art. 11a
+// ustawy o PIT). Dzień zapłaty to dzień tego zapisu — ten sam, który
+// WooCommerce zapisze jako datę zapłaty. Null dla płatności w złotych.
 const getLedgerAmount = async (
   payment: PaymentRecord
 ): Promise<LedgerAmount | null> => {
-  if (payment.currency !== Currency.EUR) return null;
+  const foreign = getForeignCurrency(payment);
+  if (!foreign) return null;
 
   const paidOn = getWarsawDay(new Date());
-  const rate = await exchangeRateService.getEurRateBefore(paidOn);
+  const rate = await exchangeRateService.getRateBefore(foreign, paidOn);
   return {
     paidOn,
-    amountEur: payment.paidTotal,
+    currency: foreign,
+    amount: payment.paidTotal,
     conversion: rate
       ? { rate, amountPln: getLedgerAmountPln(payment.paidTotal, rate.mid) }
       : null,

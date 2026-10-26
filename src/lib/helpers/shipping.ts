@@ -35,7 +35,7 @@ export const hasInPostLocker = (countryCode: string): boolean =>
   INPOST_LOCKER_COUNTRIES.includes(countryCode);
 
 const isSameRate = (a: ZoneRate, b: ZoneRate): boolean =>
-  a.pln === b.pln && a.eur === b.eur;
+  Object.values(Currency).every((currency) => a[currency] === b[currency]);
 
 // Stawka za dostawę danym sposobem. Cena paczkomatu obowiązuje tylko tam,
 // gdzie paczkomat naprawdę jest (kraj z paczkomatami, strefa z ceną za
@@ -58,7 +58,7 @@ export const resolveDeliveryMethod = (
     ? DeliveryMethod.Locker
     : DeliveryMethod.Courier;
 
-// Shipping cost in the chosen currency's smallest unit (grosze / euro cents).
+// Shipping cost in the chosen currency's smallest unit (grosze / cents / pence).
 const getShippingAmount = (
   countryCode: string,
   currency: Currency,

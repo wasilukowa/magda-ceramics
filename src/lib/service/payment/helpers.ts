@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import { PaymentRecord, PaymentStatus } from "@/contracts/server/payment";
 import { Currency } from "@/contracts/shared";
+import { isCurrency } from "@/utility";
 
 // Klucze metadanych płatności w Stripe: numer i klucz zamówienia, DLA którego
 // płatność powstała (PaymentService.getOrderIntent). Po kluczu poznajemy
@@ -43,7 +44,7 @@ export const getPaymentMethodLabel = (method: Stripe.PaymentMethod): string => {
 };
 
 const getPaidCurrency = (value: string): Currency | null =>
-  value === Currency.PLN || value === Currency.EUR ? value : null;
+  isCurrency(value) ? value : null;
 
 const getOrderId = (metadata: Stripe.Metadata): number | null => {
   const id = Number(metadata[PAYMENT_META.orderId]);

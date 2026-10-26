@@ -21,7 +21,7 @@ export type PaymentRecord = {
   id: string;
   status: PaymentStatus;
   currency: Currency | null;
-  // Zapłacona kwota w jednostkach głównych (zł / €).
+  // Zapłacona kwota w jednostkach głównych (zł / € / £).
   paidTotal: number;
   // Zamówienie przypisane do tej płatności. Płatność powstaje zawsze DLA
   // złożonego zamówienia (kasa po „Złóż zamówienie" albo strona zamówienia)

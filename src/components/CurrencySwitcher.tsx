@@ -6,12 +6,13 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { Currency, SwitcherProps } from "@/contracts/shared";
 import { cn } from "@/lib/utils";
 
-// Both currencies are always on screen with the active one marked, instead of a
-// single button showing the currency the customer is *not* using — next to a
+// All currencies are always on screen with the active one marked, instead of a
+// single button showing a currency the customer is *not* using — next to a
 // price like "18 €" a lone "PLN" reads as a label, not as a switch.
 const OPTIONS = [
   { value: Currency.PLN, label: "PLN" },
   { value: Currency.EUR, label: "EUR" },
+  { value: Currency.GBP, label: "GBP" },
 ];
 
 export default function CurrencySwitcher({ className }: SwitcherProps) {
