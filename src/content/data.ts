@@ -206,35 +206,38 @@ export const INPOST_LOCKER_COUNTRIES = [
 ];
 
 // Flat shipping rates per zone and delivery method, in each currency's
-// smallest unit (grosze for PLN, euro cents for EUR). Customers pay in the
-// currency they browse in, so each rate has both a PLN and an EUR price point.
+// smallest unit (grosze for PLN, euro cents for EUR, pence for GBP). Customers
+// pay in the currency they browse in, so each rate has a price point in every
+// currency.
 // Cennik od Natalii, 2026-10-07:
 // · Polska — paczkomat i kurier: 20 zł / 5 €
 // · paczkomaty InPost International (BE, FR, ES, NL, LU, PT, IT): 50 zł / 11,50 €;
 //   kurier do tych samych krajów: 80 zł / 18 €
 // · Niemcy i Austria — tylko kurier: 55 zł / 12 €
-// · Wielka Brytania — tylko kurier: 95 zł / 21 € (Natalia podała też 18 £,
-//   ale sklep nie przyjmuje funtów)
+// · Wielka Brytania — tylko kurier: 95 zł / 21 € / 18 £
 // · pozostałe kraje — kurier: 80 zł / 18 €
 // Dwie kwoty spoza cennika, wyliczone po kursie sklepu: Polska w euro
 // (20 zł / 4,30 = 4,65 → 5 €) i kurier za 18 € w złotych (18 × 4,30 = 77,40
 // → 80 zł, w górę do pełnej piątki jak reszta cennika).
+// Funty (2026-10-26): złote po kursie 5,20 w górę do pełnego funta — 4, 10,
+// 16, 11 i 16 £. Wyjątek to Wielka Brytania: 18 £ od Natalii (z kursu
+// wyszłoby 19).
 export const SHIPPING_RATES: ShippingRates = {
   [ShippingZone.Poland]: {
-    locker: { pln: 2000, eur: 500 },
-    courier: { pln: 2000, eur: 500 },
+    locker: { pln: 2000, eur: 500, gbp: 400 },
+    courier: { pln: 2000, eur: 500, gbp: 400 },
   },
   [ShippingZone.InPostEu]: {
-    locker: { pln: 5000, eur: 1150 },
-    courier: { pln: 8000, eur: 1800 },
+    locker: { pln: 5000, eur: 1150, gbp: 1000 },
+    courier: { pln: 8000, eur: 1800, gbp: 1600 },
   },
   [ShippingZone.GermanyAustria]: {
-    courier: { pln: 5500, eur: 1200 },
+    courier: { pln: 5500, eur: 1200, gbp: 1100 },
   },
   [ShippingZone.UnitedKingdom]: {
-    courier: { pln: 9500, eur: 2100 },
+    courier: { pln: 9500, eur: 2100, gbp: 1800 },
   },
   [ShippingZone.RestEu]: {
-    courier: { pln: 8000, eur: 1800 },
+    courier: { pln: 8000, eur: 1800, gbp: 1600 },
   },
 };

@@ -24,10 +24,11 @@ import { LedgerAmount } from "@/contracts/server/exchangeRate";
 import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
 import { routing } from "@/i18n/routing";
-import { convertPlnToEur } from "@/lib/helpers/currency";
+import { convertFromPln } from "@/lib/helpers/currency";
 import { formatDayPl, getWarsawDay, parseWooGmtDate } from "@/lib/helpers/date";
-import { formatPlNumber } from "@/lib/helpers/ledger";
+import { formatPlAmount, formatPlNumber } from "@/lib/helpers/ledger";
 import { getCountryLabel, getShippingCost } from "@/lib/helpers/shipping";
+import { isCurrency } from "@/utility";
 
 // Złożone zamówienie trzyma pracę tyle godzin. Przypomnienia o zapłacie idą
 // po 12 i po 24 godzinach od złożenia, a po 48 sklep anuluje zamówienie
@@ -73,7 +74,8 @@ export const ORDER_META = {
   // Stan płatności i jej numer w chwili zapisu (zapisuje OrderService).
   stripeStatus: "_stripe_payment_status",
   stripeIntent: "_stripe_payment_intent",
-  // Zapłata w euro (zapisuje OrderService przy zapłacie).
+  // Zapłata w obcej walucie — euro, funty; kod wielkimi literami („EUR")
+  // (zapisuje OrderService przy zapłacie).
   paidCurrency: "_paid_currency",
   paidAmount: "_paid_amount",
   // Powód anulowania, gdy anuluje sam sklep (klient albo 48 h). Zapisywany
@@ -124,15 +126,22 @@ const toAmount = (value: string | undefined): number => {
 const getOrderLocale = (country: string | undefined): string =>
   country === "PL" ? "pl" : routing.defaultLocale;
 
-// Waluta klienta. Zapłacone liczy się tak, jak pobrał Stripe: w euro tylko
-// wtedy, gdy przy zapłacie zapisało się euro. Niezapłacone — tak, jak klient
+// Obca waluta, w której zapłacono — null przy zapłacie w złotych (wtedy
+// sklep niczego nie zapisuje).
+const getPaidForeignCurrency = (raw: RawOrder): Currency | null => {
+  const paid = getMetaValue(raw, ORDER_META.paidCurrency)?.toLowerCase();
+  return isCurrency(paid) && paid !== Currency.PLN ? paid : null;
+};
+
+// Waluta klienta. Zapłacone liczy się tak, jak pobrał Stripe: w obcej walucie
+// tylko wtedy, gdy przy zapłacie się zapisała. Niezapłacone — tak, jak klient
 // wybrał w kasie.
 const getOrderCurrency = (raw: RawOrder): Currency => {
-  if (getMetaValue(raw, ORDER_META.paidCurrency) === "EUR") return Currency.EUR;
+  const paid = getPaidForeignCurrency(raw);
+  if (paid) return paid;
   if (raw.date_paid_gmt) return Currency.PLN;
-  return getMetaValue(raw, ORDER_META.currency) === Currency.EUR
-    ? Currency.EUR
-    : Currency.PLN;
+  const chosen = getMetaValue(raw, ORDER_META.currency);
+  return isCurrency(chosen) ? chosen : Currency.PLN;
 };
 
 export const getOrderPreferences = (raw: RawOrder): OrderPreferences => {
@@ -145,8 +154,8 @@ export const getOrderPreferences = (raw: RawOrder): OrderPreferences => {
   };
 };
 
-// Kwoty w walucie klienta. Złotówki idą prosto z WooCommerce. Euro liczymy
-// tą samą regułą co kasa (cena sztuki przeliczona i zaokrąglona w górę,
+// Kwoty w walucie klienta. Złotówki idą prosto z WooCommerce. Euro i funty
+// liczymy tą samą regułą co kasa (cena sztuki przeliczona i zaokrąglona w górę,
 // wysyłka z cennika dla kraju i sposobu dostawy), a suma opłaconego
 // zamówienia to kwota, którą pobrał Stripe — nie nasze przeliczenie.
 // Paczkomat, jeśli zamówienie ma zapisany kod punktu; inaczej kurier.
@@ -178,11 +187,11 @@ export const getOrderAmounts = (raw: RawOrder, currency: Currency): OrderAmounts
       productId: item.product_id ?? null,
       name: item.name,
       quantity: item.quantity,
-      total: convertPlnToEur(toAmount(item.total) / quantity) * quantity,
+      total: convertFromPln(toAmount(item.total) / quantity, currency) * quantity,
     };
   });
   const country = raw.shipping?.country || raw.billing?.country || "";
-  const shipping = getShippingCost(country, Currency.EUR, getDeliveryMethod(raw));
+  const shipping = getShippingCost(country, currency, getDeliveryMethod(raw));
   const paid = parsePositive(getMetaValue(raw, ORDER_META.paidAmount));
 
   return {
@@ -317,7 +326,7 @@ export const getDueReminders = (order: UnpaidOrder, now: Date): number => {
   return REMINDER_AFTER_HOURS.filter((hours) => elapsedHours >= hours).length;
 };
 
-// Klucze, pod którymi zamówienie w euro trzyma kwotę do ewidencji.
+// Klucze, pod którymi zamówienie w obcej walucie trzyma kwotę do ewidencji.
 export const LEDGER_META = {
   amountPln: "_ledger_amount_pln",
   rate: "_ledger_nbp_rate",
@@ -337,31 +346,40 @@ export const getLedgerMeta = (ledger: LedgerAmount | null) =>
       ]
     : [];
 
-export const getLedgerRemark = ({ paidOn, amountEur, conversion }: LedgerAmount): string => {
-  const eur = `${formatPlNumber(amountEur, 2)} €`;
+export const getLedgerRemark = ({
+  paidOn,
+  currency,
+  amount,
+  conversion,
+}: LedgerAmount): string => {
+  const paid = formatPlAmount(amount, currency);
   if (!conversion) {
     return (
-      `Do ewidencji sprzedaży: nie udało się pobrać kursu NBP. Przelicz ${eur} ` +
+      `Do ewidencji sprzedaży: nie udało się pobrać kursu NBP. Przelicz ${paid} ` +
       `ręcznie po średnim kursie NBP z ostatniego dnia roboczego przed ` +
       `${formatDayPl(paidOn)}.`
     );
   }
   const { rate, amountPln } = conversion;
   return (
-    `Do ewidencji sprzedaży: ${formatPlNumber(amountPln, 2)} zł = ${eur} × ` +
+    `Do ewidencji sprzedaży: ${formatPlNumber(amountPln, 2)} zł = ${paid} × ` +
     `${formatPlNumber(rate.mid, 4)} (średni kurs NBP z ${formatDayPl(rate.effectiveDate)}, ` +
     `tabela ${rate.table} — ostatni dzień roboczy przed dniem zapłaty ` +
     `${formatDayPl(paidOn)}).`
   );
 };
 
-// Płatność w euro odczytana z danych zamówienia (patrz getPaymentMeta
-// i getLedgerMeta w OrderService). Przeliczenie jest puste, gdy NBP przy
-// zapłacie nie odpowiedział — wtedy dolicza je zestawienie.
-const getPreparedEurPayment = (raw: RawOrder, paidAt: string): LedgerAmount | null => {
-  if (getMetaValue(raw, ORDER_META.paidCurrency) !== "EUR") return null;
-  const amountEur = parsePositive(getMetaValue(raw, ORDER_META.paidAmount));
-  if (amountEur === null) return null;
+// Płatność w obcej walucie odczytana z danych zamówienia (patrz
+// getPaymentMeta i getLedgerMeta w OrderService). Przeliczenie jest puste,
+// gdy NBP przy zapłacie nie odpowiedział — wtedy dolicza je zestawienie.
+const getPreparedForeignPayment = (
+  raw: RawOrder,
+  paidAt: string
+): LedgerAmount | null => {
+  const currency = getPaidForeignCurrency(raw);
+  if (!currency) return null;
+  const amount = parsePositive(getMetaValue(raw, ORDER_META.paidAmount));
+  if (amount === null) return null;
 
   const amountPln = parsePositive(getMetaValue(raw, LEDGER_META.amountPln));
   const mid = parsePositive(getMetaValue(raw, LEDGER_META.rate));
@@ -370,7 +388,8 @@ const getPreparedEurPayment = (raw: RawOrder, paidAt: string): LedgerAmount | nu
 
   return {
     paidOn: getWarsawDay(new Date(paidAt)),
-    amountEur,
+    currency,
+    amount,
     conversion:
       amountPln !== null && mid !== null && effectiveDate && table
         ? { amountPln, rate: { mid, effectiveDate, table } }
@@ -390,7 +409,7 @@ export const prepareSalesOrder = (
     number: raw.number,
     paidAt,
     totalPln: parseFloat(raw.total) || 0,
-    eur: getPreparedEurPayment(raw, paidAt),
+    foreign: getPreparedForeignPayment(raw, paidAt),
     refunds: refunds.map((refund) => ({
       createdAt: parseWooGmtDate(refund.date_created_gmt).toISOString(),
       amountPln: Math.abs(parseFloat(refund.amount) || 0),
@@ -504,7 +523,7 @@ export const prepareStudioOrderMail = (raw: RawOrder): StudioOrderMail => {
     totalPln: toAmount(raw.total),
     paidCurrency: currency,
     paidTotal: getOrderAmounts(raw, currency).total,
-    ledger: getPreparedEurPayment(raw, paidAt),
+    ledger: getPreparedForeignPayment(raw, paidAt),
     delivery: getOrderDelivery(raw, "pl"),
     note: getCustomerOwnNote(raw),
     notified: Boolean(getMetaValue(raw, ORDER_META.mailStudioNewOrder)),

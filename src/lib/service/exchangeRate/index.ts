@@ -2,10 +2,12 @@ import "server-only";
 
 import { serverFetch } from "@/lib/api";
 import { NbpRate, RawNbpRates } from "@/contracts/server/exchangeRate";
+import { Currency } from "@/contracts/shared";
 import { shiftDay } from "@/lib/helpers/date";
 import { prepareLastNbpRate } from "./helpers";
 
-const NBP_EUR_RATES_URL = "https://api.nbp.pl/api/exchangerates/rates/a/eur";
+// Tabela A — średnie kursy, po których przelicza się przychód w walucie.
+const NBP_RATES_URL = "https://api.nbp.pl/api/exchangerates/rates/a";
 
 // Najdłuższa przerwa bez tabeli NBP (święta sklejone z weekendem) to kilka
 // dni — dziesięć dni wstecz zawsze sięga ostatniego dnia roboczego.
@@ -26,16 +28,17 @@ class ExchangeRateService {
     return ExchangeRateService.instance;
   }
 
-  // Średni kurs euro z ostatniego dnia roboczego PRZED podanym dniem — po
-  // takim przelicza się przychód w walucie (art. 11a ustawy o PIT). Null, gdy
-  // NBP nie odpowiedział: kurs jest dodatkiem do zapisu zapłaty i jego brak
-  // nie może tego zapisu zatrzymać.
-  async getEurRateBefore(day: string): Promise<NbpRate | null> {
+  // Średni kurs waluty (euro, funta) z ostatniego dnia roboczego PRZED
+  // podanym dniem — po takim przelicza się przychód w walucie (art. 11a
+  // ustawy o PIT). Null, gdy NBP nie odpowiedział: kurs jest dodatkiem do
+  // zapisu zapłaty i jego brak nie może tego zapisu zatrzymać.
+  async getRateBefore(currency: Currency, day: string): Promise<NbpRate | null> {
     const from = shiftDay(day, -LOOKBACK_DAYS);
     const to = shiftDay(day, -1);
+    const url = `${NBP_RATES_URL}/${currency}/${from}/${to}/?format=json`;
 
     try {
-      const res = await serverFetch(`${NBP_EUR_RATES_URL}/${from}/${to}/?format=json`, {
+      const res = await serverFetch(url, {
         headers: { Accept: "application/json" },
         cache: "no-store",
         signal: AbortSignal.timeout(NBP_TIMEOUT_MS),
@@ -43,7 +46,7 @@ class ExchangeRateService {
       if (!res.ok) throw new Error(`NBP API error: ${res.status}`);
       return prepareLastNbpRate((await res.json()) as RawNbpRates);
     } catch (error) {
-      console.error(`NBP: EUR rate before ${day} not fetched:`, error);
+      console.error(`NBP: ${currency.toUpperCase()} rate before ${day} not fetched:`, error);
       return null;
     }
   }

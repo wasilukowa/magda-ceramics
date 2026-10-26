@@ -1,7 +1,7 @@
 import { type Page } from "@playwright/test";
 import { RawOrder } from "@/contracts/server/order";
 import { Currency } from "@/contracts/shared";
-import { convertPlnToEur } from "@/lib/helpers/currency";
+import { convertFromPln } from "@/lib/helpers/currency";
 import { getShippingCost } from "@/lib/helpers/shipping";
 import { ORDER_META } from "@/lib/service/order/helpers";
 import { DeliveryMethod } from "@/contracts/server/shipping";
@@ -181,7 +181,7 @@ test("an English customer pays in euro for delivery to Germany", async ({ page }
   const meta = (key: string) => order.meta_data?.find((entry) => entry.key === key)?.value;
   expect(meta(ORDER_META.paidCurrency)).toBe("EUR");
   expect(Number(meta(ORDER_META.paidAmount))).toBe(
-    convertPlnToEur(Number(product.price)) +
+    convertFromPln(Number(product.price), Currency.EUR) +
       getShippingCost("DE", Currency.EUR, DeliveryMethod.Courier)
   );
 });

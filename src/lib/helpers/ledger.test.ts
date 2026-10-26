@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { formatPlNumber, getLedgerAmountPln } from "./ledger";
+import { Currency } from "@/contracts/shared";
+import { formatPlAmount, formatPlNumber, getLedgerAmountPln } from "./ledger";
 
 describe("getLedgerAmountPln", () => {
   it("converts euro at the NBP rate without losing a grosz", () => {
@@ -14,5 +15,10 @@ describe("formatPlNumber", () => {
   it("writes numbers the Polish way", () => {
     expect(formatPlNumber(4.265, 4)).toBe("4,2650");
     expect(formatPlNumber(81.04, 2)).toBe("81,04");
+  });
+
+  it("writes an amount with its currency sign", () => {
+    expect(formatPlAmount(19, Currency.EUR)).toBe("19,00 €");
+    expect(formatPlAmount(30, Currency.GBP)).toBe("30,00 £");
   });
 });

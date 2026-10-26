@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { LedgerAmount } from "@/contracts/server/exchangeRate";
 import { SalesOrder } from "@/contracts/server/order";
 import { SalesEntryKind } from "@/contracts/server/salesReport";
+import { Currency } from "@/contracts/shared";
 import {
   buildSalesReport,
   getPreviousMonth,
@@ -14,7 +15,7 @@ const order = (overrides: Partial<SalesOrder> = {}): SalesOrder => ({
   number: "400",
   paidAt: "2026-10-05T10:00:00Z",
   totalPln: 185,
-  eur: null,
+  foreign: null,
   refunds: [],
   cancelled: false,
   ...overrides,
@@ -23,7 +24,8 @@ const order = (overrides: Partial<SalesOrder> = {}): SalesOrder => ({
 // 43 € po kursie 4,2650 z tabeli NBP.
 const paidInEuro = (converted: boolean): LedgerAmount => ({
   paidOn: "2026-10-05",
-  amountEur: 43,
+  currency: Currency.EUR,
+  amount: 43,
   conversion: converted
     ? {
         rate: { mid: 4.265, effectiveDate: "2026-10-03", table: "193/A/NBP/2026" },
@@ -55,14 +57,30 @@ describe("buildSalesReport", () => {
   });
 
   it("takes the NBP amount for an order paid in euro", () => {
-    const report = buildSalesReport("2026-10", [order({ eur: paidInEuro(true) })]);
+    const report = buildSalesReport("2026-10", [order({ foreign: paidInEuro(true) })]);
     expect(report.entries[0].amountPln).toBe(183.4);
     expect(report.totalPln).toBe(183.4);
   });
 
+  it("takes the NBP amount for an order paid in pounds", () => {
+    const paidInPounds: LedgerAmount = {
+      paidOn: "2026-10-26",
+      currency: Currency.GBP,
+      amount: 36,
+      conversion: {
+        rate: { mid: 5.2498, effectiveDate: "2026-10-23", table: "207/A/NBP/2026" },
+        amountPln: 188.99,
+      },
+    };
+    const report = buildSalesReport("2026-10", [
+      order({ paidAt: "2026-10-26T10:00:00Z", foreign: paidInPounds }),
+    ]);
+    expect(report.entries[0]).toMatchObject({ amountPln: 188.99, foreign: paidInPounds });
+  });
+
   it("leaves the amount empty when NBP did not answer", () => {
     const report = buildSalesReport("2026-10", [
-      order({ number: "401", eur: paidInEuro(false) }),
+      order({ number: "401", foreign: paidInEuro(false) }),
       order({ number: "402" }),
     ]);
     expect(report.entries.map((entry) => entry.amountPln)).toEqual([null, 185]);
@@ -82,7 +100,7 @@ describe("buildSalesReport", () => {
 
   it("refunds an euro order in proportion to its NBP amount", () => {
     const fullRefund = order({
-      eur: paidInEuro(true),
+      foreign: paidInEuro(true),
       refunds: [{ createdAt: "2026-10-07T09:00:00Z", amountPln: 185 }],
     });
     const report = buildSalesReport("2026-10", [fullRefund]);

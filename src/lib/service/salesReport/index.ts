@@ -28,23 +28,27 @@ class SalesReportService {
     return buildSalesReport(month, await this.withConversions(relevant));
   }
 
-  // Zamówienie w euro bez zapisanego przeliczenia (NBP nie odpowiedział przy
-  // zapłacie) dostaje je teraz — po tym samym kursie, który obowiązywałby
-  // wtedy. Po kolei, bo takich zamówień są pojedyncze sztuki.
+  // Zamówienie w obcej walucie bez zapisanego przeliczenia (NBP nie
+  // odpowiedział przy zapłacie) dostaje je teraz — po tym samym kursie, który
+  // obowiązywałby wtedy. Po kolei, bo takich zamówień są pojedyncze sztuki.
   private async withConversions(orders: SalesOrder[]): Promise<SalesOrder[]> {
     const completed: SalesOrder[] = [];
     for (const order of orders) {
-      if (!order.eur || order.eur.conversion) {
+      const { foreign } = order;
+      if (!foreign || foreign.conversion) {
         completed.push(order);
         continue;
       }
-      const rate = await exchangeRateService.getEurRateBefore(order.eur.paidOn);
+      const rate = await exchangeRateService.getRateBefore(
+        foreign.currency,
+        foreign.paidOn
+      );
       completed.push({
         ...order,
-        eur: {
-          ...order.eur,
+        foreign: {
+          ...foreign,
           conversion: rate
-            ? { rate, amountPln: getLedgerAmountPln(order.eur.amountEur, rate.mid) }
+            ? { rate, amountPln: getLedgerAmountPln(foreign.amount, rate.mid) }
             : null,
         },
       });

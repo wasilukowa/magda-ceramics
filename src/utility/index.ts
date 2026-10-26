@@ -1,4 +1,5 @@
 import type { PlacedCheckout } from "@/contracts/server/checkout";
+import { Currency } from "@/contracts/shared";
 
 export const isDefined = <T>(value: T | null | undefined): value is T =>
   value !== null && value !== undefined;
@@ -11,6 +12,11 @@ export const isCorrectNumber = (value: unknown): value is number =>
 
 export const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
+
+// Kod waluty sklepu małymi literami („pln", „eur", „gbp") — tak, jak zapisuje
+// go przełącznik i jak oddaje go Stripe.
+export const isCurrency = (value: unknown): value is Currency =>
+  Object.values(Currency).includes(value as Currency);
 
 export const isObjectEmpty = (object: object): boolean =>
   Object.keys(object).length === 0;

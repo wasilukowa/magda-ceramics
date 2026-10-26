@@ -49,6 +49,10 @@ describe("preparePayment", () => {
     );
   });
 
+  it("reads a payment in pounds", () => {
+    expect(preparePayment(intent({ currency: "gbp" })).currency).toBe(Currency.GBP);
+  });
+
   it("does not trust a currency the shop does not sell in", () => {
     expect(preparePayment(intent({ currency: "usd" })).currency).toBeNull();
   });

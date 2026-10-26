@@ -32,6 +32,14 @@ describe("getShippingCost", () => {
     expect(getShippingCost("GB", Currency.EUR, DeliveryMethod.Courier)).toBe(21);
   });
 
+  it("prices shipping in pounds", () => {
+    expect(getShippingCost("PL", Currency.GBP, DeliveryMethod.Locker)).toBe(4);
+    expect(getShippingCost("FR", Currency.GBP, DeliveryMethod.Locker)).toBe(10);
+    expect(getShippingCost("FR", Currency.GBP, DeliveryMethod.Courier)).toBe(16);
+    expect(getShippingCost("DE", Currency.GBP, DeliveryMethod.Courier)).toBe(11);
+    expect(getShippingCost("GB", Currency.GBP, DeliveryMethod.Courier)).toBe(18);
+  });
+
   it("records shipping in złoty whatever the paid currency", () => {
     expect(getShippingCostInZloty("DE", DeliveryMethod.Courier)).toBe(55);
     expect(getShippingCostInZloty("NL", DeliveryMethod.Locker)).toBe(50);

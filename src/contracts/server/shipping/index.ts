@@ -1,3 +1,5 @@
+import { Currency } from "@/contracts/shared";
+
 export enum ShippingZone {
   Poland = "PL",
   InPostEu = "INPOST_EU",
@@ -32,12 +34,10 @@ export type RawInPostPoint = {
   address_details?: { city?: string; post_code?: string };
 };
 
-// Native price points per currency, in the smallest unit (grosze / euro cents).
-// These are deliberate flat rates set by the studio, not currency conversions.
-export type ZoneRate = {
-  pln: number;
-  eur: number;
-};
+// Native price points per currency, in the smallest unit (grosze / euro cents /
+// pence). These are deliberate flat rates set by the studio, not live
+// currency conversions.
+export type ZoneRate = Record<Currency, number>;
 
 // Stawki jednej strefy: kurier jest wszędzie, paczkomat tylko tam, gdzie InPost
 // ma paczkomaty. Paczkomat bywa tańszy od kuriera (InPost International),

@@ -22,9 +22,10 @@ export const isValidWooSignature = (
 export const isWooPing = (body: string): boolean => /^webhook_id=\d+$/.test(body);
 
 // Kwota zwrotu w walucie klienta. WooCommerce zapisuje zwrot w złotych.
-// Dla zamówienia w złotych to dokładnie ta kwota; dla zamówienia w euro
-// dokładnie znamy tylko pełny zwrot (= to, co pobrał Stripe). Części zwrotu
-// w euro nie zgadujemy — mail mówi wtedy „zwróciłam część kwoty" bez liczby.
+// Dla zamówienia w złotych to dokładnie ta kwota; dla zamówienia w euro czy
+// funtach dokładnie znamy tylko pełny zwrot (= to, co pobrał Stripe). Części
+// zwrotu w obcej walucie nie zgadujemy — mail mówi wtedy „zwróciłam część
+// kwoty" bez liczby.
 export const getRefundAmount = (
   order: CustomerOrderMail,
   amountPln: number
