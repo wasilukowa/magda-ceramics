@@ -15,7 +15,7 @@ export const PRIVACY: LegalDocumentByLocale = {
         " (hereinafter: “Administrator”)."
       ),
       paragraph(
-        "The Customer’s personal data are processed in accordance with Regulation (EU) 2016/679 of the European Parliament and of the Council of 24 April 2016 (GDPR) and applicable data protection laws."
+        "The Customer’s personal data are processed in accordance with Regulation (EU) 2016/679 of the European Parliament and of the Council of 27 April 2016 (GDPR) and applicable data protection laws."
       ),
       paragraph(
         "The Administrator ensures that the collected data are processed lawfully and with special care for the interests of data subjects."
