@@ -8,34 +8,19 @@ import { hasLocalePrefix, localeOfUnprefixedPath } from "./lib/helpers/localePat
 
 const intlMiddleware = createMiddleware(routing);
 
-const UNLOCK_PASSWORD = "ceramika2025";
-const COOKIE_NAME = "preview_access";
-
 // Pliki dla wyszukiwarek istnieją w jednym egzemplarzu, bez wersji językowych.
-// next-intl przepisałby je na „/pl/robots.txt" i oba zwracałyby 404 — także po
-// zdjęciu bramki. Przepuszczamy je więc obok tłumaczenia adresów, ale DOPIERO
-// za sprawdzeniem dostępu: dopóki bramka stoi, są zasłonięte razem z resztą.
+// next-intl przepisałby je na „/pl/robots.txt" i oba zwracałyby 404, więc
+// przepuszczamy je obok tłumaczenia adresów.
 const SEARCH_ENGINE_FILES = ["/robots.txt", "/sitemap.xml"];
 
 export default function proxy(request: NextRequest) {
-  const { pathname, searchParams } = request.nextUrl;
+  const { pathname } = request.nextUrl;
 
-  if (pathname === "/coming-soon") return NextResponse.next();
-
-  const unlockParam = searchParams.get("unlock");
-  if (unlockParam === UNLOCK_PASSWORD) {
-    const response = NextResponse.redirect(new URL("/", request.url));
-    response.cookies.set(COOKIE_NAME, "true", {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 30,
-      path: "/",
-    });
-    return response;
-  }
-
-  const hasAccess = request.cookies.get(COOKIE_NAME)?.value === "true";
-  if (!hasAccess) {
-    return NextResponse.redirect(new URL("/coming-soon", request.url));
+  // Bramka „Wkrótce” zdjęta przy otwarciu sklepu. Jej adres mógł zostać
+  // w udostępnionych linkach i podglądach na Instagramie — prowadzi teraz na
+  // stronę główną.
+  if (pathname === "/coming-soon") {
+    return NextResponse.redirect(new URL("/", request.url), 308);
   }
 
   if (SEARCH_ENGINE_FILES.includes(pathname)) return NextResponse.next();

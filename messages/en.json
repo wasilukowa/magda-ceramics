@@ -331,10 +331,6 @@
     "faq": "Questions & answers",
     "archive": "Archive"
   },
-  "comingSoon": {
-    "title": "Coming soon",
-    "message": "Something beautiful is on its way."
-  },
   "auth": {
     "fields": {
       "firstName": "First name",
@@ -571,10 +567,6 @@
     "entries": {
       "session": {
         "purpose": "Keeps you signed in to your account.",
-        "duration": "30 days"
-      },
-      "previewAccess": {
-        "purpose": "Access to the store during the pre-launch period.",
         "duration": "30 days"
       },
       "consent": {

@@ -6,13 +6,9 @@ import {
   serializeConsentCookie,
 } from "@/lib/helpers/consent";
 
-// Ciasteczko, które otwiera sklep za bramką „Wkrótce" (patrz src/proxy.ts).
-const GATE_COOKIE = { name: "preview_access", value: "true" };
-
-// Klient, który już przeszedł bramkę i zamknął baner cookies.
+// Klient, który już zamknął baner cookies.
 const enterShop = (context: BrowserContext, baseURL: string) =>
   context.addCookies([
-    { ...GATE_COOKIE, url: baseURL },
     {
       name: CONSENT_COOKIE_NAME,
       value: serializeConsentCookie(createConsent(REJECTED_CHOICES)),

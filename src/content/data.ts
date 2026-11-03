@@ -52,13 +52,6 @@ export const COOKIE_REGISTRY: CookieRegistryEntry[] = [
     category: CookieCategory.Necessary,
   },
   {
-    // Remove this row together with the pre-launch gate in src/proxy.ts
-    key: "previewAccess",
-    name: "preview_access",
-    provider: "magdaceramics.com",
-    category: CookieCategory.Necessary,
-  },
-  {
     key: "consent",
     name: "cookie_consent",
     provider: "magdaceramics.com",
@@ -136,7 +129,7 @@ export const STUDIO_ADDRESS_EN = "Ul. Pełczyńskiego 14A/198, 01-471 Warsaw, Po
 export const SITE_URL = "https://www.magdaceramics.com";
 
 // Strony, które mają trafić do mapy strony. Świadomie NIE MA tu kasy, konta,
-// logowania, ulubionych ani zaślepki „coming soon" — to strony do używania,
+// logowania ani ulubionych — to strony do używania,
 // nie do znajdowania w wyszukiwarce. Trasy z segmentem dynamicznym (produkty,
 // kategorie) dokłada sam sitemap.ts, prosto z WooCommerce.
 export const SITEMAP_ROUTES: StaticRoute[] = [
@@ -157,17 +150,6 @@ export const SITEMAP_ROUTES: StaticRoute[] = [
 
 export const INSTAGRAM_URL = "https://www.instagram.com/magda_ceramics";
 export const INSTAGRAM_HANDLE = "@magda_ceramics";
-
-// Tytuł i opis zaślepki „coming soon". Dopóki stoi bramka, to jedyna strona,
-// jaką widzi ktoś z zewnątrz — także w podglądzie linku na Instagramie czy
-// w komunikatorze. Po angielsku, jak sama zaślepka.
-export const COMING_SOON_META = {
-  title: "Shop coming soon",
-  description:
-    "Handmade ceramics from a home studio in Warsaw — mugs, candle holders and vessels carved and painted by hand. The shop opens soon.",
-  imageAlt: "Three handmade Magda Ceramics mugs held in someone's hands",
-  photoAlt: "Handmade ceramics",
-};
 
 // Only countries the studio actually ships to: Poland, the EU countries below
 // and the United Kingdom. Other destinations are intentionally excluded —

@@ -5,8 +5,7 @@ import { SITE_URL } from "@/content/data";
 import { StaticRoute } from "@/content/types";
 
 // Strony, które nie mają czego szukać w wynikach wyszukiwania: kasa, strona
-// zamówienia z maila, konto klienta, logowanie, ulubione i zaślepka sprzed
-// premiery. Adresy liczymy
+// zamówienia z maila, konto klienta, logowanie i ulubione. Adresy liczymy
 // dla obu języków, więc polska „/pl/konto" jest wykluczona tak samo jak
 // angielska „/en/account" — bez przepisywania ich ręcznie.
 const PRIVATE_ROUTES: StaticRoute[] = [
@@ -22,10 +21,6 @@ const PRIVATE_ROUTES: StaticRoute[] = [
   "/wishlist",
 ];
 
-// Zaślepka żyje poza [locale], więc nie ma wersji językowych — inaczej trafiłby
-// tu nieistniejący „/pl/coming-soon".
-const GATE_PATH = "/coming-soon";
-
 export default function robots(): MetadataRoute.Robots {
   const disallow = routing.locales.flatMap((locale) =>
     PRIVATE_ROUTES.map((href) => getPathname({ locale, href }))
@@ -35,7 +30,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: [...new Set([...disallow, GATE_PATH])],
+      disallow: [...new Set(disallow)],
     },
     sitemap: new URL("/sitemap.xml", SITE_URL).toString(),
   };
