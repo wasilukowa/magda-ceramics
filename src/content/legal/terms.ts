@@ -17,8 +17,9 @@ import {
 
 // Regulamin sklepu. Treść jest wiążąca prawnie — poprawki wprowadzać w obu
 // językach naraz i pamiętać o dacie wejścia w życie w § 8.
-// Kotwice „delivery" i „returns" są linkowane ze stopki i ze strony
-// „Wysyłka i zwroty" — nie zmieniać ich nazw bez poprawienia tamtych linków.
+// Kotwice „delivery", „returns", „complaints" i „withdrawal-form" są linkowane
+// ze stopki i ze strony „Wysyłka i zwroty" — nie zmieniać ich nazw bez
+// poprawienia tamtych linków.
 export const TERMS: LegalDocumentByLocale = {
   en: [
     section(
@@ -50,7 +51,7 @@ export const TERMS: LegalDocumentByLocale = {
         "To place an order, select the products, add them to the cart, fill out the delivery form, and choose a payment method."
       ),
       paragraph(
-        "The condition for fulfilling the order is clicking the “Pay & order” button and paying for the order within 48 hours of placing it. An order not paid within this period is cancelled, and the Customer is notified by email. Until payment, the Customer may also cancel the order themselves."
+        "The condition for fulfilling the order is clicking the “Order with obligation to pay” button and paying for the order within 48 hours of placing it. An order not paid within this period is cancelled, and the Customer is notified by email. Until payment, the Customer may also cancel the order themselves."
       ),
       paragraph(
         "Prices in the Store are gross prices. They are shown in Polish zloty (PLN), in euro (EUR) or in pounds sterling (GBP), converted at the Store's fixed exchange rates. The Customer pays in the currency they have chosen. Prices do not include delivery costs, which are added during the checkout process."
@@ -63,11 +64,13 @@ export const TERMS: LegalDocumentByLocale = {
       "delivery",
       "§ 4. Payments and Delivery",
       paragraph("The Seller provides the following payment methods:"),
-      bullets("Card payments, BLIK, Apple Pay, Google Pay via Stripe."),
+      bullets(
+        "Payments via the Stripe payment operator — the methods available for the chosen currency (such as card, BLIK, Apple Pay and Google Pay) are shown at checkout."
+      ),
       paragraph("Available delivery methods:"),
       bullets(
-        "Domestic delivery (Poland): InPost / DPD / DHL.",
-        "International delivery: DHL Express / Polish Post."
+        "InPost parcel lockers — in Poland and in the countries where the checkout shows the locker map.",
+        "Courier delivery — booked through the ePaka.pl shipping service, which hands the parcel to the courier company serving the destination."
       ),
       paragraph(
         "Delivery costs are covered by the Buyer unless promotional terms state otherwise."
@@ -91,6 +94,11 @@ export const TERMS: LegalDocumentByLocale = {
         "To exercise this right, the Customer must inform the Seller by an unequivocal statement (e.g., by sending an email to ",
         mail(CONTACT_EMAIL),
         ")."
+      ),
+      paragraph(
+        "The Customer may use the ",
+        link("model withdrawal form", "/terms", "withdrawal-form"),
+        " in Annex No. 1 to these Terms, but it is not obligatory."
       ),
       paragraph(
         `The Customer is obliged to send the product back at their own expense to: ${STUDIO_ADDRESS_EN}, within 14 days of notifying the Seller.`
@@ -132,7 +140,7 @@ export const TERMS: LegalDocumentByLocale = {
       "§ 7. Personal Data Protection (GDPR)",
       paragraph("The Seller is the administrator of the Customers’ personal data."),
       paragraph(
-        "Personal data is processed solely for the purpose of fulfilling orders and (if the Customer consents) for marketing purposes."
+        "Personal data is processed for the purpose of fulfilling orders and maintaining the Customer’s account in the Store."
       ),
       paragraph(
         "Detailed rules on data protection and cookie policy can be found in the ",
@@ -142,13 +150,28 @@ export const TERMS: LegalDocumentByLocale = {
     ),
     section(
       "§ 8. Final Provisions",
-      paragraph("These Terms and Conditions enter into force on May 28, 2026."),
+      paragraph("These Terms and Conditions enter into force on November 4, 2026."),
       paragraph(
         "In matters not regulated herein, the relevant provisions of Polish and European consumer law shall apply."
       ),
       paragraph(
         "The Seller reserves the right to amend these Terms and Conditions. Orders placed before the amendment will be governed by the version in force on the day the order was placed."
       )
+    ),
+    anchoredSection(
+      "withdrawal-form",
+      "Annex No. 1. Model Withdrawal Form",
+      paragraph("(complete and return this form only if you wish to withdraw from the contract)"),
+      bullets(
+        [`To: ${STUDIO_NAME}, ${STUDIO_ADDRESS_EN}, email: `, mail(CONTACT_EMAIL)],
+        "I/We (*) hereby give notice that I/We (*) withdraw from my/our (*) contract of sale of the following goods: …",
+        "Ordered on (*) / received on (*): …",
+        "Name of consumer(s): …",
+        "Address of consumer(s): …",
+        "Signature of consumer(s) (only if this form is notified on paper): …",
+        "Date: …"
+      ),
+      paragraph("(*) Delete as appropriate.")
     ),
   ],
   pl: [
@@ -184,7 +207,7 @@ export const TERMS: LegalDocumentByLocale = {
         "W celu złożenia zamówienia należy wybrać produkty, dodać je do koszyka, wypełnić formularz dostawy oraz wybrać metodę płatności."
       ),
       paragraph(
-        "Warunkiem realizacji zamówienia jest kliknięcie przycisku „Zapłać i zamów” oraz opłacenie zamówienia w ciągu 48 godzin od jego złożenia. Zamówienie nieopłacone w tym terminie zostaje anulowane, o czym Klient otrzymuje wiadomość e-mail. Do czasu zapłaty Klient może też sam anulować zamówienie."
+        "Warunkiem realizacji zamówienia jest kliknięcie przycisku „Zamawiam z obowiązkiem zapłaty” oraz opłacenie zamówienia w ciągu 48 godzin od jego złożenia. Zamówienie nieopłacone w tym terminie zostaje anulowane, o czym Klient otrzymuje wiadomość e-mail. Do czasu zapłaty Klient może też sam anulować zamówienie."
       ),
       paragraph(
         "Ceny w Sklepie są cenami brutto. Podawane są w złotych (PLN), w euro (EUR) albo w funtach brytyjskich (GBP), przeliczonych po stałych kursach Sklepu. Klient płaci w walucie, którą wybrał. Ceny nie zawierają kosztów dostawy, które są doliczane w procesie składania zamówienia."
@@ -197,11 +220,13 @@ export const TERMS: LegalDocumentByLocale = {
       "delivery",
       "§ 4. Płatności i dostawa",
       paragraph("Sprzedawca udostępnia następujące formy płatności:"),
-      bullets("Płatności kartą, BLIK, Apple Pay, Google Pay za pośrednictwem operatora Stripe."),
+      bullets(
+        "Płatności za pośrednictwem operatora płatności Stripe — metody dostępne dla wybranej waluty (np. karta, BLIK, Apple Pay, Google Pay) pokazują się w kasie."
+      ),
       paragraph("Dostępne metody dostawy:"),
       bullets(
-        "Dostawa krajowa: InPost / DPD / DHL.",
-        "Dostawa zagraniczna: DHL Express / Poczta Polska."
+        "Paczkomaty InPost — w Polsce i w krajach, w których kasa pokazuje mapę paczkomatów.",
+        "Przesyłka kurierska — zamawiana przez serwis ePaka.pl, który przekazuje paczkę firmie kurierskiej obsługującej dany kierunek."
       ),
       paragraph(
         "Koszt dostawy pokrywa Kupujący, chyba że warunki promocji stanowią inaczej."
@@ -225,6 +250,11 @@ export const TERMS: LegalDocumentByLocale = {
         "Aby skorzystać z tego prawa, Klient musi poinformować Sprzedawcę o swojej decyzji w drodze jednoznacznego oświadczenia (np. wysyłając e-mail na adres ",
         mail(CONTACT_EMAIL),
         ")."
+      ),
+      paragraph(
+        "Klient może skorzystać ze ",
+        link("wzoru formularza odstąpienia od umowy", "/terms", "withdrawal-form"),
+        ", stanowiącego Załącznik nr 1 do Regulaminu, jednak nie jest to obowiązkowe."
       ),
       paragraph(
         `Klient ma obowiązek odesłać produkt na własny koszt na adres: ${STUDIO_ADDRESS_PL}, w terminie 14 dni od dnia zgłoszenia odstąpienia.`
@@ -266,7 +296,7 @@ export const TERMS: LegalDocumentByLocale = {
       "§ 7. Ochrona danych osobowych (RODO)",
       paragraph("Administratorem danych osobowych Klientów jest Sprzedawca."),
       paragraph(
-        "Dane osobowe przetwarzane są wyłącznie w celu realizacji zamówień oraz (jeśli Klient wyrazi zgodę) w celach marketingowych."
+        "Dane osobowe przetwarzane są w celu realizacji zamówień oraz prowadzenia konta Klienta w Sklepie."
       ),
       paragraph(
         "Szczegółowe zasady ochrony danych oraz polityka plików cookies dostępne są w dokumencie ",
@@ -276,13 +306,28 @@ export const TERMS: LegalDocumentByLocale = {
     ),
     section(
       "§ 8. Postanowienia końcowe",
-      paragraph("Regulamin wchodzi w życie z dniem 28 maja 2026 r."),
+      paragraph("Regulamin wchodzi w życie z dniem 4 listopada 2026 r."),
       paragraph(
         "W sprawach nieuregulowanych niniejszym Regulaminem mają zastosowanie powszechnie obowiązujące przepisy prawa polskiego."
       ),
       paragraph(
         "Sprzedawca zastrzega sobie prawo do zmian w Regulaminie. Do zamówień złożonych przed zmianą stosuje się wersję Regulaminu obowiązującą w dniu złożenia zamówienia."
       )
+    ),
+    anchoredSection(
+      "withdrawal-form",
+      "Załącznik nr 1. Wzór formularza odstąpienia od umowy",
+      paragraph("(formularz ten należy wypełnić i odesłać tylko w przypadku chęci odstąpienia od umowy)"),
+      bullets(
+        [`Adresat: ${STUDIO_NAME}, ${STUDIO_ADDRESS_PL}, e-mail: `, mail(CONTACT_EMAIL)],
+        "Ja/My (*) niniejszym informuję/informujemy (*) o moim/naszym (*) odstąpieniu od umowy sprzedaży następujących rzeczy: …",
+        "Data zawarcia umowy (*) / odbioru (*): …",
+        "Imię i nazwisko konsumenta(-ów): …",
+        "Adres konsumenta(-ów): …",
+        "Podpis konsumenta(-ów) (tylko jeżeli formularz jest przesyłany w wersji papierowej): …",
+        "Data: …"
+      ),
+      paragraph("(*) Niepotrzebne skreślić.")
     ),
   ],
 };

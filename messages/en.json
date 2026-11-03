@@ -230,7 +230,7 @@
     "stepSummary": "Summary",
     "shippingPending": "Added once you choose a delivery method",
     "emailInvalid": "Please check the email address.",
-    "placeOrder": "Place order",
+    "placeOrder": "Order with obligation to pay",
     "placeOrderHint": "Once you place the order, {count, plural, one {the piece is} other {the pieces are}} held for you for 48 hours. You pay in the next step.",
     "saveChanges": "Save changes",
     "saveChangesHint": "Your changes will update order no. {number} — no new order is placed.",
