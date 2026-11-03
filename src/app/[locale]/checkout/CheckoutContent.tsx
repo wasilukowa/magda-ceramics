@@ -210,10 +210,22 @@ export default function CheckoutContent({
 
   const onShipping = step === CheckoutStep.Shipping;
   const placesOrder = onShipping && (!placement || dirty);
+  // Przycisk składający zamówienie musi mówić wprost o obowiązku zapłaty
+  // (art. 17 ustawy o prawach konsumenta). Ta część idzie drugą, mniejszą
+  // linijką — decyzja Natalii 2026-11-03.
+  const placeOrderLabel = (
+    <span className="flex flex-col items-center gap-1">
+      {t.rich("placeOrder", {
+        small: (chunks) => (
+          <span className="text-[11px] normal-case tracking-normal">{chunks}</span>
+        ),
+      })}
+    </span>
+  );
   const primaryLabel = !onShipping
     ? t("continue")
     : !placement
-      ? t("placeOrder")
+      ? placeOrderLabel
       : dirty
         ? t("saveChanges")
         : t("continue");
@@ -270,6 +282,7 @@ export default function CheckoutContent({
             onBack={onShipping ? () => goToStep(CheckoutStep.Contact) : onLeave}
             primaryLabel={primaryLabel}
             accent={placesOrder}
+            wide={placesOrder}
             loading={loading}
             error={error}
             hint={hint}

@@ -229,7 +229,7 @@
     "stepSummary": "Podsumowanie",
     "shippingPending": "Koszt doliczymy po wybraniu sposobu dostawy",
     "emailInvalid": "Sprawdź adres e-mail.",
-    "placeOrder": "Złóż zamówienie",
+    "placeOrder": "Zamawiam <small>z obowiązkiem zapłaty</small>",
     "placeOrderHint": "Po złożeniu zamówienia {count, plural, one {praca czeka} other {prace czekają}} na Ciebie 48 godzin. Zapłacisz w następnym kroku.",
     "saveChanges": "Zapisz zmiany",
     "saveChangesHint": "Zmiany trafią do zamówienia nr {number} — bez składania nowego.",

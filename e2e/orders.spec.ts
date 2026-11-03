@@ -17,6 +17,7 @@ import {
   fillCourierAddress,
   payByCard,
   placeOrder,
+  plainText,
   startGuestCheckout,
   type Locale,
 } from "./support/checkout";
@@ -149,7 +150,7 @@ test("a reserved work cannot be bought twice, and returns when cancelled", async
   await startGuestCheckout(rival, "pl");
   await fillContact(rival, "pl");
   await fillCourierAddress(rival, "pl");
-  await rival.getByRole("button", { name: t.checkout.placeOrder }).click();
+  await rival.getByRole("button", { name: plainText(t.checkout.placeOrder) }).click();
   await expect(rival.getByText(t.checkout.soldOutTitle)).toBeVisible({ timeout: 30_000 });
   await expect(rival.getByRole("listitem").filter({ hasText: product.name })).toBeVisible();
   await rival.context().close();

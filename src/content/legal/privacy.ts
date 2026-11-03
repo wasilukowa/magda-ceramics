@@ -27,7 +27,7 @@ export const PRIVACY: LegalDocumentByLocale = {
       bullets(
         [
           strong("Performance of the sales contract"),
-          " (Art. 6(1)(b) GDPR) — name, surname, delivery address, email address, phone number, Tax ID (for businesses).",
+          " (Art. 6(1)(b) GDPR) — name, surname, delivery address, email address, phone number.",
         ],
         [
           strong("Accounting and tax settlements"),
@@ -38,8 +38,8 @@ export const PRIVACY: LegalDocumentByLocale = {
           " (Art. 6(1)(f) GDPR) — the legitimate interest of the Administrator.",
         ],
         [
-          strong("Direct marketing / Newsletter"),
-          " (Art. 6(1)(a) GDPR) — only with the Customer’s voluntary consent.",
+          strong("Customer account"),
+          " (Art. 6(1)(b) GDPR) — account details, saved addresses and parcel lockers, wishlist; only if the Customer creates an account.",
         ]
       )
     ),
@@ -48,15 +48,19 @@ export const PRIVACY: LegalDocumentByLocale = {
       paragraph("To fulfill the order, the Administrator may share the Customer’s data with:"),
       bullets(
         "Electronic payment operator (Stripe) — to process payments.",
-        "Courier and logistics companies (InPost / DPD / DHL) — to deliver the package.",
+        "InPost, the ePaka.pl shipping service and the courier company it hands the parcel to — to deliver the order.",
+        "Email delivery provider (Resend) — to send order confirmations and replies to messages.",
         "Accounting office — for store bookkeeping services.",
         "Hosting and e-commerce platform providers supporting the store."
+      ),
+      paragraph(
+        "Some of these providers (e.g. Stripe, Resend and the hosting provider Vercel) may process data outside the European Economic Area, in particular in the United States. Such transfers take place on the basis of a European Commission adequacy decision (EU–US Data Privacy Framework) or of standard contractual clauses approved by the European Commission."
       )
     ),
     section(
       "§ 4. Data Retention Period",
       paragraph(
-        "Personal data will be stored for the period necessary to execute the sales contract, and thereafter for a period corresponding to the statute of limitations for claims (usually 6 years for tax and accounting purposes) or until consent is withdrawn in the case of the Newsletter."
+        "Personal data will be stored for the period necessary to execute the sales contract, and thereafter for a period corresponding to the statute of limitations for claims (usually 6 years for tax and accounting purposes). Customer account data are kept until the account is deleted."
       )
     ),
     section(
@@ -113,7 +117,7 @@ export const PRIVACY: LegalDocumentByLocale = {
       bullets(
         [
           strong("Realizacja zamówienia i umowy sprzedaży"),
-          " (art. 6 ust. 1 lit. b RODO) — imię, nazwisko, adres dostawy, e-mail, numer telefonu, NIP (w przypadku firm).",
+          " (art. 6 ust. 1 lit. b RODO) — imię, nazwisko, adres dostawy, e-mail, numer telefonu.",
         ],
         [
           strong("Rozliczenia księgowe i podatkowe"),
@@ -124,8 +128,8 @@ export const PRIVACY: LegalDocumentByLocale = {
           " (art. 6 ust. 1 lit. f RODO) — prawnie uzasadniony interes Administratora.",
         ],
         [
-          strong("Marketing bezpośredni / Newsletter"),
-          " (art. 6 ust. 1 lit. a RODO) — wyłącznie za zgodą Klienta.",
+          strong("Prowadzenie konta Klienta"),
+          " (art. 6 ust. 1 lit. b RODO) — dane konta, zapisane adresy i paczkomaty, lista ulubionych; tylko jeśli Klient założy konto.",
         ]
       )
     ),
@@ -134,15 +138,19 @@ export const PRIVACY: LegalDocumentByLocale = {
       paragraph("W celu realizacji zamówienia Administrator może udostępniać dane Klienta:"),
       bullets(
         "Operatorowi płatności Stripe — w celu obsługi płatności.",
-        "Firmom kurierskim (InPost / DPD / DHL) — w celu dostarczenia przesyłki.",
+        "InPost, serwisowi ePaka.pl oraz firmie kurierskiej, której ePaka przekazuje przesyłkę — w celu dostarczenia zamówienia.",
+        "Dostawcy usługi wysyłki e-maili (Resend) — w celu wysyłania potwierdzeń zamówień i odpowiedzi na wiadomości.",
         "Biuru rachunkowemu — w celu obsługi księgowej sklepu.",
         "Dostawcy hostingu i systemu e-commerce."
+      ),
+      paragraph(
+        "Część z tych usługodawców (np. Stripe, Resend i dostawca hostingu Vercel) może przetwarzać dane poza Europejskim Obszarem Gospodarczym, w szczególności w Stanach Zjednoczonych. Odbywa się to na podstawie decyzji Komisji Europejskiej stwierdzającej odpowiedni stopień ochrony (EU–US Data Privacy Framework) albo standardowych klauzul umownych zatwierdzonych przez Komisję Europejską."
       )
     ),
     section(
       "§ 4. Okres przechowywania danych",
       paragraph(
-        "Dane osobowe będą przechowywane przez okres niezbędny do realizacji umowy sprzedaży, a po tym czasie przez okres odpowiadający przedawnieniu roszczeń (zazwyczaj 6 lat dla celów podatkowych i księgowych) lub do momentu wycofania zgody w przypadku Newslettera."
+        "Dane osobowe będą przechowywane przez okres niezbędny do realizacji umowy sprzedaży, a po tym czasie przez okres odpowiadający przedawnieniu roszczeń (zazwyczaj 6 lat dla celów podatkowych i księgowych). Dane konta Klienta przechowujemy do czasu usunięcia konta."
       )
     ),
     section(

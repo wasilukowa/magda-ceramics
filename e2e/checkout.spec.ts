@@ -10,6 +10,7 @@ import {
   addToCart,
   chooseLocker,
   fillContact,
+  plainText,
   startGuestCheckout,
   type Locale,
 } from "./support/checkout";
@@ -83,13 +84,13 @@ test("checkout asks for the missing details step by step", async ({ page }) => {
   await expectTotals(page, "pl", product.price, "PL", DeliveryMethod.Locker);
   await page.getByLabel(t.phoneRequired, { exact: true }).fill("12");
   await expect(page.getByText(t.phoneInvalid)).toBeVisible();
-  await page.getByRole("button", { name: t.placeOrder }).click();
+  await page.getByRole("button", { name: plainText(t.placeOrder) }).click();
   await expect(page.getByText(t.lockerRequired)).toBeVisible();
 
   // Kurier bez adresu.
   await page.getByRole("button", { name: new RegExp(`^${t.methodCourier}`) }).click();
   await expectTotals(page, "pl", product.price, "PL", DeliveryMethod.Courier);
-  await page.getByRole("button", { name: t.placeOrder }).click();
+  await page.getByRole("button", { name: plainText(t.placeOrder) }).click();
   await expect(page.getByText(t.fillRequired)).toBeVisible();
 
   // Wstecz nie gubi wpisanych danych.

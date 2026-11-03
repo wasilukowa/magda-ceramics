@@ -9,6 +9,10 @@ export type Locale = "pl" | "en";
 
 export const MESSAGES = { pl, en } as const;
 
+// Tekst komunikatu bez znaczników formatowania („Zamawiam <small>…</small>")
+// — tak, jak czyta go przeglądarka w nazwie przycisku.
+export const plainText = (message: string): string => message.replace(/<\/?[^>]+>/g, "");
+
 // Skrzynka testowa Resenda — przyjmuje wszystko i niczego nie dostarcza.
 export const TEST_EMAIL = "delivered@resend.dev";
 
@@ -89,7 +93,7 @@ export const placeOrder = async (
   button: "placeOrder" | "saveChanges" = "placeOrder"
 ): Promise<number> => {
   const t = MESSAGES[locale].checkout;
-  await page.getByRole("button", { name: t[button] }).click();
+  await page.getByRole("button", { name: plainText(t[button]) }).click();
   const placed = page.getByText(new RegExp(t.orderPlaced.replace("{number}", "(\\d+)")));
   await expect(placed).toBeVisible({ timeout: 30_000 });
   const [, number] = (await placed.textContent())!.match(/(\d+)/)!;

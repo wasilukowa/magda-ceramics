@@ -65,6 +65,11 @@ export const SHIPPING_DETAILS: LegalDocumentByLocale = {
       ),
       paragraph("It is enough to write to ", mail(CONTACT_EMAIL), " and say so."),
       paragraph(
+        "You can use the ",
+        link("model withdrawal form", "/terms", "withdrawal-form"),
+        " from the Terms, but you don’t have to."
+      ),
+      paragraph(
         `The product then goes back at the customer’s own expense, within 14 days of that message, to: ${STUDIO_ADDRESS_EN}.`
       ),
       paragraph(
@@ -108,6 +113,11 @@ export const SHIPPING_DETAILS: LegalDocumentByLocale = {
         "Konsument może odstąpić od zakupu bez podawania przyczyny w ciągu 14 dni od odebrania przesyłki."
       ),
       paragraph("Wystarczy napisać na ", mail(CONTACT_EMAIL), "."),
+      paragraph(
+        "Możesz skorzystać ze ",
+        link("wzoru formularza odstąpienia", "/terms", "withdrawal-form"),
+        " z regulaminu, ale nie musisz."
+      ),
       paragraph(
         `Produkt wraca na koszt klienta, w ciągu 14 dni od tej wiadomości, na adres: ${STUDIO_ADDRESS_PL}.`
       ),
