@@ -11,7 +11,6 @@ import {
   link,
   mail,
   paragraph,
-  placeholder,
   section,
   strong,
 } from "@/lib/helpers/legal";
@@ -64,13 +63,7 @@ export const TERMS: LegalDocumentByLocale = {
       "delivery",
       "§ 4. Payments and Delivery",
       paragraph("The Seller provides the following payment methods:"),
-      bullets(
-        "Card payments, BLIK, Apple Pay, Google Pay via Stripe.",
-        [
-          "Traditional bank transfer to account: ",
-          placeholder("[bank account number — to be provided]"),
-        ]
-      ),
+      bullets("Card payments, BLIK, Apple Pay, Google Pay via Stripe."),
       paragraph("Available delivery methods:"),
       bullets(
         "Domestic delivery (Poland): InPost / DPD / DHL.",
@@ -204,13 +197,7 @@ export const TERMS: LegalDocumentByLocale = {
       "delivery",
       "§ 4. Płatności i dostawa",
       paragraph("Sprzedawca udostępnia następujące formy płatności:"),
-      bullets(
-        "Płatności kartą, BLIK, Apple Pay, Google Pay za pośrednictwem operatora Stripe.",
-        [
-          "Tradycyjny przelew bankowy na konto o numerze: ",
-          placeholder("[numer konta — do uzupełnienia]"),
-        ]
-      ),
+      bullets("Płatności kartą, BLIK, Apple Pay, Google Pay za pośrednictwem operatora Stripe."),
       paragraph("Dostępne metody dostawy:"),
       bullets(
         "Dostawa krajowa: InPost / DPD / DHL.",
