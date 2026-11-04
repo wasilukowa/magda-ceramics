@@ -18,11 +18,17 @@ import { CeramicsByLocale } from "./types";
 // pomniejszone do 1600 px. Zdjęcie pracowni to kwadratowy kadr ze zdjęcia
 // z telefonu, taki jak w dokumencie.
 //
+// Zmiany od Natalii po dokumencie (2026-11-04): zdjęcie pracowni przeszło
+// wyżej, pod pierwszy akapit; pod „1. Przygotowanie" stoi zamiast niego
+// kulka gliny, a polskie zdanie przed nim kończy się na „…który z niego
+// powstanie." (bez „czyli jestem tu:").
+//
 // Do 2026-11-04 na tej stronie stał slider z 17 zdjęciami z pracy przy kole
 // (CERAMICS_PHOTOS) i ramka „Właśnie w piecu". Decyzja Natalii: slider na
 // razie znika — lista i pliki są w historii gita przed tą zmianą.
 const PHOTO = {
   kitchenStudio: { src: "/ceramika/pracownia-w-kuchni.jpg", width: 1600, height: 1600 },
+  clayBall: { src: "/ceramika/kulka-gliny.jpg", width: 1600, height: 1600 },
   throwingVase: { src: "/ceramika/toczenie-wazon.jpg", width: 1600, height: 1600 },
   throwingWalls: { src: "/ceramika/toczenie-scianki.jpg", width: 1600, height: 1600 },
   trimming: { src: "/ceramika/trymowanie.jpg", width: 1600, height: 1600 },
@@ -45,6 +51,15 @@ export const CERAMICS: CeramicsByLocale = {
         text: "Every mug, bowl, or vase that finds its way into your hands carries a story written in clay, hands, and fire. The entire process unfolds in my home studio, where everyday living space blends seamlessly with artistic craftsmanship.",
       },
       {
+        type: "photos",
+        photos: [
+          {
+            ...PHOTO.kitchenStudio,
+            alt: "Magda's home studio in the kitchen: the pottery wheel, a side table and tools",
+          },
+        ],
+      },
+      {
         type: "paragraph",
         text: "Here is the journey each piece takes before it makes it to your table:",
       },
@@ -55,12 +70,7 @@ export const CERAMICS: CeramicsByLocale = {
       },
       {
         type: "photos",
-        photos: [
-          {
-            ...PHOTO.kitchenStudio,
-            alt: "Magda's home studio in the kitchen: the pottery wheel, a side table and tools",
-          },
-        ],
+        photos: [{ ...PHOTO.clayBall, alt: "A ball of raw clay on a wooden worktop" }],
       },
       { type: "heading", text: "2. Wheel Throwing" },
       {
@@ -154,15 +164,6 @@ export const CERAMICS: CeramicsByLocale = {
         text: "Każdy kubek, miska czy wazon, który trafia w Twoje ręce, to historia zapisana w glinie, dłoniach i ogniu. Cały proces toczy się w mojej domowej pracowni, gdzie codzienna przestrzeń życiowa miesza się z artystycznym rzemiosłem.",
       },
       {
-        type: "paragraph",
-        text: "Oto droga, jaką przechodzi każda rzecz, zanim trafi na Twój stół:",
-      },
-      { type: "heading", text: "1. Przygotowanie" },
-      {
-        type: "paragraph",
-        text: "Wszystko zaczyna się od chłodnej i mokrej kulki gliny. Ważę ją i dokładnie wyrabiam, aby usunąć wszystkie pęcherzyki powietrza. To moment skupienia, w którym materiał zyskuje plastyczność, a ja jestem już myślami przy kształcie, który z niego powstanie, czyli jestem tu:",
-      },
-      {
         type: "photos",
         photos: [
           {
@@ -170,6 +171,19 @@ export const CERAMICS: CeramicsByLocale = {
             alt: "Domowa pracownia Magdy w kuchni: koło garncarskie, stolik i narzędzia",
           },
         ],
+      },
+      {
+        type: "paragraph",
+        text: "Oto droga, jaką przechodzi każda rzecz, zanim trafi na Twój stół:",
+      },
+      { type: "heading", text: "1. Przygotowanie" },
+      {
+        type: "paragraph",
+        text: "Wszystko zaczyna się od chłodnej i mokrej kulki gliny. Ważę ją i dokładnie wyrabiam, aby usunąć wszystkie pęcherzyki powietrza. To moment skupienia, w którym materiał zyskuje plastyczność, a ja jestem już myślami przy kształcie, który z niego powstanie.",
+      },
+      {
+        type: "photos",
+        photos: [{ ...PHOTO.clayBall, alt: "Kulka surowej gliny na drewnianym blacie" }],
       },
       { type: "heading", text: "2. Toczenie na kole" },
       {
