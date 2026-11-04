@@ -11,13 +11,18 @@ import { getUnitPrice } from "@/lib/helpers/currency";
 import { SITE_NAME } from "@/lib/helpers/metadata";
 import { getLowestShippingCost } from "@/lib/helpers/shipping";
 
+// Google zna tylko prawdziwe kraje, więc regiony z listy kasy (Irlandia
+// Północna, „XI”) pomijamy: dla Google'a są częścią Wielkiej Brytanii i jej
+// ceny wysyłki — nie niższej, więc niczego nie obiecujemy za tanio.
+const GOOGLE_COUNTRIES = CHECKOUT_COUNTRIES.filter(({ region }) => !region);
+
 // Wysyłka dla Google: najtańsza dostawa do każdego kraju z kasy, w walucie
 // ceny, z krajami zebranymi po stawce (np. 50 zł — paczkomaty InPost
 // International). Cennik i lista krajów to te same dane co w kasie, więc
 // zmiana stawki przechodzi tu sama.
 const buildShippingDetails = (currency: Currency): ShippingDetailsJsonLd[] => {
   const countriesByCost = new Map<number, string[]>();
-  for (const { code } of CHECKOUT_COUNTRIES) {
+  for (const { code } of GOOGLE_COUNTRIES) {
     const cost = getLowestShippingCost(code, currency);
     countriesByCost.set(cost, [...(countriesByCost.get(cost) ?? []), code]);
   }
@@ -36,7 +41,7 @@ const buildShippingDetails = (currency: Currency): ShippingDetailsJsonLd[] => {
 // przewoźnika nie obiecuje — Google pokazałby go jako naszą obietnicę.
 const RETURN_POLICY: ReturnPolicyJsonLd = {
   "@type": "MerchantReturnPolicy",
-  applicableCountry: CHECKOUT_COUNTRIES.map(({ code }) => code),
+  applicableCountry: GOOGLE_COUNTRIES.map(({ code }) => code),
   returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
   merchantReturnDays: RETURN_WINDOW_DAYS,
   returnMethod: "https://schema.org/ReturnByMail",

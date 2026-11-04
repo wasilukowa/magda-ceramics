@@ -707,5 +707,9 @@
     "help": "Questions? Just reply to this email.",
     "signature": "Magda",
     "lockerCode": "Locker number: {code}"
+  },
+  "postcodeIssue": {
+    "outside-region": "Northern Ireland postcodes start with BT. If the address is elsewhere in the UK, choose “United Kingdom”.",
+    "inside-region": "BT postcodes are in Northern Ireland — please choose it from the country list."
   }
 }

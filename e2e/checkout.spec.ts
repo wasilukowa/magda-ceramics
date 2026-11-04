@@ -10,6 +10,7 @@ import {
   addToCart,
   chooseLocker,
   fillContact,
+  fillCourierAddress,
   plainText,
   startGuestCheckout,
   type Locale,
@@ -131,6 +132,42 @@ test("shipping price follows the country", async ({ page }) => {
     await expect(methodLocker).toBeHidden();
     await expectTotals(page, "pl", product.price, code, DeliveryMethod.Courier);
   }
+});
+
+// Irlandia i Irlandia Północna (decyzja Natalii 2026-11-04): tylko kurier,
+// a Irlandia Północna to osobna pozycja na liście, pilnowana kodem BT.
+test("Ireland and Northern Ireland ship by courier, BT postcodes decide", async ({ page }) => {
+  const t = MESSAGES.pl.checkout;
+  const issue = MESSAGES.pl.postcodeIssue;
+  await addToCart(page, "pl", product.slug);
+  await startGuestCheckout(page, "pl");
+  await fillContact(page, "pl");
+
+  const country = page.getByLabel(t.country);
+  const methodLocker = page.getByRole("button", { name: new RegExp(`^${t.methodLocker}`) });
+  await expect(country.locator("option[value=XI]")).toHaveText("Irlandia Północna");
+
+  for (const code of ["IE", "XI"]) {
+    await country.selectOption(code);
+    await expect(methodLocker).toBeHidden();
+    await expectTotals(page, "pl", product.price, code, DeliveryMethod.Courier);
+  }
+
+  // Irlandia Północna z kodem z Londynu — komunikat pod polem kodu.
+  await fillCourierAddress(page, "pl");
+  const postcode = page.getByLabel(t.postcode, { exact: true });
+  await postcode.fill("SW1A 1AA");
+  await expect(page.getByText(issue["outside-region"])).toBeVisible();
+  await postcode.fill("BT1 1AA");
+  await expect(page.getByText(issue["outside-region"])).toBeHidden();
+
+  // Wielka Brytania z kodem BT — klient ma wybrać Irlandię Północną, a
+  // „Złóż zamówienie" stoi (komunikat pod polem i przy przycisku).
+  await country.selectOption("GB");
+  await expect(page.getByText(issue["inside-region"])).toBeVisible();
+  await page.getByRole("button", { name: plainText(t.placeOrder) }).click();
+  await expect(page.getByText(issue["inside-region"])).toHaveCount(2);
+  await expect(page.getByText(t.shippingAddress)).toBeVisible();
 });
 
 test("the English checkout charges in euro", async ({ page }) => {

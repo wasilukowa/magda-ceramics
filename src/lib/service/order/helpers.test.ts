@@ -122,6 +122,17 @@ describe("order in the account", () => {
     expect(order.total).toBe(30);
   });
 
+  it("charges a UK address with a BT postcode the Northern Ireland rate", () => {
+    const order = prepareOrder(
+      rawOrder({
+        status: "on-hold",
+        shipping: { country: "GB", postcode: "BT1 1AA" },
+        meta_data: [{ key: ORDER_META.currency, value: Currency.EUR }],
+      })
+    );
+    expect(order.shipping).toBe(20);
+  });
+
   it("keeps the pounds chosen in the checkout until the order is paid", () => {
     const order = prepareOrder(
       rawOrder({

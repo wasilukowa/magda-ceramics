@@ -5,7 +5,21 @@ export enum ShippingZone {
   InPostEu = "INPOST_EU",
   GermanyAustria = "DE_AT",
   UnitedKingdom = "GB",
+  NorthernIreland = "XI",
+  Ireland = "IE",
   RestEu = "REST_EU",
+}
+
+// Co nie gra między krajem z listy a kodem pocztowym. Dotyczy tylko regionów
+// wydzielonych z kraju (Irlandia Północna w Wielkiej Brytanii — patrz
+// CountryRegion): sklep liczy im osobną cenę, więc kod pocztowy musi pasować
+// do tego, co klient wybrał.
+export enum PostcodeIssue {
+  // Wybrany region, a kod spoza niego (Irlandia Północna z kodem z Londynu).
+  OutsideRegion = "outside-region",
+  // Wybrany kraj nadrzędny, a kod z regionu, który ma własną pozycję na
+  // liście (Wielka Brytania z kodem BT).
+  InsideRegion = "inside-region",
 }
 
 // How an order is delivered. Locker = picked on the InPost Geowidget map;

@@ -6,6 +6,7 @@ import {
 import {
   DeliveryMethod,
   InPostPoint,
+  PostcodeIssue,
   RawInPostPoint,
   ShippingOption,
   ShippingZone,
@@ -14,19 +15,80 @@ import {
   ZoneRates,
 } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
+import { Country } from "@/content/types";
+import { hasLocale } from "next-intl";
+import { routing } from "@/i18n/routing";
+
+const findCountry = (countryCode: string): Country | undefined =>
+  CHECKOUT_COUNTRIES.find((country) => country.code === countryCode);
 
 // Falls back to the rest-of-EU zone for any unknown code. The checkout only
 // accepts codes from CHECKOUT_COUNTRIES (see isCheckoutCountry), so this only
 // matters for orders placed before a country left the list.
 export const getShippingZone = (countryCode: string): ShippingZone =>
-  CHECKOUT_COUNTRIES.find((country) => country.code === countryCode)?.zone ??
-  ShippingZone.RestEu;
+  findCountry(countryCode)?.zone ?? ShippingZone.RestEu;
 
 // Czy w ogóle wysyłamy do tego kraju. Kasa pokazuje wyłącznie te kraje, więc
 // kod spoza listy znaczy, że ktoś ominął formularz — a wtedy zamówienia nie
 // przyjmujemy zamiast po cichu policzyć mu najdroższą strefę.
 export const isCheckoutCountry = (countryCode: string): boolean =>
   CHECKOUT_COUNTRIES.some((country) => country.code === countryCode);
+
+// --- Regiony wydzielone z kraju (Irlandia Północna) ---
+// Wewnątrz sklepu region to osobny „kraj” z listy (XI), z własną ceną
+// wysyłki. Na zewnątrz — w Stripe, w WooCommerce, u kuriera — to kraj
+// nadrzędny (GB), a region poznaje się po kodzie pocztowym (BT…).
+
+// Kod pocztowy bez spacji i wielkimi literami: „bt7 1nn” → „BT71NN”.
+const normalizePostcode = (postcode: string): string =>
+  postcode.replace(/\s+/g, "").toUpperCase();
+
+const isInRegion = (region: Country["region"], postcode: string): boolean =>
+  !!region && normalizePostcode(postcode).startsWith(region.postcodePrefix);
+
+// Kraj do adresu dla Stripe'a i WooCommerce: region → kraj nadrzędny.
+export const toPostalCountry = (countryCode: string): string =>
+  findCountry(countryCode)?.region?.country ?? countryCode;
+
+// Nazwa regionu do pola „County” w WooCommerce; null dla zwykłych krajów.
+export const getRegionStateName = (countryCode: string): string | null =>
+  findCountry(countryCode)?.region?.stateName ?? null;
+
+// Odwrotnie: adres z WooCommerce (GB + kod BT…) → kraj sklepu (XI). Tędy
+// czyta się każde zamówienie i adres z WordPressa, zanim policzy się
+// wysyłkę albo pokaże nazwę kraju.
+export const getShopCountry = (countryCode: string, postcode: string): string =>
+  CHECKOUT_COUNTRIES.find(
+    ({ region }) => region?.country === countryCode && isInRegion(region, postcode)
+  )?.code ?? countryCode;
+
+// Czy kod pocztowy pasuje do wybranego kraju. Pilnujemy tylko regionów, bo
+// tylko tam od kodu zależy cena: Irlandia Północna musi mieć kod BT,
+// a Wielka Brytania nie może go mieć (klient ma wtedy wybrać Irlandię
+// Północną). Pod polem w kasie (`whileTyping`) kod krótszy niż prefiks to
+// jeszcze nie błąd — klient dopiero pisze.
+export const getPostcodeIssue = (
+  countryCode: string,
+  postcode: string,
+  whileTyping = false
+): PostcodeIssue | null => {
+  const region = findCountry(countryCode)?.region;
+
+  if (region) {
+    if (whileTyping && normalizePostcode(postcode).length < region.postcodePrefix.length) {
+      return null;
+    }
+    return isInRegion(region, postcode) ? null : PostcodeIssue.OutsideRegion;
+  }
+
+  return getShopCountry(countryCode, postcode) !== countryCode
+    ? PostcodeIssue.InsideRegion
+    : null;
+};
+
+// Przy składaniu zamówienia i zapisie adresu.
+export const isPostcodeInCountry = (countryCode: string, postcode: string): boolean =>
+  getPostcodeIssue(countryCode, postcode) === null;
 
 // Whether the customer can pick an InPost parcel locker for this country.
 // Drives the locker/courier toggle and which Geowidget (PL vs International)
@@ -107,7 +169,9 @@ const ZONE_ORDER = [
   ShippingZone.InPostEu,
   ShippingZone.GermanyAustria,
   ShippingZone.RestEu,
+  ShippingZone.NorthernIreland,
   ShippingZone.UnitedKingdom,
+  ShippingZone.Ireland,
 ];
 
 // Stawki zebrane po strefach, prosto z tych samych danych, na których liczy
@@ -127,19 +191,23 @@ export const getShippingZoneSummaries = (): ShippingZoneSummary[] =>
   });
 
 // Nazwa kraju w języku klienta, prosto z przeglądarki/Node — bez własnego
-// słownika do utrzymania. Gdyby środowisko nie znało kodu (albo w ogóle nie
-// miało Intl.DisplayNames), zostaje angielska nazwa z CHECKOUT_COUNTRIES,
-// a na końcu sam kod. Używane i na stronie „Wysyłka i zwroty", i w kasie —
-// to jedno miejsce decyduje, jak nazywamy kraje w całym sklepie.
+// słownika do utrzymania. Wyjątek to regiony, których Intl nie zna
+// (Irlandia Północna, „XI”): ich nazwy stoją w CHECKOUT_COUNTRIES. Gdyby
+// środowisko nie znało kodu (albo w ogóle nie miało Intl.DisplayNames),
+// zostaje angielska nazwa z CHECKOUT_COUNTRIES, a na końcu sam kod. Używane
+// i na stronie „Wysyłka i zwroty", i w kasie — to jedno miejsce decyduje,
+// jak nazywamy kraje w całym sklepie.
 export const getCountryLabel = (countryCode: string, locale: string): string => {
-  const fallback =
-    CHECKOUT_COUNTRIES.find((country) => country.code === countryCode)?.label ??
-    countryCode;
+  const country = findCountry(countryCode);
+  const ownName = hasLocale(routing.locales, locale) ? country?.names?.[locale] : undefined;
+  if (ownName) return ownName;
 
+  const fallback = country?.label ?? countryCode;
   try {
     return (
-      new Intl.DisplayNames([locale], { type: "region" }).of(countryCode) ??
-      fallback
+      new Intl.DisplayNames([locale], { type: "region", fallback: "none" }).of(
+        countryCode
+      ) ?? fallback
     );
   } catch {
     return fallback;

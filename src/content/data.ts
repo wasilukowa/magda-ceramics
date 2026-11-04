@@ -164,6 +164,13 @@ export const INSTAGRAM_HANDLE = "@magda_ceramics";
 // Only countries the studio actually ships to: Poland, the EU countries below
 // and the United Kingdom. Other destinations are intentionally excluded —
 // shipping there is too costly. See SHIPPING_RATES below for the amounts.
+// Kolejność = kolejność na liście krajów w kasie i w adresach na koncie.
+//
+// „XI” to nie kod kraju, tylko kod, którym UE oznacza Irlandię Północną (VAT,
+// cło). Natalia chciała ją jako osobną pozycję na liście (2026-11-04), bo ma
+// tańszą wysyłkę niż reszta Wielkiej Brytanii. Sklep używa „XI” wewnątrz,
+// a do Stripe'a i WooCommerce idzie „GB” — patrz toPostalCountry
+// i getShopCountry w lib/helpers/shipping.ts.
 export const CHECKOUT_COUNTRIES: Country[] = [
   { code: "PL", label: "Poland", zone: ShippingZone.Poland },
   { code: "FR", label: "France", zone: ShippingZone.InPostEu },
@@ -176,6 +183,14 @@ export const CHECKOUT_COUNTRIES: Country[] = [
   { code: "DE", label: "Germany", zone: ShippingZone.GermanyAustria },
   { code: "AT", label: "Austria", zone: ShippingZone.GermanyAustria },
   { code: "GB", label: "United Kingdom", zone: ShippingZone.UnitedKingdom },
+  {
+    code: "XI",
+    label: "Northern Ireland",
+    names: { pl: "Irlandia Północna" },
+    zone: ShippingZone.NorthernIreland,
+    region: { country: "GB", postcodePrefix: "BT", stateName: "Northern Ireland" },
+  },
+  { code: "IE", label: "Ireland", zone: ShippingZone.Ireland },
   { code: "CZ", label: "Czech Republic", zone: ShippingZone.RestEu },
   { code: "SE", label: "Sweden", zone: ShippingZone.RestEu },
   { code: "DK", label: "Denmark", zone: ShippingZone.RestEu },
@@ -220,6 +235,9 @@ export const INPOST_LOCKER_COUNTRIES = [
 // Funty (2026-10-26): złote po kursie 5,20 w górę do pełnego funta — 4, 10,
 // 16, 11 i 16 £. Wyjątek to Wielka Brytania: 18 £ od Natalii (z kursu
 // wyszłoby 19).
+// Dopisane 2026-11-04 (kwoty w euro od Natalii, złote i funty tą samą regułą):
+// · Irlandia Północna — tylko kurier: 20 € → 86 zł → 90 zł → 17,31 £ → 18 £
+// · Irlandia — tylko kurier: 25 € → 107,50 zł → 110 zł → 21,15 £ → 22 £
 export const SHIPPING_RATES: ShippingRates = {
   [ShippingZone.Poland]: {
     locker: { pln: 2000, eur: 500, gbp: 400 },
@@ -234,6 +252,12 @@ export const SHIPPING_RATES: ShippingRates = {
   },
   [ShippingZone.UnitedKingdom]: {
     courier: { pln: 9500, eur: 2100, gbp: 1800 },
+  },
+  [ShippingZone.NorthernIreland]: {
+    courier: { pln: 9000, eur: 2000, gbp: 1800 },
+  },
+  [ShippingZone.Ireland]: {
+    courier: { pln: 11000, eur: 2500, gbp: 2200 },
   },
   [ShippingZone.RestEu]: {
     courier: { pln: 8000, eur: 1800, gbp: 1600 },

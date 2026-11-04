@@ -6,6 +6,7 @@ import { CartItem, Address } from "@/contracts/server/cart";
 import { SavedDelivery } from "@/contracts/server/auth";
 import { Currency } from "@/contracts/shared";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
+import { getPostcodeIssue } from "@/lib/helpers/shipping";
 import {
   CheckoutError,
   CheckoutPlacement,
@@ -84,6 +85,7 @@ export default function CheckoutContent({
   onLeave,
 }: Props) {
   const t = useTranslations("checkout");
+  const tPostcode = useTranslations("postcodeIssue");
   const locale = useLocale();
   const [step, setStep] = useState<CheckoutStep>(CheckoutStep.Contact);
   // Czy klient doszedł już do wyboru dostawy — od tej chwili podsumowanie
@@ -111,6 +113,11 @@ export default function CheckoutContent({
     (usingLocker
       ? !!locker
       : !!address.street.trim() && !!address.postcode.trim() && !!address.city.trim());
+  // Irlandia Północna tylko z kodem BT, Wielka Brytania bez niego — od tego
+  // zależy cena wysyłki. Pod polem kodu stoi ten sam komunikat na bieżąco.
+  const postcodeIssue = usingLocker
+    ? null
+    : getPostcodeIssue(address.country, address.postcode);
 
   // Najdalszy krok, na który wolno przejść paskiem kroków. „Płatność" dopiero
   // po złożeniu zamówienia i tylko bez niezapisanych zmian.
@@ -150,6 +157,10 @@ export default function CheckoutContent({
     }
     if (!isShippingComplete) {
       setError(usingLocker && !locker ? t("lockerRequired") : t("fillRequired"));
+      return;
+    }
+    if (postcodeIssue) {
+      setError(tPostcode(postcodeIssue));
       return;
     }
     if (placement && !dirty) {
