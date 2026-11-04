@@ -19,8 +19,7 @@ export const STUDIO_LINKS: NavLinkType[] = [
 // z repozytorium). Żeby dodać: wrzuć plik do public/slider/ i dopisz wiersz.
 // Slider przycina zdjęcie do swojej ramki (na komputerze prawie pionowej, na
 // telefonie prawie kwadratowej), więc najważniejsze powinno być blisko środka
-// kadru. Zdjęcia z procesu (koło, rzeźbienie) są na „Moja ceramika" — patrz
-// CERAMICS_PHOTOS.
+// kadru.
 export const HERO_SLIDER_PHOTOS: string[] = [
   "/slider/01-dsc-1746.jpg",
   "/slider/02-dsc-0132.jpg",
