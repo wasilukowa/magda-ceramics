@@ -634,10 +634,7 @@
   },
   "ceramics": {
     "title": "Moja ceramika",
-    "metaDescription": "Jak powstaje naczynie w mojej pracowni — od bryły gliny, przez koło garncarskie i rzeźbienie, po dwa wypały.",
-    "kiln": "Właśnie w piecu",
-    "comingSoon": "Strona już wkrótce",
-    "photoAlt": "Praca w pracowni Magdy, zdjęcie {number}"
+    "metaDescription": "Jak powstaje naczynie w mojej pracowni — od bryły gliny, przez koło garncarskie i rzeźbienie, po dwa wypały."
   },
   "faq": {
     "title": "Pytania i odpowiedzi",

@@ -87,36 +87,45 @@ export type Review = {
   featured?: boolean;
 };
 
-// --- Strona „O mnie" ---------------------------------------------------------
-// Opowieść Magdy o sobie, odwzorowana z jej dokumentu: akapity, śródtytuły
-// („Jak to się zaczęło", „Jedyne w swoim rodzaju") i zdjęcia wplecione tam,
-// gdzie ona je wstawiła. Zdjęcia idą grupami, bo tak u niej stoją — jedno pod
-// akapitem o pierwszym kole, dwa pod akapitem o pierwszych pracach, sześć pod
-// akapitem o etapach pracy. Liczba zdjęć w grupie decyduje o układzie.
-export type AboutPhoto = {
+// --- Opowieści Magdy: „O mnie" i „Moja ceramika" -----------------------------
+// Obie strony są odwzorowane z jej dokumentów: akapity, śródtytuły i zdjęcia
+// wplecione tam, gdzie ona je wstawiła. Zdjęcia idą grupami, bo tak u niej
+// stoją — np. jedno pod akapitem o pierwszym kole, dwa pod akapitem
+// o pierwszych pracach. Liczba zdjęć w grupie decyduje o układzie
+// (components/StoryBlocks.tsx).
+export type StoryPhoto = {
   src: string;
   // Wymiary pliku. Next potrzebuje ich, żeby zarezerwować miejsce i nie
   // przesuwać tekstu w trakcie ładowania — przy podmianie zdjęcia trzeba je
-  // poprawić razem ze ścieżką. Oba siedzą obok siebie w `content/about.ts`.
+  // poprawić razem ze ścieżką. Oba siedzą obok siebie w stałej `PHOTO`
+  // w `content/about.ts` albo `content/ceramics.ts`.
   width: number;
   height: number;
   // Opis dla czytników ekranu i dla wyszukiwarki — w języku danej wersji.
   alt: string;
 };
 
-export type AboutBlock =
+export type StoryBlock =
   | { type: "paragraph"; text: string }
   | { type: "heading"; text: string }
-  | { type: "photos"; photos: AboutPhoto[] };
+  | { type: "photos"; photos: StoryPhoto[] };
 
 export type AboutContent = {
-  blocks: AboutBlock[];
+  blocks: StoryBlock[];
   // Podpis pod tekstem; w widoku jest wyróżniony, stąd osobne pole. Łamanie
   // wiersza jest w nim znaczące („Ciepło pozdrawiam," i niżej „Magda").
   signature: string;
 };
 
 export type AboutByLocale = Record<Locale, AboutContent>;
+
+// „Moja ceramika" ma w dokumencie Magdy własny tytuł („Od surowej kulki gliny
+// do gotowego naczynia…"), który stoi nad tekstem większą czcionką.
+export type CeramicsContent = AboutContent & {
+  title: string;
+};
+
+export type CeramicsByLocale = Record<Locale, CeramicsContent>;
 
 // --- Strona „Pytania i odpowiedzi" -------------------------------------------
 // Pytania, które wracają najczęściej, pogrupowane tematycznie. `moreRoute`
