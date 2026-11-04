@@ -3,6 +3,7 @@ import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
 import {
   getInPostPoint,
+  getLowestShippingCost,
   getShippingCost,
   getShippingCostInZloty,
   hasInPostLocker,
@@ -43,6 +44,17 @@ describe("getShippingCost", () => {
   it("records shipping in złoty whatever the paid currency", () => {
     expect(getShippingCostInZloty("DE", DeliveryMethod.Courier)).toBe(55);
     expect(getShippingCostInZloty("NL", DeliveryMethod.Locker)).toBe(50);
+  });
+});
+
+describe("getLowestShippingCost", () => {
+  it("takes the parcel locker where there is one, otherwise the courier", () => {
+    expect(getLowestShippingCost("PL", Currency.PLN)).toBe(20);
+    expect(getLowestShippingCost("FR", Currency.PLN)).toBe(50);
+    expect(getLowestShippingCost("FR", Currency.EUR)).toBe(11.5);
+    expect(getLowestShippingCost("AT", Currency.EUR)).toBe(12);
+    expect(getLowestShippingCost("GB", Currency.GBP)).toBe(18);
+    expect(getLowestShippingCost("SE", Currency.PLN)).toBe(80);
   });
 });
 

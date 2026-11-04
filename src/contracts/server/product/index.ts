@@ -146,5 +146,26 @@ export type ProductJsonLd = {
     availability: SchemaAvailability;
     itemCondition: "https://schema.org/NewCondition";
     seller: { "@type": "Organization"; name: string };
+    shippingDetails: ShippingDetailsJsonLd[];
+    hasMerchantReturnPolicy: ReturnPolicyJsonLd;
   };
+};
+
+// Koszt wysyłki dla Google — jedna pozycja na każdą stawkę, z listą krajów,
+// do których tyle kosztuje najtańsza dostawa.
+export type ShippingDetailsJsonLd = {
+  "@type": "OfferShippingDetails";
+  shippingRate: { "@type": "MonetaryAmount"; value: number; currency: string };
+  shippingDestination: { "@type": "DefinedRegion"; addressCountry: string }[];
+};
+
+// Zasady zwrotów dla Google — te same co w regulaminie: 14 dni, odesłanie
+// pocztą na koszt klienta.
+export type ReturnPolicyJsonLd = {
+  "@type": "MerchantReturnPolicy";
+  applicableCountry: string[];
+  returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow";
+  merchantReturnDays: number;
+  returnMethod: "https://schema.org/ReturnByMail";
+  returnFees: "https://schema.org/ReturnFeesCustomerResponsibility";
 };
