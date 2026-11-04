@@ -10,7 +10,7 @@ import { PlacedCheckout } from "@/contracts/server/checkout";
 import { InPostPoint } from "@/contracts/server/shipping";
 import { ButtonSize, Currency } from "@/contracts/shared";
 import { formatPrice } from "@/lib/helpers/currency";
-import { getCountryLabel } from "@/lib/helpers/shipping";
+import { getCountryLabel, toPostalCountry } from "@/lib/helpers/shipping";
 import { getStripeFonts } from "@/lib/helpers/stripeAppearance";
 import { useStripeAppearance } from "@/hooks/useStripeAppearance";
 import { ButtonArrow, buttonClass } from "@/components/ui/button";
@@ -85,19 +85,21 @@ function PaymentForm({
     setError(null);
 
     // Do paczkomatu adres to adres punktu — tak samo jak w zamówieniu.
+    // Stripe zna tylko prawdziwe kraje: Irlandia Północna idzie jako GB.
+    const country = toPostalCountry(address.country);
     const billingAddress = locker
       ? {
           line1: locker.description || locker.code,
           city: locker.city,
           postal_code: locker.postCode,
-          country: address.country,
+          country,
         }
       : {
           line1: address.street,
           line2: address.street2,
           city: address.city,
           postal_code: address.postcode,
-          country: address.country,
+          country,
         };
 
     const { error: stripeError } = await stripe.confirmPayment({

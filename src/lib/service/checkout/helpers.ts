@@ -10,7 +10,13 @@ import {
 } from "@/contracts/server/checkout";
 import { DeliveryMethod } from "@/contracts/server/shipping";
 import { Currency } from "@/contracts/shared";
-import { getShippingCostInZloty, isCheckoutCountry } from "@/lib/helpers/shipping";
+import {
+  getRegionStateName,
+  getShippingCostInZloty,
+  isCheckoutCountry,
+  isPostcodeInCountry,
+  toPostalCountry,
+} from "@/lib/helpers/shipping";
 import { LOCKER_NOTE_PREFIX } from "@/lib/service/order/helpers";
 import { routing } from "@/i18n/routing";
 import { isPhoneNumber } from "@/utility";
@@ -43,20 +49,25 @@ const cartSchema = z
 // listy znaczy, że ktoś ominął formularz.
 const countrySchema = z.string().refine(isCheckoutCountry);
 
-const billingSchema = z.object({
-  first_name: text(),
-  last_name: text(),
-  email: z.email().max(MAX_FIELD_LENGTH),
-  // Obowiązkowy przy każdej dostawie (paczkomat: SMS z kodem odbioru, kurier:
-  // telefon w sprawie doręczenia). Kasa pilnuje tego sama, to jest
-  // zabezpieczenie na żądanie złożone z pominięciem formularza.
-  phone: z.string().trim().max(MAX_FIELD_LENGTH).refine(isPhoneNumber),
-  address_1: text(200),
-  address_2: z.string().trim().max(200).optional().default(""),
-  city: text(),
-  postcode: text(20),
-  country: countrySchema,
-});
+// Kod pocztowy musi pasować do kraju tam, gdzie od niego zależy cena
+// (Irlandia Północna tylko z kodem BT, Wielka Brytania bez niego) — inaczej
+// ktoś z Londynu zapłaciłby taniej, wybierając Irlandię Północną.
+const billingSchema = z
+  .object({
+    first_name: text(),
+    last_name: text(),
+    email: z.email().max(MAX_FIELD_LENGTH),
+    // Obowiązkowy przy każdej dostawie (paczkomat: SMS z kodem odbioru, kurier:
+    // telefon w sprawie doręczenia). Kasa pilnuje tego sama, to jest
+    // zabezpieczenie na żądanie złożone z pominięciem formularza.
+    phone: z.string().trim().max(MAX_FIELD_LENGTH).refine(isPhoneNumber),
+    address_1: text(200),
+    address_2: z.string().trim().max(200).optional().default(""),
+    city: text(),
+    postcode: text(20),
+    country: countrySchema,
+  })
+  .refine((billing) => isPostcodeInCountry(billing.country, billing.postcode));
 
 const lockerSchema = z.object({
   code: text(50),
@@ -182,13 +193,25 @@ export const checkoutErrorResponse = (
 // wiedziała, dokąd nadać. W uwagach klienta ląduje tylko to, co może
 // przeczytać w swoim mailu: jego własna uwaga i wybrany paczkomat. Uwagi dla
 // Magdy idą osobno, jako notatki prywatne — patrz OrderService.
+//
+// Irlandia Północna (XI) wychodzi z kasy jako Wielka Brytania z regionem
+// w polu „County” — WooCommerce, epaka i kurier znają tylko prawdziwe kraje.
+// Cenę wysyłki liczymy jeszcze z XI.
 export const getDeliveryFields = ({
-  billing,
+  billing: shopBilling,
   note,
   deliveryMethod,
   locker,
 }: DeliveryDetails): DeliveryFields => {
   const isLocker = deliveryMethod === DeliveryMethod.Locker && !!locker;
+  // „County” zawsze wysłane, także puste: poprawka zamówienia z Irlandii
+  // Północnej na inny kraj musi je wyczyścić, a WooCommerce zostawia pola,
+  // których nie dostał.
+  const billing = {
+    ...shopBilling,
+    country: toPostalCountry(shopBilling.country),
+    state: getRegionStateName(shopBilling.country) ?? "",
+  };
   const shipping = isLocker
     ? {
         ...billing,
@@ -216,7 +239,7 @@ export const getDeliveryFields = ({
     shippingLine: {
       method_id: "flat_rate",
       method_title: isLocker ? `Paczkomat InPost ${locker.code}` : "Shipping",
-      total: getShippingCostInZloty(billing.country, deliveryMethod).toFixed(2),
+      total: getShippingCostInZloty(shopBilling.country, deliveryMethod).toFixed(2),
     },
     customerNote: noteParts.join("\n"),
     lockerCode: isLocker ? locker.code : null,

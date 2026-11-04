@@ -70,10 +70,14 @@ export type DeliveryDetails = {
   locker?: InPostPoint | null;
 };
 
+// Adres w zamówieniu WooCommerce: kraj już prawdziwy (GB, nie XI), a region
+// w polu „County” — patrz getDeliveryFields.
+type WooAddress = BillingAddress & { state: string };
+
 // Zamówienie WooCommerce od strony dostawy — patrz getDeliveryFields.
 export type DeliveryFields = {
-  billing: BillingAddress;
-  shipping: BillingAddress & { company?: string };
+  billing: WooAddress;
+  shipping: WooAddress & { company?: string };
   shippingLine: { method_id: string; method_title: string; total: string };
   customerNote: string;
   // Kod paczkomatu albo null przy kurierze.

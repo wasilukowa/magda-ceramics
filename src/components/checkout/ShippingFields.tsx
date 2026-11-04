@@ -5,7 +5,7 @@ import { Address } from "@/contracts/server/cart";
 import { Currency } from "@/contracts/shared";
 import { DeliveryMethod, InPostPoint } from "@/contracts/server/shipping";
 import { CHECKOUT_COUNTRIES } from "@/content/data";
-import { getCountryLabel, getShippingCost } from "@/lib/helpers/shipping";
+import { getCountryLabel, getPostcodeIssue, getShippingCost } from "@/lib/helpers/shipping";
 import { formatPrice } from "@/lib/helpers/currency";
 import { cn } from "@/lib/utils";
 import { isPhoneNumber } from "@/utility";
@@ -58,6 +58,7 @@ export default function ShippingFields({
   onSavedChange,
 }: Props) {
   const t = useTranslations("checkout");
+  const tPostcode = useTranslations("postcodeIssue");
   const locale = useLocale();
 
   const usingLocker = hasLocker && deliveryMethod === DeliveryMethod.Locker;
@@ -66,6 +67,8 @@ export default function ShippingFields({
   const addressComplete =
     !!address.street.trim() && !!address.postcode.trim() && !!address.city.trim();
   const chosenAddress = addressComplete ? findSavedAddress(savedAddresses, address) : undefined;
+  // Irlandia Północna / Wielka Brytania a kod BT — patrz getPostcodeIssue.
+  const postcodeIssue = getPostcodeIssue(address.country, address.postcode, true);
 
   // Zapisany adres wpisuje się w pola; telefon tylko wtedy, gdy pole jest puste.
   function fillSavedAddress(savedAddress: SavedAddress) {
@@ -208,6 +211,11 @@ export default function ShippingFields({
               />
             </CheckoutField>
           </div>
+          {postcodeIssue && (
+            <p className="-mt-2 text-xs text-[var(--color-error)]">
+              {tPostcode(postcodeIssue)}
+            </p>
+          )}
           {addressComplete && (
             <SaveToAccountButton
               key={[address.street, address.street2, address.postcode, address.city, address.country].join("|")}

@@ -19,7 +19,11 @@ import {
   removeSavedLocker,
 } from "@/lib/service/customer/helpers";
 import { findSavedAddress, MAX_SAVED_ITEMS } from "@/lib/helpers/savedDelivery";
-import { hasInPostLocker, isCheckoutCountry } from "@/lib/helpers/shipping";
+import {
+  getPostcodeIssue,
+  hasInPostLocker,
+  isCheckoutCountry,
+} from "@/lib/helpers/shipping";
 import { isPhoneNumber } from "@/utility";
 
 // Zapisane adresy i paczkomaty zalogowanego klienta (zakładka „Adresy"
@@ -29,7 +33,9 @@ import { isPhoneNumber } from "@/utility";
 
 type Messages = (key: string) => string;
 
-const getAddressSchema = (t: Messages) =>
+// Irlandia Północna tylko z kodem BT, Wielka Brytania bez niego — inaczej
+// zapisany adres zatrzymałby się dopiero w kasie. Patrz getPostcodeIssue.
+const getAddressSchema = (t: Messages, tPostcode: Messages) =>
   z.object({
     firstName: z.string().trim().min(1, t("errors.firstName")).max(100),
     lastName: z.string().trim().min(1, t("errors.lastName")).max(100),
@@ -43,6 +49,10 @@ const getAddressSchema = (t: Messages) =>
     postcode: z.string().trim().min(1, t("errors.postcode")).max(20),
     city: z.string().trim().min(1, t("errors.city")).max(100),
     country: z.string().refine(isCheckoutCountry, t("errors.country")),
+  })
+  .superRefine(({ country, postcode }, ctx) => {
+    const issue = postcode ? getPostcodeIssue(country, postcode) : null;
+    if (issue) ctx.addIssue({ code: "custom", path: ["postcode"], message: tPostcode(issue) });
   });
 
 const lockerSchema = z.object({
@@ -75,10 +85,13 @@ export async function saveAddress(
   _prevState: AccountFormState,
   formData: FormData,
 ): Promise<AccountFormState> {
-  const t = await getTranslations("account");
+  const [t, tPostcode] = await Promise.all([
+    getTranslations("account"),
+    getTranslations("postcodeIssue"),
+  ]);
   const read = (key: string) => String(formData.get(key) ?? "");
 
-  const parsed = getAddressSchema(t).safeParse({
+  const parsed = getAddressSchema(t, tPostcode).safeParse({
     firstName: read("firstName"),
     lastName: read("lastName"),
     phone: read("phone"),
@@ -180,8 +193,11 @@ export async function getSavedDelivery(): Promise<SavedDelivery | null> {
 // „Dodaj do moich adresów". Adres, który już jest na liście, nie zapisuje się
 // drugi raz. Null — nie zapisano (gość, błędny adres, pełna lista, awaria).
 export async function rememberAddress(input: SavedAddressInput): Promise<SavedDelivery | null> {
-  const t = await getTranslations("account");
-  const parsed = getAddressSchema(t).safeParse(input);
+  const [t, tPostcode] = await Promise.all([
+    getTranslations("account"),
+    getTranslations("postcodeIssue"),
+  ]);
+  const parsed = getAddressSchema(t, tPostcode).safeParse(input);
   if (!parsed.success) return null;
 
   try {

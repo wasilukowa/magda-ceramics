@@ -757,5 +757,9 @@
     "reply": "Odpowiedź na tego maila trafi prosto do klienta.",
     "footer": "Wiadomość wysłana automatycznie przez sklep magdaceramics.com.",
     "lockerCode": "Numer paczkomatu: {code}"
+  },
+  "postcodeIssue": {
+    "outside-region": "Kod pocztowy w Irlandii Północnej zaczyna się od BT. Jeśli adres jest w innej części Wielkiej Brytanii, wybierz „Wielka Brytania”.",
+    "inside-region": "Kody pocztowe BT to Irlandia Północna — wybierz ją z listy krajów."
   }
 }

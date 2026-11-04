@@ -2,10 +2,26 @@ import { ShippingZone } from "@/contracts/server/shipping";
 import { CookieCategory, LegalBlockType } from "@/contracts/shared";
 import { routing, Locale } from "@/i18n/routing";
 
+// Region wydzielony z kraju na liście krajów kasy (Irlandia Północna, decyzja
+// Natalii 2026-11-04). Nie ma własnego kodu kraju: w adresie dla Stripe'a,
+// WooCommerce i kuriera stoi kraj nadrzędny, a region poznaje się po
+// początku kodu pocztowego.
+export type CountryRegion = {
+  country: string;
+  postcodePrefix: string;
+  // Nazwa regionu w polu „County” adresu w WooCommerce — żeby pracownia
+  // widziała ją w panelu i przy nadawaniu, a nie samą Wielką Brytanię.
+  stateName: string;
+};
+
 export type Country = {
   code: string;
   label: string;
   zone: ShippingZone;
+  // Nazwy, których przeglądarka nie zna (Intl.DisplayNames zna tylko
+  // prawdziwe kraje). Brak języka = angielskie `label`.
+  names?: Partial<Record<Locale, string>>;
+  region?: CountryRegion;
 };
 
 // One row of the cookie table on the cookie policy page. `key` points at the

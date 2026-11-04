@@ -64,6 +64,17 @@ describe("placeOrderRequestSchema", () => {
     expect(placeOrderRequestSchema.safeParse(abroad).success).toBe(false);
   });
 
+  it("lets only BT postcodes pay the Northern Ireland rate", () => {
+    const order = (country: string, postcode: string) =>
+      placeOrderRequestSchema.safeParse(placeOrder({ billing: { ...billing, country, postcode } }))
+        .success;
+    expect(order("XI", "BT1 1AA")).toBe(true);
+    expect(order("XI", "SW1A 1AA")).toBe(false);
+    expect(order("GB", "BT1 1AA")).toBe(false);
+    expect(order("GB", "SW1A 1AA")).toBe(true);
+    expect(order("IE", "D02 X285")).toBe(true);
+  });
+
   it("refuses an empty cart and the same piece twice", () => {
     expect(placeOrderRequestSchema.safeParse(placeOrder({ items: [] })).success).toBe(false);
     const twice = placeOrder({
@@ -122,5 +133,32 @@ describe("getDeliveryFields", () => {
     expect(fields.shippingLine.total).toBe("95.00");
     expect(fields.customerNote).toBe("");
     expect(fields.lockerCode).toBeNull();
+  });
+
+  it("sends Northern Ireland to WooCommerce as the UK, at its own rate", () => {
+    const fields = getDeliveryFields({
+      billing: { ...billing, country: "XI", postcode: "BT1 1AA" },
+      note: "",
+      deliveryMethod: DeliveryMethod.Courier,
+      locker: null,
+    });
+
+    expect(fields.billing.country).toBe("GB");
+    expect(fields.shipping.country).toBe("GB");
+    expect(fields.shipping.state).toBe("Northern Ireland");
+    expect(fields.shippingLine.total).toBe("90.00");
+  });
+
+  it("clears the county for every other country", () => {
+    const fields = getDeliveryFields({
+      billing: { ...billing, country: "IE" },
+      note: "",
+      deliveryMethod: DeliveryMethod.Courier,
+      locker: null,
+    });
+
+    expect(fields.shipping.country).toBe("IE");
+    expect(fields.shipping.state).toBe("");
+    expect(fields.shippingLine.total).toBe("110.00");
   });
 });

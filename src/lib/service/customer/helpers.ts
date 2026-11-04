@@ -5,6 +5,7 @@ import {
   SavedLocker,
 } from "@/contracts/server/auth";
 import { isCorrectNumber, isRecord, isString } from "@/utility";
+import { getShopCountry } from "@/lib/helpers/shipping";
 
 export const WISHLIST_META_KEY = "mc_wishlist";
 // Zapisane adresy i paczkomaty — listy w danych klienta, najnowsze pierwsze.
@@ -75,7 +76,8 @@ const prepareSavedAddresses = (raw: RawWcCustomer): SavedAddress[] => {
       street2: billing.address_2 ?? "",
       postcode: billing.postcode ?? "",
       city: billing.city ?? "",
-      country: billing.country || "PL",
+      // Adres z WooCommerce: GB z kodem BT to na liście Irlandia Północna.
+      country: getShopCountry(billing.country || "PL", billing.postcode ?? ""),
     },
   ];
 };

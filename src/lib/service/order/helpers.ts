@@ -27,7 +27,7 @@ import { routing } from "@/i18n/routing";
 import { convertFromPln } from "@/lib/helpers/currency";
 import { formatDayPl, getWarsawDay, parseWooGmtDate } from "@/lib/helpers/date";
 import { formatPlAmount, formatPlNumber } from "@/lib/helpers/ledger";
-import { getCountryLabel, getShippingCost } from "@/lib/helpers/shipping";
+import { getCountryLabel, getShippingCost, getShopCountry } from "@/lib/helpers/shipping";
 import { isCurrency } from "@/utility";
 
 // Złożone zamówienie trzyma pracę tyle godzin. Przypomnienia o zapłacie idą
@@ -190,7 +190,10 @@ export const getOrderAmounts = (raw: RawOrder, currency: Currency): OrderAmounts
       total: convertFromPln(toAmount(item.total) / quantity, currency) * quantity,
     };
   });
-  const country = raw.shipping?.country || raw.billing?.country || "";
+  // Wysyłka z kraju sklepu, nie z WooCommerce: GB z kodem BT to Irlandia
+  // Północna, z własną ceną.
+  const address = raw.shipping?.country ? raw.shipping : raw.billing;
+  const country = getShopCountry(address?.country ?? "", address?.postcode ?? "");
   const shipping = getShippingCost(country, currency, getDeliveryMethod(raw));
   const paid = parsePositive(getMetaValue(raw, ORDER_META.paidAmount));
 
@@ -425,7 +428,9 @@ const getOrderDelivery = (raw: RawOrder, locale: string): OrderDelivery => {
   const billing = raw.billing ?? {};
   const name = [billing.first_name, billing.last_name].filter(Boolean).join(" ");
   const cityLine = [shipping.postcode, shipping.city].filter(Boolean).join(" ");
-  const country = shipping.country ? getCountryLabel(shipping.country, locale) : "";
+  const country = shipping.country
+    ? getCountryLabel(getShopCountry(shipping.country, shipping.postcode ?? ""), locale)
+    : "";
 
   return {
     kind: lockerCode ? DeliveryKind.Locker : DeliveryKind.Courier,
