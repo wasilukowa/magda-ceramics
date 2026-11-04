@@ -39,7 +39,7 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
     command: `npm run build && npx next start --port ${PORT}`,
-    url: BASE_URL + "/coming-soon",
+    url: BASE_URL + "/pl",
     // Zamówienia zawsze na świeżym serwerze z mailami na skrzynkę testową —
     // cudzy serwer na tym porcie mógłby wysłać je do pracowni.
     reuseExistingServer: !process.env.E2E_ORDERS,

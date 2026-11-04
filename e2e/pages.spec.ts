@@ -53,12 +53,19 @@ test("old addresses without a language move to the right one", async ({ page }) 
   }
 });
 
-test("the shop is closed to visitors without the preview cookie", async ({ browser, baseURL }) => {
+test("the shop is open to a first-time visitor", async ({ browser, baseURL }) => {
   const visitor = await browser.newContext({ baseURL });
   const page = await visitor.newPage();
-  await page.goto("/pl/sklep");
-  await expect(page).toHaveURL(/\/coming-soon$/);
+  const response = await page.goto("/pl/sklep");
+  expect(response?.status()).toBe(200);
+  await expect(page).toHaveURL(/\/pl\/sklep$/);
   await visitor.close();
+});
+
+test("the old coming-soon address leads to the home page", async ({ page }) => {
+  const response = await page.request.get("/coming-soon", { maxRedirects: 0 });
+  expect(response.status()).toBe(308);
+  expect(new URL(response.headers().location, "http://x").pathname).toBe("/");
 });
 
 test("a product page shows the price and data for Google", async ({ page }) => {
