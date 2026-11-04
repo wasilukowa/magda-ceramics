@@ -278,7 +278,7 @@
   "success": {
     "loading": "Finalizowanie zamówienia...",
     "thankYou": "Dziękujemy za zamówienie",
-    "orderReceived": "Zamówienie #{orderId} zostało przyjęte. Potwierdzenie wysłaliśmy na Twój adres e-mail — jeśli go nie widzisz, zajrzyj także do spamu.",
+    "orderReceived": "Zamówienie #{number} zostało przyjęte. Potwierdzenie wysłaliśmy na Twój adres e-mail — jeśli go nie widzisz, zajrzyj także do spamu.",
     "backToShop": "Wróć do sklepu",
     "connectionError": "Błąd połączenia podczas tworzenia zamówienia.",
     "checkEmail": "Zamówienie jest złożone — szczegóły i link do zapłaty wysłaliśmy mailem. Jeśli go nie widzisz, zajrzyj do spamu albo napisz do nas.",

@@ -40,6 +40,7 @@ export async function POST(request: Request) {
     }
     const unpaid: CheckoutReturn = {
       orderId: described.id,
+      orderNumber: payment.orderNumber ?? described.id.toString(),
       completion: described.completion,
       key: payment.orderKey,
     };
@@ -50,7 +51,11 @@ export async function POST(request: Request) {
   // jest. Dwie drogi piszące naraz zdublowały maile i zdjęły sztukę z magazynu
   // dwa razy (#282). Bez webhooka (lokalnie) zapisujemy stąd, jak dotąd.
   if (paymentService.isWebhookConfigured()) {
-    const result: CheckoutReturn = { orderId: described.id, completion: described.completion };
+    const result: CheckoutReturn = {
+      orderId: described.id,
+      orderNumber: payment.orderNumber ?? described.id.toString(),
+      completion: described.completion,
+    };
     return Response.json(result);
   }
 
@@ -67,6 +72,10 @@ export async function POST(request: Request) {
     return checkoutErrorResponse(CheckoutError.PaymentNotVerified);
   }
 
-  const result: CheckoutReturn = { orderId: order.id, completion: order.completion };
+  const result: CheckoutReturn = {
+    orderId: order.id,
+    orderNumber: payment.orderNumber ?? order.id.toString(),
+    completion: order.completion,
+  };
   return Response.json(result);
 }

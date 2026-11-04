@@ -11,6 +11,10 @@ import { isCurrency } from "@/utility";
 export const PAYMENT_META = {
   orderId: "orderId",
   orderKey: "orderKey",
+  // Numer zamówienia, który widzi klient (od 2026-11-04 własna numeracja od
+  // 101 — mu-plugin mc-numeracja-zamowien.php). Płatności sprzed tej zmiany
+  // go nie mają; wtedy pokazujemy numer wewnętrzny.
+  orderNumber: "orderNumber",
 } as const;
 
 // Metoda płatności w panelu WooCommerce („Płatność przez …”). Zanim klient
@@ -73,6 +77,7 @@ export const preparePayment = (intent: Stripe.PaymentIntent): PaymentRecord => (
   paidTotal: (intent.amount_received || intent.amount) / 100,
   orderId: getOrderId(intent.metadata),
   orderKey: intent.metadata[PAYMENT_META.orderKey] || null,
+  orderNumber: intent.metadata[PAYMENT_META.orderNumber] || null,
 });
 
 // Czy do tej płatności można wrócić przy kolejnej próbie: wciąż czeka na

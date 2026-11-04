@@ -279,7 +279,7 @@
   "success": {
     "loading": "Finalising your order...",
     "thankYou": "Thank you for your order",
-    "orderReceived": "Order #{orderId} has been received. A confirmation has been sent to your email address — if you can't see it, please check your spam folder too.",
+    "orderReceived": "Order #{number} has been received. A confirmation has been sent to your email address — if you can't see it, please check your spam folder too.",
     "backToShop": "Back to shop",
     "connectionError": "Connection error while creating the order.",
     "checkEmail": "Your order is placed — we have emailed you the details and a link to pay. If you cannot see it, check your spam folder or write to us.",
