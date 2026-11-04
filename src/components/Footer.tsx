@@ -179,8 +179,9 @@ export default async function Footer({
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-12 pt-6 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] tracking-widest uppercase opacity-60">
+        {/* Bottom bar — przy 60% krycia drobny napis miał kontrast 4,4:1, poniżej
+            wymaganych 4,5:1 (PageSpeed, 2026-11-04); przy 75% ma ok. 7:1. */}
+        <div className="mt-12 pt-6 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] tracking-widest uppercase opacity-75">
           <span>© {year} Magda Ceramics</span>
           <span>{t("footer.copyright")}</span>
         </div>
