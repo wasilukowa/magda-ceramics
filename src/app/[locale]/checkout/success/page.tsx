@@ -13,7 +13,7 @@ import CheckoutStepper from "@/components/checkout/CheckoutStepper";
 
 type OrderState =
   | { status: "loading" }
-  | { status: "success"; orderId: number }
+  | { status: "success"; orderNumber: string }
   | { status: "error"; message: string };
 
 function SuccessContent() {
@@ -64,7 +64,10 @@ function SuccessContent() {
         }
         // Zapłacone — kasa nie musi już podsuwać drogi do tego zamówienia.
         forgetPlacedOrder();
-        setState({ status: "success", orderId: data.orderId });
+        setState({
+          status: "success",
+          orderNumber: data.orderNumber ?? data.orderId.toString(),
+        });
       })
       .catch(() => {
         if (!active) return;
@@ -120,7 +123,7 @@ function SuccessContent() {
         {t("thankYou")}
       </p>
       <p className="text-sm">
-        {t("orderReceived", { orderId: shown.orderId })}
+        {t("orderReceived", { number: shown.orderNumber })}
       </p>
       <Link
         href="/shop"

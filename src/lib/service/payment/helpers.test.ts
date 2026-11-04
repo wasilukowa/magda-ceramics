@@ -19,6 +19,13 @@ const method = (type: string, wallet?: string): Stripe.PaymentMethod =>
   ({ type, card: wallet ? { wallet: { type: wallet } } : undefined }) as Stripe.PaymentMethod;
 
 describe("preparePayment", () => {
+  it("reads the customer-facing order number from Stripe", () => {
+    expect(
+      preparePayment(intent({ metadata: { orderId: "317", orderKey: "wc_order_test", orderNumber: "101" } }))
+        .orderNumber
+    ).toBe("101");
+  });
+
   it("reads the paid amount, currency and order from Stripe", () => {
     expect(preparePayment(intent())).toEqual({
       id: "pi_test",
@@ -27,6 +34,8 @@ describe("preparePayment", () => {
       paidTotal: 185,
       orderId: 317,
       orderKey: "wc_order_test",
+      // Płatność sprzed numeracji od 101 nie ma numeru w metadanych.
+      orderNumber: null,
     });
   });
 

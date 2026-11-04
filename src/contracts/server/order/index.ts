@@ -289,6 +289,8 @@ export type CompletedOrder = {
 // zamówienia, gdzie spróbuje jeszcze raz.
 export type CheckoutReturn = {
   orderId: number;
+  // Numer, który widzi klient (własna numeracja WooCommerce od 101).
+  orderNumber: string;
   completion: OrderCompletion;
   key?: string;
 };

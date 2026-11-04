@@ -59,9 +59,13 @@ class PaymentService {
       amount,
       currency: order.currency,
       automatic_payment_methods: { enabled: true },
+      // Opis widać na liście płatności w panelu Stripe'a — ten sam numer, który
+      // dostaje klient.
+      description: `Zamówienie #${order.number}`,
       metadata: {
         [PAYMENT_META.orderId]: order.id.toString(),
         [PAYMENT_META.orderKey]: order.key,
+        [PAYMENT_META.orderNumber]: order.number,
       },
     });
 

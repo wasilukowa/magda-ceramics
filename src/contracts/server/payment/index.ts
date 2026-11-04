@@ -29,4 +29,6 @@ export type PaymentRecord = {
   // klucza (panel klienta) — sam klucz nigdy nie jest bez numeru.
   orderId: number | null;
   orderKey: string | null;
+  // Numer do pokazania klientowi; brak w płatnościach sprzed 2026-11-04.
+  orderNumber: string | null;
 };
