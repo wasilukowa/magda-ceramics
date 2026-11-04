@@ -182,6 +182,12 @@ export const CHECKOUT_COUNTRIES: Country[] = [
   { code: "FI", label: "Finland", zone: ShippingZone.RestEu },
 ];
 
+// Ile dni ma konsument na odstąpienie od umowy, licząc od odebrania paczki —
+// regulamin (§ o odstąpieniu) i strona „Wysyłka i zwroty". Idzie też do
+// danych produktu dla Google (structuredData.ts); przy zmianie poprawić
+// wszystkie trzy miejsca.
+export const RETURN_WINDOW_DAYS = 14;
+
 // Countries where InPost parcel lockers can be picked on the Geowidget map.
 // Poland uses the domestic Geowidget; the rest use the InPost International
 // Geowidget (which only covers these ISO codes). Austria is intentionally

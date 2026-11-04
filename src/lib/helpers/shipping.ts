@@ -49,6 +49,13 @@ const getRate = (countryCode: string, method: DeliveryMethod): ZoneRate => {
 
 // Sposób dostawy zamówienia: paczkomat tylko wtedy, gdy klient go wybrał,
 // wskazał konkretny punkt, a w tym kraju paczkomaty są. Inaczej kurier.
+// Najtańsza dostawa do kraju — paczkomat, jeśli tam jest, inaczej kurier —
+// w złotych, euro albo funtach (nie w groszach).
+export const getLowestShippingCost = (countryCode: string, currency: Currency): number =>
+  Math.min(
+    ...Object.values(DeliveryMethod).map((method) => getRate(countryCode, method)[currency])
+  ) / 100;
+
 export const resolveDeliveryMethod = (
   countryCode: string,
   requested: DeliveryMethod | undefined,
