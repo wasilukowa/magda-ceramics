@@ -24,9 +24,6 @@ export const STUDIO_LINKS: NavLinkType[] = [
 export const HERO_SLIDER_PHOTOS: string[] = [
   "/slider/01-dsc-1746.jpg",
   "/slider/02-dsc-0132.jpg",
-  "/slider/03-dsc-0572.jpg",
-  "/slider/04-dsc-0589.jpg",
-  "/slider/05-dsc-1147.jpg",
   "/slider/06-dsc-1388.jpg",
   "/slider/07-dsc-1412.jpg",
   "/slider/08-dsc-1427.jpg",
