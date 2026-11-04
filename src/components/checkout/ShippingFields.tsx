@@ -40,8 +40,9 @@ type Props = {
   onSavedChange: (saved: SavedDelivery) => void;
 };
 
-// Krok 2 kasy: dokąd i jak. Telefon jest tutaj (decyzja Natalii 2026-10-12),
-// bo do paczkomatu jest obowiązkowy — InPost wysyła na niego kod odbioru.
+// Krok 2 kasy: dokąd i jak. Telefon jest tutaj (decyzja Natalii 2026-10-12)
+// i jest obowiązkowy przy każdej dostawie (2026-11-04): InPost wysyła na niego
+// kod odbioru, kurier dzwoni w sprawie doręczenia.
 // Uwagi też, bo trafiają do zamówienia, które ten krok składa.
 export default function ShippingFields({
   address,
@@ -219,7 +220,7 @@ export default function ShippingFields({
         </>
       )}
 
-      <CheckoutField label={t(usingLocker ? "phoneRequired" : "phone")}>
+      <CheckoutField label={t("phoneRequired")}>
         <input
           type="tel"
           value={address.phone}
@@ -228,12 +229,15 @@ export default function ShippingFields({
           autoComplete="tel"
         />
       </CheckoutField>
-      {usingLocker &&
-        (address.phone && !isPhoneNumber(address.phone) ? (
-          <p className="-mt-2 text-xs text-[var(--color-error)]">{t("phoneInvalid")}</p>
-        ) : (
-          <p className="-mt-2 text-xs text-[var(--muted)]">{t("phoneLockerHint")}</p>
-        ))}
+      {address.phone && !isPhoneNumber(address.phone) ? (
+        <p className="-mt-2 text-xs text-[var(--color-error)]">
+          {t(usingLocker ? "phoneInvalid" : "phoneCourierInvalid")}
+        </p>
+      ) : (
+        <p className="-mt-2 text-xs text-[var(--muted)]">
+          {t(usingLocker ? "phoneLockerHint" : "phoneCourierHint")}
+        </p>
+      )}
 
       <CheckoutField label={t("note")}>
         <textarea

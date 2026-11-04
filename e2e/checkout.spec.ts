@@ -93,6 +93,18 @@ test("checkout asks for the missing details step by step", async ({ page }) => {
   await page.getByRole("button", { name: plainText(t.placeOrder) }).click();
   await expect(page.getByText(t.fillRequired)).toBeVisible();
 
+  // Kurier z pełnym adresem, ale bez poprawnego telefonu — też nie przejdzie
+  // (decyzja Natalii 2026-11-04). Serwer i tak by odrzucił takie zamówienie.
+  await expect(page.getByText(t.phoneCourierInvalid)).toBeVisible();
+  await page.getByLabel(t.street, { exact: true }).fill(CUSTOMER.street);
+  await page.getByLabel(t.postcode, { exact: true }).fill(CUSTOMER.postcode);
+  await page.getByLabel(t.city, { exact: true }).fill(CUSTOMER.city);
+  await page.getByLabel(t.phoneRequired, { exact: true }).fill("");
+  await expect(page.getByText(t.phoneCourierHint)).toBeVisible();
+  await page.getByRole("button", { name: plainText(t.placeOrder) }).click();
+  await expect(page.getByText(t.fillRequired)).toBeVisible();
+  await expect(page.getByText(t.shippingAddress)).toBeVisible();
+
   // Wstecz nie gubi wpisanych danych.
   await page.getByRole("button", { name: t.back }).click();
   await expect(page.getByLabel(t.emailLabel, { exact: true })).toHaveValue(CUSTOMER.email);

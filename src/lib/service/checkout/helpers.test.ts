@@ -50,6 +50,15 @@ describe("placeOrderRequestSchema", () => {
     ).toBe(true);
   });
 
+  it("requires a phone number for a courier", () => {
+    const withoutPhone = placeOrder({ billing: { ...billing, phone: "" } });
+    expect(placeOrderRequestSchema.safeParse(withoutPhone).success).toBe(false);
+    const noPhoneField = placeOrder({ billing: { ...billing, phone: undefined } });
+    expect(placeOrderRequestSchema.safeParse(noPhoneField).success).toBe(false);
+    const badPhone = placeOrder({ billing: { ...billing, phone: "12" } });
+    expect(placeOrderRequestSchema.safeParse(badPhone).success).toBe(false);
+  });
+
   it("refuses countries the shop does not ship to", () => {
     const abroad = placeOrder({ billing: { ...billing, country: "US" } });
     expect(placeOrderRequestSchema.safeParse(abroad).success).toBe(false);

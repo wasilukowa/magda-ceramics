@@ -64,7 +64,7 @@ export const fillCourierAddress = async (page: Page, locale: Locale, street = CU
   await page.getByLabel(t.street, { exact: true }).fill(street);
   await page.getByLabel(t.postcode, { exact: true }).fill(CUSTOMER.postcode);
   await page.getByLabel(t.city, { exact: true }).fill(CUSTOMER.city);
-  await page.getByLabel(t.phone, { exact: true }).fill(CUSTOMER.phone);
+  await page.getByLabel(t.phoneRequired, { exact: true }).fill(CUSTOMER.phone);
 };
 
 // Paczkomat wybrany na otwartej mapie InPostu tak jak klient: wyszukanie

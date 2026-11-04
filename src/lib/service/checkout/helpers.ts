@@ -47,7 +47,10 @@ const billingSchema = z.object({
   first_name: text(),
   last_name: text(),
   email: z.email().max(MAX_FIELD_LENGTH),
-  phone: z.string().trim().max(MAX_FIELD_LENGTH).optional().default(""),
+  // Obowiązkowy przy każdej dostawie (paczkomat: SMS z kodem odbioru, kurier:
+  // telefon w sprawie doręczenia). Kasa pilnuje tego sama, to jest
+  // zabezpieczenie na żądanie złożone z pominięciem formularza.
+  phone: z.string().trim().max(MAX_FIELD_LENGTH).refine(isPhoneNumber),
   address_1: text(200),
   address_2: z.string().trim().max(200).optional().default(""),
   city: text(),
@@ -78,43 +81,25 @@ const deliveryFields = {
   locker: lockerSchema.nullish(),
 };
 
-// Do paczkomatu telefon jest obowiązkowy: InPost wysyła na niego SMS
-// z kodem odbioru. Kasa pilnuje tego sama, to jest zabezpieczenie na
-// żądanie złożone z pominięciem formularza.
-const hasLockerPhone = ({
-  deliveryMethod,
-  locker,
-  billing,
-}: {
-  deliveryMethod?: DeliveryMethod;
-  locker?: unknown;
-  billing: { phone: string };
-}): boolean =>
-  deliveryMethod !== DeliveryMethod.Locker || !locker || isPhoneNumber(billing.phone);
-
 // „Złóż zamówienie". Waluta przychodzi z kasy, ale kwoty nie ma — tę liczy
 // WooCommerce z numerów produktów, a wysyłkę serwer z cennika.
-export const placeOrderRequestSchema = z
-  .object({
-    ...deliveryFields,
-    items: cartSchema,
-    currency: z.enum(Currency),
-    checkoutId: z.uuid(),
-    // Język strony, na której klient zamawia — w nim dostanie maile. Opcjonalny,
-    // bo karta otwarta przed wdrożeniem go nie wysyła; wtedy język idzie
-    // z kraju adresu.
-    locale: z.enum(routing.locales).optional(),
-  })
-  .refine(hasLockerPhone, { path: ["billing", "phone"] });
+export const placeOrderRequestSchema = z.object({
+  ...deliveryFields,
+  items: cartSchema,
+  currency: z.enum(Currency),
+  checkoutId: z.uuid(),
+  // Język strony, na której klient zamawia — w nim dostanie maile. Opcjonalny,
+  // bo karta otwarta przed wdrożeniem go nie wysyła; wtedy język idzie
+  // z kraju adresu.
+  locale: z.enum(routing.locales).optional(),
+});
 
 // „Zapisz zmiany" — poprawka złożonego, nieopłaconego zamówienia.
-export const updateOrderRequestSchema = z
-  .object({
-    ...deliveryFields,
-    orderId: z.int().positive(),
-    key: z.string().trim().min(1).max(64),
-  })
-  .refine(hasLockerPhone, { path: ["billing", "phone"] });
+export const updateOrderRequestSchema = z.object({
+  ...deliveryFields,
+  orderId: z.int().positive(),
+  key: z.string().trim().min(1).max(64),
+});
 
 // Pusty koszyk zasługuje na własny komunikat („Twój koszyk jest pusty"), a nie
 // na to samo „nieprawidłowe żądanie" co bzdurne dane.

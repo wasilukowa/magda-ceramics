@@ -103,12 +103,14 @@ export default function CheckoutContent({
 
   const isContactComplete =
     !!address.firstName.trim() && !!address.lastName.trim() && isEmailAddress(address.email);
-  // Do paczkomatu telefon jest obowiązkowy — InPost wysyła na niego SMS
-  // z kodem odbioru (decyzja Natalii 2026-10-07). Przy kurierze zostaje
-  // nieobowiązkowy.
-  const isShippingComplete = usingLocker
-    ? !!locker && isPhoneNumber(address.phone)
-    : !!address.street.trim() && !!address.postcode.trim() && !!address.city.trim();
+  // Telefon jest obowiązkowy przy każdym sposobie dostawy: InPost wysyła na
+  // niego SMS z kodem odbioru (decyzja Natalii 2026-10-07), a kurier dzwoni
+  // w sprawie doręczenia (decyzja Natalii 2026-11-04).
+  const isShippingComplete =
+    isPhoneNumber(address.phone) &&
+    (usingLocker
+      ? !!locker
+      : !!address.street.trim() && !!address.postcode.trim() && !!address.city.trim());
 
   // Najdalszy krok, na który wolno przejść paskiem kroków. „Płatność" dopiero
   // po złożeniu zamówienia i tylko bez niezapisanych zmian.
