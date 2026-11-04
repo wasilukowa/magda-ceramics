@@ -2,13 +2,15 @@ import { CeramicsByLocale } from "./types";
 
 // Tekst strony „Moja ceramika" w obu językach — odwzorowany co do słowa
 // z dokumentów Magdy („Od surowej kulki gliny do gotowego naczynia" i „From
-// a Raw Ball of Clay to a Finished Vessel", 2026-11-04).
+// a Raw Ball of Clay to a Finished Vessel", poprawiona wersja z 2026-11-04).
 //
 // ‼️ MAGDA: obie wersje są Twoje i nie są swoimi tłumaczeniami zdanie
 // w zdanie (np. w trymowaniu polska mówi o schnięciu pod folią, angielska
 // o powolnym schnięciu, żeby nie pękło) — i tak ma zostać. Poprawione zostały
-// tylko: „Nastepnie" → „Następnie", przecinek przed „gdzie niespiesznie
-// schną" oraz nazwa na Instagramie — w dokumencie stało „@magdaceramics",
+// tylko: „Nastepnie" → „Następnie", „ktory" → „który", przecinki przed
+// „czyli o tym" i „gdzie niespiesznie schną", podwójna spacja w tytule,
+// podział podpisu na dwa wiersze („Do zobaczenia!" i niżej „Magda") oraz
+// nazwa na Instagramie — w dokumencie stało „@magdaceramics",
 // a Twój profil nazywa się @magda_ceramics (tak samo jak na „O mnie").
 //
 // Zdjęcia stoją tam, gdzie wstawiłaś je w polskim dokumencie; angielski nie
@@ -18,10 +20,6 @@ import { CeramicsByLocale } from "./types";
 // pomniejszone do 1600 px. Zdjęcie pracowni to kwadratowy kadr ze zdjęcia
 // z telefonu, taki jak w dokumencie.
 //
-// Zmiany od Natalii po dokumencie (2026-11-04): zdjęcie pracowni przeszło
-// wyżej, pod pierwszy akapit; pod „1. Przygotowanie" stoi zamiast niego
-// kulka gliny, a polskie zdanie przed nim kończy się na „…który z niego
-// powstanie." (bez „czyli jestem tu:").
 //
 // Do 2026-11-04 na tej stronie stał slider z 17 zdjęciami z pracy przy kole
 // (CERAMICS_PHOTOS) i ramka „Właśnie w piecu". Decyzja Natalii: slider na
@@ -133,11 +131,11 @@ export const CERAMICS: CeramicsByLocale = {
       { type: "heading", text: "A Piece of My Everyday Life in Your Home" },
       {
         type: "paragraph",
-        text: "Every thumbprint, gentle curve, or unique glaze drip is proof that these objects once lived in my hands. By creating at home, I pour a piece of my everyday life into each ceramic piece.",
+        text: "Every thumbprint, gentle curve, or unique glaze drip is proof that these objects once lived in my hands. By creating at home, I pour a piece of my everyday life and a whole lot of heart into each ceramic piece.",
       },
       {
         type: "paragraph",
-        text: "I hope you find something here that brings you joy and adds warmth to your home.",
+        text: "I hope you find something here that brings joy to you and your loved ones, and adds warmth to your home and everyday rituals.",
       },
       {
         type: "photos",
@@ -157,7 +155,7 @@ export const CERAMICS: CeramicsByLocale = {
     signature: "See you there!\nMagda",
   },
   pl: {
-    title: "Od surowej kulki gliny do gotowego naczynia – jak powstaje moja ceramika",
+    title: "Od surowej kulki gliny do gotowego naczynia, czyli o tym, jak powstaje moja ceramika",
     blocks: [
       {
         type: "paragraph",
@@ -248,16 +246,12 @@ export const CERAMICS: CeramicsByLocale = {
       },
       { type: "heading", text: "Kawałek mojej codzienności w Twoim domu" },
       {
-        // ‼️ W dokumencie zdanie urywa się po „i dużo" — czeka na dokończenie
-        // od Magdy. Do tego czasu stoi dokładnie tak jak w dokumencie.
         type: "paragraph",
-        text: "Każdy ślad mojego kciuka, delikatna krzywizna czy niepowtarzalny zaciek szkliwa to dowód na to, że te przedmioty żyły w moich dłoniach. Tworząc w domu, oddaję ceramice kawałek swojej codzienności i dużo",
+        text: "Każdy ślad mojego kciuka, delikatna krzywizna czy niepowtarzalny zaciek szkliwa to dowód na to, że te przedmioty żyły w moich dłoniach i nigdy nie powtórzą się dwa razy. Tworząc w domu, oddaję ceramice kawałek swojej codzienności i wkładam w nią mnóstwo serca, czasu oraz pracy.",
       },
       {
-        // ‼️ W dokumencie brakuje tu słowa („co sprawi Ci Tobie") — czeka na
-        // poprawkę od Magdy. Do tego czasu stoi dokładnie tak jak w dokumencie.
         type: "paragraph",
-        text: "Mam nadzieję, że znajdziesz u mnie coś, co sprawi Ci Tobie oraz Twoim bliskim.",
+        text: "Mam nadzieję, że znajdziesz u mnie coś, co sprawi radość Tobie oraz Twoim bliskim i ociepli Wasz dom magią ręcznego rzemiosła.",
       },
       {
         type: "photos",
