@@ -45,7 +45,9 @@ export function PhotoSlider({ photos, sizes }: PhotoSliderProps) {
               className="object-cover"
               sizes={sizes}
               preload={i === 0}
-              fetchPriority={i === current ? undefined : "low"}
+              // Pierwsze zdjęcie to największy element strony głównej (LCP) —
+              // przeglądarka ma je pobrać przed resztą (PageSpeed, 2026-11-04).
+              fetchPriority={i === 0 ? "high" : i === current ? undefined : "low"}
             />
           </div>
         ) : null
