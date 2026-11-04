@@ -11,33 +11,47 @@ export const STUDIO_LINKS: NavLinkType[] = [
   { route: "/contact", labelKey: "contact" },
 ];
 
-// Zdjęcia w sliderze na stronie głównej, w kolejności pokazywania (tej samej,
-// co nazwy plików u Natalii, 2026-10-07: „a_" na początek, „w_" na koniec).
-// Pliki leżą w public/slider/ (pomniejszone do 2000 px w dłuższym boku). Żeby
+// Zdjęcia w sliderze na stronie głównej, w kolejności pokazywania. Kolejność
+// ustala numer na początku nazwy pliku (01-, 02-, …) i lista poniżej musi iść
+// tak samo — strona nie czyta folderu, tylko tę listę. Żeby przestawić zdjęcia:
+// zmień numery w nazwach plików i tutaj. Pliki leżą w public/slider/. Żeby
 // usunąć zdjęcie: skasuj wiersz tutaj (i sam plik, jeśli ma zniknąć
 // z repozytorium). Żeby dodać: wrzuć plik do public/slider/ i dopisz wiersz.
 // Slider przycina zdjęcie do swojej ramki (na komputerze prawie pionowej, na
 // telefonie prawie kwadratowej), więc najważniejsze powinno być blisko środka
-// kadru. Zdjęcia, które stały tu wcześniej, są teraz na „Moja ceramika" —
-// patrz CERAMICS_PHOTOS.
+// kadru. Zdjęcia z procesu (koło, rzeźbienie) są na „Moja ceramika" — patrz
+// CERAMICS_PHOTOS.
 export const HERO_SLIDER_PHOTOS: string[] = [
-  "/slider/dsc-1746.jpg",
-  "/slider/dsc-1388.jpg",
-  "/slider/dsc-1412.jpg",
-  "/slider/dsc-1427.jpg",
-  "/slider/dsc-1505.jpg",
-  "/slider/dsc-1578.jpg",
-  "/slider/dsc-1641.jpg",
-  "/slider/dsc-1650.jpg",
-  "/slider/dsc-2100.jpg",
-  "/slider/dsc-8101.jpg",
-  "/slider/dsc-9112.jpg",
-  "/slider/dsc-9290.jpg",
-  "/slider/dsc-9316.jpg",
-  "/slider/dsc-9581.jpg",
-  "/slider/dsc-9815.jpg",
-  "/slider/dsc-0407.jpg",
-  "/slider/dsc-1196.jpg",
+  "/slider/01-dsc-1746.jpg",
+  "/slider/02-dsc-0132.jpg",
+  "/slider/03-dsc-0572.jpg",
+  "/slider/04-dsc-0589.jpg",
+  "/slider/05-dsc-1147.jpg",
+  "/slider/06-dsc-1388.jpg",
+  "/slider/07-dsc-1412.jpg",
+  "/slider/08-dsc-1427.jpg",
+  "/slider/09-dsc-1505.jpg",
+  "/slider/10-dsc-1578.jpg",
+  "/slider/11-dsc-1641.jpg",
+  "/slider/12-dsc-1650.jpg",
+  "/slider/13-dsc-2100.jpg",
+  "/slider/14-dsc-2397.jpg",
+  "/slider/15-dsc-2554.jpg",
+  "/slider/16-dsc-2644.jpg",
+  "/slider/17-dsc-2821.jpg",
+  "/slider/18-dsc-3036.jpg",
+  "/slider/19-dsc-3576.jpg",
+  "/slider/20-dsc-3610.jpg",
+  "/slider/21-dsc-3746.jpg",
+  "/slider/22-dsc-3750.jpg",
+  "/slider/23-dsc-8101.jpg",
+  "/slider/24-dsc-8516.jpg",
+  "/slider/25-dsc-9112.jpg",
+  "/slider/26-dsc-9290.jpg",
+  "/slider/27-dsc-9316.jpg",
+  "/slider/28-dsc-9581.jpg",
+  "/slider/29-dsc-9815.jpg",
+  "/slider/30-dsc-7519.jpg",
 ];
 
 // Everything the store writes to the customer's device, listed for the cookie
