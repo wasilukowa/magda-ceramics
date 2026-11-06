@@ -121,6 +121,19 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // Ikonka dla iPhone'a (ekran początkowy, ulubione Safari) to
+  // src/app/apple-icon.png — Next sam dopisuje do każdej strony
+  // <link rel="apple-touch-icon">. Część przeglądarek i robotów nie czyta
+  // tego linku, tylko z przyzwyczajenia pyta o stałe adresy w katalogu
+  // głównym — w logach z 4–6.11 były to dwa 404. Kierujemy je na ten sam
+  // plik, żeby nie trzymać dwóch kopii obrazka.
+  async rewrites() {
+    return [
+      { source: "/apple-touch-icon.png", destination: "/apple-icon.png" },
+      { source: "/apple-touch-icon-precomposed.png", destination: "/apple-icon.png" },
+    ];
+  },
+
   // Ile stron Next buduje NARAZ. Domyślnie osiem na workera, a workerów bywa
   // siedem — czyli kilkadziesiąt stron jednocześnie dobija się do WordPressa.
   // ZMIERZONE (czystym HTTP, bez udziału tego kodu): wp.magdaceramics.com
