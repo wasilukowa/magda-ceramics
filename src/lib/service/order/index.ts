@@ -287,7 +287,7 @@ class OrderService {
   async getSalesOrders(modifiedAfter: string): Promise<SalesOrder[]> {
     const raw: RawOrder[] = [];
     for (let page = 1; ; page++) {
-      const batch = await this.wcFetch<RawOrder[]>(
+      const batch = await this.wcRead<RawOrder[]>(
         `orders?status=any&modified_after=${modifiedAfter}&dates_are_gmt=true` +
           `&orderby=id&order=asc&per_page=${SALES_PAGE_SIZE}&page=${page}`
       );
@@ -299,7 +299,7 @@ class OrderService {
     for (const order of raw) {
       if (!order.date_paid_gmt) continue;
       const refunds = order.refunds?.length
-        ? await this.wcFetch<RawOrderRefund[]>(`orders/${order.id}/refunds`)
+        ? await this.wcRead<RawOrderRefund[]>(`orders/${order.id}/refunds`)
         : [];
       const prepared = prepareSalesOrder(order, refunds);
       if (prepared) orders.push(prepared);

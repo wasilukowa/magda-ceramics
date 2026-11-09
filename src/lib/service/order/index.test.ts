@@ -85,9 +85,9 @@ describe("placing an order", () => {
   });
 });
 
-// Budzik co godzinę pyta o nieopłacone zamówienia. Kolejne odpowiedzi
-// WordPressa podaje test; pusta lista = nic do przypomnienia.
-const fakeReservedLookup = (...answers: (() => Response)[]) => {
+// Zadania z budzika tylko czytają z WooCommerce. Kolejne odpowiedzi
+// WordPressa podaje test; pusta lista = nic do zrobienia.
+const fakeLookup =(...answers: (() => Response)[]) => {
   const fetchMock = vi.fn(async () => {
     const answer = answers.shift();
     if (!answer) throw new Error("unexpected request");
@@ -106,19 +106,19 @@ const getReservedOrders = async () => {
 
 describe("checking reserved orders", () => {
   it("asks once when WordPress answers", async () => {
-    const fetchMock = fakeReservedLookup(() => Response.json([]));
+    const fetchMock = fakeLookup(() => Response.json([]));
     await expect(getReservedOrders()).resolves.toEqual([]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("asks again after a timeout", async () => {
-    const fetchMock = fakeReservedLookup(timedOut, () => Response.json([]));
+    const fetchMock = fakeLookup(timedOut, () => Response.json([]));
     await expect(getReservedOrders()).resolves.toEqual([]);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it("asks again after a server error", async () => {
-    const fetchMock = fakeReservedLookup(
+    const fetchMock = fakeLookup(
       () => new Response(null, { status: 503 }),
       () => Response.json([])
     );
@@ -127,8 +127,30 @@ describe("checking reserved orders", () => {
   });
 
   it("fails when WordPress stays silent", async () => {
-    const fetchMock = fakeReservedLookup(timedOut, timedOut);
+    const fetchMock = fakeLookup(timedOut, timedOut);
     await expect(getReservedOrders()).rejects.toBe(TIMEOUT);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
+
+// Zestawienie sprzedaży 1. dnia miesiąca — też zadanie z budzika.
+describe("collecting the sales report", () => {
+  const getSalesOrders = async () => {
+    const result = orderService.getSalesOrders("2026-10-01T00:00:00");
+    result.catch(() => {});
+    await vi.runAllTimersAsync();
+    return result;
+  };
+
+  it("asks again after a timeout", async () => {
+    const fetchMock = fakeLookup(timedOut, () => Response.json([]));
+    await expect(getSalesOrders()).resolves.toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("fails when WordPress stays silent", async () => {
+    const fetchMock = fakeLookup(timedOut, timedOut);
+    await expect(getSalesOrders()).rejects.toBe(TIMEOUT);
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
