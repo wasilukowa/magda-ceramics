@@ -1,6 +1,12 @@
 import "server-only";
 
-import { HttpError, isNotFoundError, serverFetch, wait } from "@/lib/api";
+import {
+  HttpError,
+  isNotFoundError,
+  serverFetch,
+  serverFetchReadWithRetry,
+  wait,
+} from "@/lib/api";
 import {
   CancelReason,
   CustomerOrderMail,
@@ -140,8 +146,12 @@ class OrderService {
     return OrderService.instance;
   }
 
-  private async wcFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const res = await serverFetch(`${WP_URL}/wp-json/wc/v3/${endpoint}`, {
+  private wcUrl(endpoint: string): string {
+    return `${WP_URL}/wp-json/wc/v3/${endpoint}`;
+  }
+
+  private wcInit(options?: RequestInit): RequestInit {
+    return {
       ...options,
       headers: {
         Authorization: `Basic ${this.authHeader}`,
@@ -149,9 +159,28 @@ class OrderService {
         ...options?.headers,
       },
       cache: "no-store",
-    });
+    };
+  }
+
+  private async wcParse<T>(res: Response): Promise<T> {
     if (!res.ok) throw new HttpError(res.status, `WooCommerce API error: ${res.status}`);
     return res.json() as Promise<T>;
+  }
+
+  private async wcFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    return this.wcParse<T>(await serverFetch(this.wcUrl(endpoint), this.wcInit(options)));
+  }
+
+  // Odczyt z jednym ponowieniem — dla zadań z budzika, przy których nikt nie
+  // czeka przed ekranem. Serwer WP pracowni potrafi na chwilę przestać
+  // odpowiadać (od 6.11 kilka razy na dobę), a pojedyncze potknięcie
+  // kończyło przebieg kodem 503 i mailem „Cronjob failed” z cron-job.org,
+  // choć godzinę później wszystko przechodziło. Najgorzej ok. 21 s zamiast
+  // 10 s — w limicie czasu budzika. Tylko odczyty: patrz serverFetchReadWithRetry.
+  private async wcRead<T>(endpoint: string): Promise<T> {
+    return this.wcParse<T>(
+      await serverFetchReadWithRetry(this.wcUrl(endpoint), this.wcInit())
+    );
   }
 
   // Nazwy pozycji w języku klienta (N25). WooCommerce zapisuje w zamówieniu
@@ -233,7 +262,7 @@ class OrderService {
   // stronie to sufit WooCommerce. Zamówienia sprzed rezerwacji (bez terminu)
   // odpadają w prepareUnpaidOrder.
   async getReservedOrders(): Promise<UnpaidOrder[]> {
-    const raw = await this.wcFetch<RawOrder[]>(
+    const raw = await this.wcRead<RawOrder[]>(
       `orders?status=${OrderStatus.OnHold}&per_page=100&orderby=date&order=asc`
     );
     const orders = raw
@@ -258,7 +287,7 @@ class OrderService {
   async getSalesOrders(modifiedAfter: string): Promise<SalesOrder[]> {
     const raw: RawOrder[] = [];
     for (let page = 1; ; page++) {
-      const batch = await this.wcFetch<RawOrder[]>(
+      const batch = await this.wcRead<RawOrder[]>(
         `orders?status=any&modified_after=${modifiedAfter}&dates_are_gmt=true` +
           `&orderby=id&order=asc&per_page=${SALES_PAGE_SIZE}&page=${page}`
       );
@@ -270,7 +299,7 @@ class OrderService {
     for (const order of raw) {
       if (!order.date_paid_gmt) continue;
       const refunds = order.refunds?.length
-        ? await this.wcFetch<RawOrderRefund[]>(`orders/${order.id}/refunds`)
+        ? await this.wcRead<RawOrderRefund[]>(`orders/${order.id}/refunds`)
         : [];
       const prepared = prepareSalesOrder(order, refunds);
       if (prepared) orders.push(prepared);
