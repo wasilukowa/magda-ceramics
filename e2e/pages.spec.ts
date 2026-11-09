@@ -97,3 +97,32 @@ test("the home slider loads only nearby photos and still shows the next ones", a
   await page.getByRole("button", { name: "Poprzednie zdjęcie" }).click();
   await expect(page.getByAltText(/^Ceramika Magdy, zdjęcie/).last()).toHaveJSProperty("complete", true);
 });
+
+// Karty produktów wczytują stronę z wyprzedzeniem dopiero na sygnał zamiaru
+// (IntentPrefetchLink, 2026-11-09). Wcześniej samo przewinięcie sklepu
+// pobierało strony wszystkich kilkudziesięciu produktów, a każde pobranie
+// zlecało odświeżenie z WordPressa — i serwer WP przestawał odpowiadać.
+// Zapytania o produkty są tu przerywane, więc test nie obciąża WordPressa.
+test("the shop grid prefetches a product only when the visitor reaches for it", async ({ page }) => {
+  const prefetched: string[] = [];
+  await page.route(/\/pl\/produkt\//, (route) => {
+    if (route.request().isNavigationRequest()) return route.continue();
+    prefetched.push(new URL(route.request().url()).pathname);
+    return route.abort();
+  });
+
+  await page.goto("/pl/sklep");
+  const cards = page.locator('a[href^="/pl/produkt/"]');
+  await expect(cards.first()).toBeVisible();
+  for (let i = 0; i < 10; i++) {
+    await page.mouse.wheel(0, 800);
+    await page.waitForTimeout(200);
+  }
+  await page.waitForTimeout(1_500);
+  expect(prefetched).toEqual([]);
+
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const href = await cards.first().getAttribute("href");
+  await cards.first().hover();
+  await expect.poll(() => prefetched).toContain(href);
+});

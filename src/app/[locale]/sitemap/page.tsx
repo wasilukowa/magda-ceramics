@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { buildPageMetadata } from "@/lib/helpers/metadata";
 import { Link } from "@/i18n/navigation";
+import IntentPrefetchLink from "@/components/IntentPrefetchLink";
 import { StaticRoute } from "@/content/types";
 import { getCategoryLabel } from "@/lib/helpers/category";
 import { productService } from "@/lib/service/product";
@@ -115,12 +116,14 @@ export default async function SiteMapPage({
           {katalogDostepny ? (
             products.map((product) => (
               <li key={product.slug}>
-                <Link
+                {/* Tu są WSZYSTKIE produkty naraz — zwykły Link wczytywałby
+                    z wyprzedzeniem każdy z nich. Patrz IntentPrefetchLink. */}
+                <IntentPrefetchLink
                   href={{ pathname: "/product/[slug]", params: { slug: product.slug } }}
                   className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
                 >
                   {product.name}
-                </Link>
+                </IntentPrefetchLink>
               </li>
             ))
           ) : (
