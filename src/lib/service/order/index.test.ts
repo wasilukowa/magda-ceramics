@@ -84,3 +84,51 @@ describe("placing an order", () => {
     expect(calls.map((call) => call.method)).toEqual(["PUT"]);
   });
 });
+
+// Budzik co godzinę pyta o nieopłacone zamówienia. Kolejne odpowiedzi
+// WordPressa podaje test; pusta lista = nic do przypomnienia.
+const fakeReservedLookup = (...answers: (() => Response)[]) => {
+  const fetchMock = vi.fn(async () => {
+    const answer = answers.shift();
+    if (!answer) throw new Error("unexpected request");
+    return answer();
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+};
+
+const getReservedOrders = async () => {
+  const result = orderService.getReservedOrders();
+  result.catch(() => {});
+  await vi.runAllTimersAsync();
+  return result;
+};
+
+describe("checking reserved orders", () => {
+  it("asks once when WordPress answers", async () => {
+    const fetchMock = fakeReservedLookup(() => Response.json([]));
+    await expect(getReservedOrders()).resolves.toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("asks again after a timeout", async () => {
+    const fetchMock = fakeReservedLookup(timedOut, () => Response.json([]));
+    await expect(getReservedOrders()).resolves.toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("asks again after a server error", async () => {
+    const fetchMock = fakeReservedLookup(
+      () => new Response(null, { status: 503 }),
+      () => Response.json([])
+    );
+    await expect(getReservedOrders()).resolves.toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("fails when WordPress stays silent", async () => {
+    const fetchMock = fakeReservedLookup(timedOut, timedOut);
+    await expect(getReservedOrders()).rejects.toBe(TIMEOUT);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});
