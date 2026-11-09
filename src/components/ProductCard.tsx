@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
+import IntentPrefetchLink from "@/components/IntentPrefetchLink";
 import { ProductCardProps } from "@/contracts/shared";
 import Price from "@/components/Price";
 import WishlistButton from "@/components/WishlistButton";
@@ -35,7 +35,9 @@ export default function ProductCard({
     // niepoprawny HTML, a kliknięcie w serce otwierałoby przy okazji produkt.
     // Stąd wspólny kontener z `relative` i serce nałożone na róg zdjęcia.
     <div className="relative">
-      <Link
+      {/* Strona produktu wczytuje się z wyprzedzeniem dopiero po najechaniu
+          albo dotknięciu, nie przy samym przewijaniu — patrz IntentPrefetchLink. */}
+      <IntentPrefetchLink
         href={{ pathname: "/product/[slug]", params: { slug: product.slug } }}
         className="group block"
       >
@@ -83,7 +85,7 @@ export default function ProductCard({
             className="block text-sm text-[var(--muted)] mt-1"
           />
         )}
-      </Link>
+      </IntentPrefetchLink>
 
       {/* Widoczne od razu, nie dopiero po najechaniu — na telefonie nie ma
           czym najechać, a to właśnie tam najczęściej się przegląda. Krążek tła

@@ -1,4 +1,6 @@
+import type { ComponentProps } from "react";
 import type { ImageProps as NextImageProps } from "next/image";
+import type { Link } from "@/i18n/navigation";
 import {
   CategoryProps,
   CategoryTileProps,
@@ -93,6 +95,11 @@ export type CookieCategoryToggleProps = {
 // bywa rysowana i po stronie serwera (sklep, strona główna), i po stronie
 // klienta (ulubione) — nie ma jednego sposobu, w jaki mogłaby sama sięgnąć po
 // tłumaczenie. Bez etykiety plakietka po prostu się nie rysuje.
+// Link do strony produktu, który wczytuje ją z wyprzedzeniem dopiero na
+// sygnał zamiaru — patrz IntentPrefetchLink. O tym, kiedy wczytać, decyduje
+// sam komponent, więc `prefetch` nie da się mu podać z zewnątrz.
+export type IntentPrefetchLinkProps = Omit<ComponentProps<typeof Link>, "prefetch">;
+
 export type ProductCardProps = {
   product: ProductProps;
   soldOutLabel?: string;
